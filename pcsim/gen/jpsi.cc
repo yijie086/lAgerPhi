@@ -12,6 +12,9 @@
   #include "TGraph.h"
   #include "TGraphErrors.h"
 
+  using std::cout;
+  using std::endl;
+
 
   Double_t Mp=0.9383;
   Double_t Mj=3.0969;

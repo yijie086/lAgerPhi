@@ -11,6 +11,9 @@
 #include "TF1.h"
 #include "TVector3.h"
 
+  using std::cout;
+  using std::endl;
+
 Double_t xsec(Double_t W){
   //This function returns the cross-section for a 5/2- isospin pentaquark of mass 4450 when given a W.  The function is parameterized from Qian Wang's paper: Phys.Rev. D92 (2015) 034022.  It ignores any angular considerations for the cross-section and uses a digitization of the plot in Fig 3.  Returned result is in nb.
 
