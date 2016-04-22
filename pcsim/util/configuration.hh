@@ -1,5 +1,5 @@
-#ifndef PYTHIA6M_UTIL_CONFIGURATION_LOADED
-#define PYTHIA6M_UTIL_CONFIGURATION_LOADED
+#ifndef PCSIM_UTIL_CONFIGURATION_LOADED
+#define PCSIM_UTIL_CONFIGURATION_LOADED
 
 #include <string>
 #include <map>
@@ -10,10 +10,10 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <pythia6m/util/exception.hh>
-#include <pythia6m/util/stringify.hh>
+#include <pcsim/util/exception.hh>
+#include <pcsim/util/stringify.hh>
 
-namespace pythia6m {
+namespace pcsim {
 // necessary type aliases
 using ptree = boost::property_tree::ptree;
 using boost::property_tree::read_json;
@@ -27,7 +27,7 @@ class configuration_path_error;
 class configuration_key_error;
 class configuration_value_error;
 class configuration_translation_error;
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // Consistend way to format object paths/names/titles
@@ -37,7 +37,7 @@ class configuration_translation_error;
 //       * a format_path() is not provided, as this is performed more
 //         transparently by the string_path class.
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 // path/name/title separators.
 constexpr const char PATH_SEPARATOR{'/'};
 constexpr const char NAME_SEPARATOR{'_'};
@@ -66,7 +66,7 @@ public:
   }
   std::string str() const { return dump(); }
 };
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // configuration handler
@@ -75,7 +75,7 @@ public:
 // as argument. This string should match the settings path
 // in the associated settings ptree.
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 class configuration {
 public:
   constexpr static const char* DEFAULTS{"defaults"};
@@ -179,7 +179,7 @@ private:
   string_path defaults_path_;
   ptree defaults_;
 };
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // configurable mixin
@@ -190,7 +190,7 @@ private:
 // The path member function returns the configuration path of the object, making
 // it easier to create path hierarchies for nested objects.
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 class configurable {
 public:
   configurable(const ptree& settings, const string_path& path)
@@ -203,19 +203,19 @@ private:
   configuration conf_;
   const string_path path_;
 };
-} // ns pythia6m
+} // ns pcsim
 
 
 // =============================================================================
 // Definition: exceptions
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 // exceptions
-class configuration_error : public pythia6m::exception {
+class configuration_error : public pcsim::exception {
 public:
   configuration_error(const std::string& msg,
                       const std::string& type = "configuration_error")
-      : pythia6m::exception{msg, type} {}
+      : pcsim::exception{msg, type} {}
 };
 
 class configuration_path_error : public configuration_error {
@@ -482,6 +482,6 @@ configuration_translation_error::configuration_translation_error(
               "')",
           "configuration_translation_error") {}
 
-} // ns pythia6m
+} // ns pcsim
 
 #endif

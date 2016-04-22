@@ -1,26 +1,26 @@
-#ifndef PYTHIA6M_FRAMEWORK_LOADED
-#define PYTHIA6M_FRAMEWORK_LOADED
+#ifndef PCSIM_FRAMEWORK_LOADED
+#define PCSIM_FRAMEWORK_LOADED
 
 #include <functional>
 #include <vector>
 #include <string>
 
-#include <pythia6m/util/configuration.hh>
+#include <pcsim/util/configuration.hh>
 
 #include <boost/program_options.hpp>
 
-namespace pythia6m {
+namespace pcsim {
 // error prototypes
 class framework_error;
 class framework_help;
 class framework_file_error;
 class framework_parse_error;
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // analyser::framework
 //
-// If you want to use the framework, call MAKE_PYTHIA6M_FRAMEWORK(function) at
+// If you want to use the framework, call MAKE_PCSIM_FRAMEWORK(function) at
 // the end of your main source file. "function" is the analysis function you
 // want to call. The analysis function should take the following inputs:
 //    * settings: ptree made from the input configuration file
@@ -28,25 +28,25 @@ class framework_parse_error;
 //  Note:
 //    * the framework takes care of all fancy exception handling
 // =============================================================================
-#define MAKE_PYTHIA6M_FRAMEWORK(function)                                      \
+#define MAKE_PCSIM_FRAMEWORK(function)                                      \
   int main(int argc, char* argv[]) {                                           \
     try {                                                                      \
-      pythia6m::framework pythia6m{argc, argv, (function)};                    \
-      pythia6m.run();                                                          \
+      pcsim::framework pcsim{argc, argv, (function)};                    \
+      pcsim.run();                                                          \
       return 0;                                                                \
     } catch (...) {                                                            \
       return 1;                                                                \
     }                                                                          \
   }
 
-namespace pythia6m {
+namespace pcsim {
 class framework {
 public:
-  using pythia6m_function_type =
+  using pcsim_function_type =
       std::function<int(const ptree& settings, const std::string& output)>;
 
   // setup the analysis framework
-  framework(int argc, char* argv[], pythia6m_function_type pythia6m_function);
+  framework(int argc, char* argv[], pcsim_function_type pcsim_function);
   // run the analyzis framework
   int run() const;
 
@@ -56,22 +56,22 @@ private:
   ptree get_settings() const;
   void root_suppress_signals() const;
 
-  pythia6m_function_type pythia6m_function_;
+  pcsim_function_type pcsim_function_;
   boost::program_options::variables_map args_;
   std::string output_;
   ptree settings_;
 };
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // Definition: exceptions
 // =============================================================================
-namespace pythia6m {
-class framework_error : public pythia6m::exception {
+namespace pcsim {
+class framework_error : public pcsim::exception {
 public:
   framework_error(const std::string& msg,
                   const std::string& type = "framework_error")
-      : pythia6m::exception{msg, type} {}
+      : pcsim::exception{msg, type} {}
 };
 class framework_help : public framework_error {
 public:
@@ -91,6 +91,6 @@ class framework_parse_error : public framework_error {
 public:
   framework_parse_error(const std::string& file);
 };
-} // ns pythia6m
+} // ns pcsim
 
 #endif

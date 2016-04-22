@@ -1,6 +1,6 @@
 #include "logger.hh"
 
-namespace pythia6m {
+namespace pcsim {
 // =============================================================================
 // Implementation: log_handler
 // =============================================================================
@@ -26,4 +26,4 @@ void log_handler::set_level(unsigned ulevel) {
 namespace global {
 log_handler logger{};
 } // ns global
-} // ns pythia6m
+} // ns pcsim

@@ -1,5 +1,5 @@
-#ifndef PYTHIA6M_UTIL_STRINGIFY_LOADED
-#define PYTHIA6M_UTIL_STRINGIFY_LOADED
+#ifndef PCSIM_UTIL_STRINGIFY_LOADED
+#define PCSIM_UTIL_STRINGIFY_LOADED
 
 #include <string>
 #include <utility>
@@ -7,9 +7,9 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <pythia6m/util/type_traits.hh>
+#include <pcsim/util/type_traits.hh>
 
-namespace pythia6m {
+namespace pcsim {
 
 // implementation prototypes needed for stringify
 namespace stringify_impl {
@@ -26,7 +26,7 @@ RangeElement element_accessor(const RangeElement& el);
 template <class U, class V>
 std::string element_accessor(const std::pair<U, V>& p);
 }
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // stringify(range, delimiter, accessor):
@@ -35,7 +35,7 @@ std::string element_accessor(const std::pair<U, V>& p);
 // Default accessor just returns the string, with specializations for STL
 // containers and std::pair, allowing for nesting.
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 template <class Range,
           class ElementAccessor = decltype(
               stringify_impl::element_accessor<typename Range::value_type>)>
@@ -43,12 +43,12 @@ std::string
 stringify(const Range& r, const std::string& delimiter = ", ",
           ElementAccessor acc =
               stringify_impl::element_accessor<typename Range::value_type>);
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // Implementation
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 namespace stringify_impl {
 template <class RangeElement, class>
 RangeElement element_accessor(const RangeElement& el) {
@@ -77,6 +77,6 @@ std::string stringify(const Range& r, const std::string& delimiter,
   }
   return str;
 }
-} // ns pythia6m
+} // ns pcsim
 
 #endif

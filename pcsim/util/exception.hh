@@ -1,10 +1,10 @@
-#ifndef PYTHIA6M_UTIL_EXCEPTION_LOADED
-#define PYTHIA6M_UTIL_EXCEPTION_LOADED
+#ifndef PCSIM_UTIL_EXCEPTION_LOADED
+#define PCSIM_UTIL_EXCEPTION_LOADED
 
 #include <exception>
 #include <string>
 
-namespace pythia6m {
+namespace pcsim {
 class exception : public std::exception {
 public:
   exception(const std::string& msg, const std::string& type = "exception")
@@ -18,6 +18,6 @@ private:
   std::string msg_;
   std::string type_;
 };
-} // ns pythia6m
+} // ns pcsim
 
 #endif

@@ -1,6 +1,6 @@
 #include "configuration.hh"
 
-#include <pythia6m/util/logger.hh>
+#include <pcsim/util/logger.hh>
 
 using boost::property_tree::ptree_bad_path;
 using boost::property_tree::ptree_error;
@@ -8,7 +8,7 @@ using boost::property_tree::ptree_error;
 // =============================================================================
 // class configuration
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 configuration::configuration(const ptree& settings, const string_path& path)
     : settings_path_{path} {
   load(settings);
@@ -71,11 +71,11 @@ configuration::translation_error(const string_path& key,
                                  const std::string& value) const {
   return {key, value, settings_path_, defaults_path_};
 }
-} // ns pythia6m
+} // ns pcsim
 // =============================================================================
 // exceptions
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 // path error
 configuration_path_error::configuration_path_error(const string_path& path)
     : configuration_error{"Cannot find the configuration path '" +
@@ -107,12 +107,12 @@ configuration_translation_error::configuration_translation_error(
                               settings_path.str() + "' or '" +
                               defaults_path.str() + "')",
                           "configuration_translation_error"} {}
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // utility functions to format object names and titles
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 std::string format_name(std::string context, const std::string& name) {
   if (name.size() && context.size()) {
     context += NAME_SEPARATOR;
@@ -132,4 +132,4 @@ std::string format_title(const std::string& context, std::string title) {
   }
   return title;
 }
-} // ns pythia6m
+} // ns pcsim

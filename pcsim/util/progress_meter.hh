@@ -1,5 +1,5 @@
-#ifndef PYTHIA6M_UTIL_PROGRESS_METER_LOADED
-#define PYTHIA6M_UTIL_PROGRESS_METER_LOADED
+#ifndef PCSIM_UTIL_PROGRESS_METER_LOADED
+#define PCSIM_UTIL_PROGRESS_METER_LOADED
 
 #include <cmath>
 #include <cstdint>
@@ -8,7 +8,7 @@
 // =============================================================================
 // A simple console progress meter
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 class progress_meter {
 public:
   constexpr static const size_t PRECISION = 1000.; // 0.1 percent
@@ -39,6 +39,6 @@ private:
   size_t index_;
   const size_t precision_;
 };
-} // ns pythia6m
+} // ns pcsim
 
 #endif

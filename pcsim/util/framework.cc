@@ -3,10 +3,10 @@
 #include <exception>
 #include <cstdlib>
 
-#include <pythia6m/util/exception.hh>
-#include <pythia6m/util/configuration.hh>
-#include <pythia6m/util/logger.hh>
-#include <pythia6m/util/stringify.hh>
+#include <pcsim/util/exception.hh>
+#include <pcsim/util/configuration.hh>
+#include <pcsim/util/logger.hh>
+#include <pcsim/util/stringify.hh>
 
 #include <TSystem.h>
 
@@ -20,28 +20,28 @@ namespace po = boost::program_options;
 namespace {
 void file_exists(const std::string& file) {
   if (!fs::exists(file)) {
-    throw pythia6m::framework_file_error{file};
+    throw pcsim::framework_file_error{file};
   }
 }
 } // ns unnamed
 
-namespace pythia6m {
+namespace pcsim {
 // =============================================================================
 // framework constructor: suppress ROOT signals, parse command line arguments
 // and provide for error handling
 // =============================================================================
 framework::framework(int argc, char* argv[],
-                     pythia6m_function_type pythia6m_function)
-    : pythia6m_function_{pythia6m_function} {
+                     pcsim_function_type pcsim_function)
+    : pcsim_function_{pcsim_function} {
   try {
-    LOG_INFO("pythia6m", "Starting pythia6m framework");
+    LOG_INFO("pcsim", "Starting pcsim framework");
     // suppress ROOT signal handler
     root_suppress_signals();
     // parse the command line
     args_ = parse_arguments(argc, argv);
     // configuration
     settings_ = get_settings();
-    LOG_INFO("pythia6m", "Configuration file: " + args_["conf"].as<std::string>());
+    LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
     // run and events
     int run = args_["run"].as<int>();
     int events = args_["events"].as<int>();
@@ -52,11 +52,11 @@ framework::framework(int argc, char* argv[],
     char suffix[1024];
     sprintf(suffix, ".run%06i-%i", run, events);
     output_ += suffix;
-    LOG_INFO("pythia6m", "Output files will be written to: " + output_ + ".*");
+    LOG_INFO("pcsim", "Output files will be written to: " + output_ + ".*");
   } catch (const framework_help& h) {
     std::cerr << h.what() << std::endl;
     exit(0);
-  } catch (const pythia6m::exception& e) {
+  } catch (const pcsim::exception& e) {
     LOG_ERROR(e.type(), e.what());
     LOG_ERROR(e.type(), "Run with -h for help.");
     throw e;
@@ -64,21 +64,21 @@ framework::framework(int argc, char* argv[],
     LOG_CRITICAL("boost::exception", boost::diagnostic_information(e));
     LOG_CRITICAL("boost::exception", "Unhandled boost exception");
     LOG_CRITICAL("boost::exception", "Please contact developer for support.");
-    throw pythia6m::exception("Unhandled boost exception", "boost::exception");
+    throw pcsim::exception("Unhandled boost exception", "boost::exception");
   } catch (const std::exception& e) {
     LOG_CRITICAL("std::exception", e.what());
     LOG_CRITICAL("std::exception", "Unhandled standard exception");
     LOG_CRITICAL("std::exception", "Please contact developer for support.");
-    throw pythia6m::exception("Unhandled standard exception", "std::exception");
+    throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
 }
 int framework::run() const {
   try{
-    LOG_INFO("pythia6m", "Starting event generator...");
-    int ret = pythia6m_function_(settings_, output_);
-    LOG_INFO("pythia6m", "Finished.");
+    LOG_INFO("pcsim", "Starting event generator...");
+    int ret = pcsim_function_(settings_, output_);
+    LOG_INFO("pcsim", "Finished.");
     return ret;
-  } catch (const pythia6m::exception& e) {
+  } catch (const pcsim::exception& e) {
     LOG_ERROR(e.type(), e.what());
     LOG_ERROR(e.type(), "Run with -h for help.");
     throw e;
@@ -86,20 +86,20 @@ int framework::run() const {
     LOG_CRITICAL("boost::exception", boost::diagnostic_information(e));
     LOG_CRITICAL("boost::exception", "Unhandled boost exception");
     LOG_CRITICAL("boost::exception", "Please contact developer for support.");
-    throw pythia6m::exception("Unhandled boost exception", "boost::exception");
+    throw pcsim::exception("Unhandled boost exception", "boost::exception");
   } catch (const std::exception& e) {
     LOG_CRITICAL("std::exception", e.what());
     LOG_CRITICAL("std::exception", "Unhandled standard exception");
     LOG_CRITICAL("std::exception", "Please contact developer for support.");
-    throw pythia6m::exception("Unhandled standard exception", "std::exception");
+    throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
 }
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // framework private utility functions 
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 // =============================================================================
 // Implementation: framework::parse_arguments
 // Also sets the verbosity level to what was requested
@@ -137,7 +137,7 @@ po::variables_map framework::parse_arguments(int argc, char* argv[]) const {
     // set the verbosity level if requested
     if (args.count("verb")) {
       unsigned v{args["verb"].as<unsigned>()};
-      LOG_INFO("pythia6m", "Verbosity level: " + std::to_string(v));
+      LOG_INFO("pcsim", "Verbosity level: " + std::to_string(v));
       global::logger.set_level(v);
     }
     return args;
@@ -176,12 +176,12 @@ void framework::root_suppress_signals() const {
   gSystem->ResetSignal(kSigFloatingException);
   gSystem->ResetSignal(kSigWindowChanged);
 }
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // Implementation: Exceptions
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 framework_file_error::framework_file_error(const std::string& file)
     : framework_error{"No such file or directory: " + file,
                       "framework_file_error"} {}
@@ -197,4 +197,4 @@ std::string framework_help::message(const std::string& program,
      << "\n";
   return ss.str();
 }
-} // ns pythia6m
+} // ns pcsim

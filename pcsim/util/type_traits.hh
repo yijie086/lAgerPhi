@@ -1,5 +1,5 @@
-#ifndef PYTHIA6M_UTIL_TYPE_TRAITS_LOADED
-#define PYTHIA6M_UTIL_TYPE_TRAITS_LOADED
+#ifndef PCSIM_UTIL_TYPE_TRAITS_LOADED
+#define PCSIM_UTIL_TYPE_TRAITS_LOADED
 
 #include <type_traits>
 
@@ -27,7 +27,7 @@
 // =============================================================================
 // is_container evaluates to std::true_type for *iterable* STL containers
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 // and basic arrays
 template <class T> struct is_container : std::false_type {};
 // basic array
@@ -75,15 +75,15 @@ struct is_container<std::unordered_multiset<Key, Hash, Pred, Alloc>>
 // std::vector
 template <class T, class Alloc>
 struct is_container<std::vector<T, Alloc>> : std::true_type {};
-} // ns pythia6m
+} // ns pcsim
 
 // =============================================================================
 // is_map returns true for maps, false for everything else
 // =============================================================================
-namespace pythia6m {
+namespace pcsim {
 template <class T> struct is_map : std::false_type {};
 template <class Key, class T, class Compare, class Alloc>
 struct is_map<std::map<Key, T, Compare, Alloc>> : std::true_type {};
-} // ns pythia6m
+} // ns pcsim
 
 #endif
