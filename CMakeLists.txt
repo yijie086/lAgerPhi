@@ -24,7 +24,8 @@ include(cmake/compiler.cmake)
 set (TARGETS "")
 
 add_subdirectory(pcsim/gen)
-add_subdirectory(program)
+add_subdirectory(pcsim/util)
+#add_subdirectory(program)
 
 ################################################################################
 ## Prepare the project to be EXPORTed, generate configuration files
