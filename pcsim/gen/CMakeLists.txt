@@ -2,7 +2,7 @@
 ## CMAKE Settings
 ################################################################################
 set (SUBDIR "gen")
-set (LIBRARY "${PROJECT_NAME}-${SUBDIR}")
+set (LIBRARY "${PROJECT_NAME}_${SUBDIR}")
 set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 
 ################################################################################
@@ -20,10 +20,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## External Libraries
 ################################################################################
-find_package(nanoclas REQUIRED)
-include_directories(${NANOCLAS_INCLUDE_DIRS})
-add_definitions(${NANOCLAS_DEFINITIONS}
-                -DNANOCLAS_PARMS_DIR=\"${NANOCLAS_PARMS_DIR}\")
+find_package(root REQUIRED)
+include_directories(${ROOT_INCLUDE_DIR})
 
 ################################################################################
 ## Compile and Link
