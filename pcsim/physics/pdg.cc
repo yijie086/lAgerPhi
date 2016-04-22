@@ -11,6 +11,6 @@ const TParticlePDG& PDG_PI_MINUS{*pdg_particle(pdg_id::pi_minus)};
 const TParticlePDG& PDG_K_PLUS{*pdg_particle(pdg_id::K_plus)};
 const TParticlePDG& PDG_K_MINUS{*pdg_particle(pdg_id::K_minus)};
 const TParticlePDG& PDG_PHOTON{*pdg_particle(pdg_id::gamma)};
-const TParticlePDG& PDG_JPSI{*pdg_particle(pdg_id::J_psi)};
+const TParticlePDG& PDG_JPSI{*pdg_particle(pdg_id::J_Psi)};
 
 } // ns pcsim

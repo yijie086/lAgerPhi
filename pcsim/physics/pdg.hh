@@ -114,7 +114,10 @@ inline TParticlePDG* pdg_particle(const int32_t id) {
     db->AddParticle("N-14", "Nitrogen-14", 13.0403, true, 0, 1, "nucleus",
                     static_cast<int32_t>(pdg_id::N14));
   }
-  return db->GetParticle(static_cast<int32_t>(id));
+  return db->GetParticle(id);
+}
+inline TParticlePDG* pdg_particle(const pdg_id id) {
+  return pdg_particle(static_cast<int32_t>(id));
 }
 
 // some often used particles (add as needed, don't forget pdg.cc)
