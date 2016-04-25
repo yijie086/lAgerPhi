@@ -1,5 +1,5 @@
-#ifndef ANALYZER_CORE_HISTOGRAMMER_LOADED
-#define ANALYZER_CORE_HISTOGRAMMER_LOADED
+#ifndef PCSIM_CORE_HISTOGRAMMER_LOADED
+#define PCSIM_CORE_HISTOGRAMMER_LOADED
 
 // an easy to define 1D and 2D histo that will automatically get its own
 // variables from Data using a custom getter (f(Data...){return Double_t;})
@@ -12,8 +12,8 @@
 #include <TH1D.h>
 #include <TH2D.h>
 
-#include <analyzer/core/configuration.hh>
-#include <analyzer/core/interval.hh>
+#include <pcsim/core/configuration.hh>
+#include <pcsim/core/interval.hh>
 
 // =============================================================================
 // helper class for more elegant histogram constructors
@@ -24,7 +24,7 @@
 //  * n_bins: number of histogram bins
 //  * range: the [min, max] range of the histogram
 // =============================================================================
-namespace analyzer {
+namespace pcsim {
 template <class... Data> struct histogram_variable {
   using getter_type = std::function<Double_t(Data...)>;
 
@@ -37,7 +37,7 @@ template <class... Data> struct histogram_variable {
                      const Int_t n_bins, const interval<Double_t> range)
       : name{name}, getter{getter}, n_bins{n_bins}, range{range} {}
 };
-} // ns analyzer
+} // ns pcsim
 
 // =============================================================================
 // Histogrammer class to auto-generate 1D and 2D histos from data
@@ -49,7 +49,7 @@ template <class... Data> struct histogram_variable {
 //  * fill(Data..., weight)
 //        ==> fill all histograms using Data... as input
 // =============================================================================
-namespace analyzer {
+namespace pcsim {
 namespace histogrammer_impl {
 // utility classes needed by histogrammer
 template <class... Data> class histo1D;
@@ -110,12 +110,12 @@ private:
   std::vector<histo2D_type> histos_2D_;
 };
 
-} // ns analyzer
+} // ns pcsim
 
 // =============================================================================
 // Implementation: histo1D and histo2D
 // =============================================================================
-namespace analyzer {
+namespace pcsim {
 namespace histogrammer_impl {
 template <class... Data> class histo1D
 {
@@ -261,6 +261,6 @@ private:
   TH2D* histo_; // resource managed by file_
 };
 } // ns histogrammer_impl
-} // ns analyzer
+} // ns pcsim
 
 #endif

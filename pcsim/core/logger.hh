@@ -1,5 +1,5 @@
-#ifndef PCSIM_UTIL_LOGGER_LOADED
-#define PCSIM_UTIL_LOGGER_LOADED
+#ifndef PCSIM_CORE_LOGGER_LOADED
+#define PCSIM_CORE_LOGGER_LOADED
 
 #include <ctime>
 #include <ostream>

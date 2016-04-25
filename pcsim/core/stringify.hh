@@ -1,5 +1,5 @@
-#ifndef PCSIM_UTIL_STRINGIFY_LOADED
-#define PCSIM_UTIL_STRINGIFY_LOADED
+#ifndef PCSIM_CORE_STRINGIFY_LOADED
+#define PCSIM_CORE_STRINGIFY_LOADED
 
 #include <string>
 #include <utility>

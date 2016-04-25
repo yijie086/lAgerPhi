@@ -1,7 +1,7 @@
 ################################################################################
 ## CMAKE Settings
 ################################################################################
-set (SUBDIR "util")
+set (SUBDIR "core")
 set (LIBRARY "${PROJECT_NAME}_${SUBDIR}")
 set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 

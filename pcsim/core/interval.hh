@@ -1,5 +1,5 @@
-#ifndef PCSIM_UTIL_INTERVAL_LOADED
-#define PCSIM_UTIL_INTERVAL_LOADED
+#ifndef PCSIM_CORE_INTERVAL_LOADED
+#define PCSIM_CORE_INTERVAL_LOADED
 
 // =============================================================================
 // A simple interval for readible ranges such as cut parameters.

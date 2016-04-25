@@ -1,5 +1,5 @@
-#ifndef PCSIM_UTIL_SPLINE_LOADED
-#define PCSIM_UTIL_SPLINE_LOADED
+#ifndef PCSIM_CORE_SPLINE_LOADED
+#define PCSIM_CORE_SPLINE_LOADED
 
 #include <pcsim/util/configuration.hh>
 #include <pcsim/util/interval.hh>

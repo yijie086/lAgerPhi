@@ -1,5 +1,5 @@
-#ifndef PCSIM_UTIL_EXCEPTION_LOADED
-#define PCSIM_UTIL_EXCEPTION_LOADED
+#ifndef PCSIM_CORE_EXCEPTION_LOADED
+#define PCSIM_CORE_EXCEPTION_LOADED
 
 #include <exception>
 #include <string>
