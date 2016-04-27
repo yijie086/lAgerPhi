@@ -2,8 +2,8 @@
 #define PCSIM_CORE_SPLINE_LOADED
 
 #include <Spline3.h>
-#include <pcsim/util/configuration.hh>
-#include <pcsim/util/interval.hh>
+#include <pcsim/core/configuration.hh>
+#include <pcsim/core/interval.hh>
 
 namespace pcsim {
 

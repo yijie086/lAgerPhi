@@ -1,8 +1,8 @@
 #ifndef PCSIM_CORE_ASSERT_LOADED
 #define PCSIM_CORE_ASSERT_LOADED
 
-#include <pcsim/util/logger.hh>
-#include <pcsim/util/exception.hh>
+#include <pcsim/core/logger.hh>
+#include <pcsim/core/exception.hh>
 #include <string>
 
 // =============================================================================

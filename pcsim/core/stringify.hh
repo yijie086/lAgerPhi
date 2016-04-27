@@ -7,7 +7,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <pcsim/util/type_traits.hh>
+#include <pcsim/core/type_traits.hh>
 
 namespace pcsim {
 

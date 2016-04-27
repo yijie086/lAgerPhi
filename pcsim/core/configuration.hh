@@ -10,8 +10,8 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <pcsim/util/exception.hh>
-#include <pcsim/util/stringify.hh>
+#include <pcsim/core/exception.hh>
+#include <pcsim/core/stringify.hh>
 
 namespace pcsim {
 // necessary type aliases

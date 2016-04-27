@@ -3,10 +3,10 @@
 #include <exception>
 #include <cstdlib>
 
-#include <pcsim/util/exception.hh>
-#include <pcsim/util/configuration.hh>
-#include <pcsim/util/logger.hh>
-#include <pcsim/util/stringify.hh>
+#include <pcsim/core/exception.hh>
+#include <pcsim/core/configuration.hh>
+#include <pcsim/core/logger.hh>
+#include <pcsim/core/stringify.hh>
 
 #include <TSystem.h>
 

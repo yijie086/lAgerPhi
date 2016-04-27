@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include <pcsim/util/configuration.hh>
+#include <pcsim/core/configuration.hh>
 
 #include <boost/program_options.hpp>
 

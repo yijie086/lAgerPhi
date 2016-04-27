@@ -1,6 +1,6 @@
 #include "configuration.hh"
 
-#include <pcsim/util/logger.hh>
+#include <pcsim/core/logger.hh>
 
 using boost::property_tree::ptree_bad_path;
 using boost::property_tree::ptree_error;
