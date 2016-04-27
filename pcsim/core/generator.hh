@@ -24,7 +24,7 @@ public:
   generator(const ptree& settings, const string_path& path,
             const std::string& title, std::shared_ptr<TRandom> r)
       : configurable{settings, path}
-      , histos_{path, "", title}
+      , histos_{path, "", format_title(title, "from:")}
       , rng_{std::move(r)} {}
 
   // add a 1D histo
@@ -49,14 +49,17 @@ public:
 
   template <class... Input> event_type generate(const Input&... input) {
     const auto& event = derived().gen_impl(input...);
-    histos_.fill(event);
+    // plot good events, if requested
+    if (event.good) {
+      histos_.fill(event);
+    }
     return event;
   }
   template <class... Input> event_type operator()(const Input&... input) {
     return generate(input...);
   }
 
-  TRandom& rng() const { return *rng_; }
+  std::shared_ptr<TRandom> rng() const { return rng_; }
 
 private:
   gen_type& derived() { return static_cast<gen_type&>(*this); }

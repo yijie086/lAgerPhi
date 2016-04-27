@@ -34,13 +34,13 @@ public:
       , Mp2_{Mp_ * Mp_}
       , v_{1. / 16. * TMath::Pi()} {}
 
-  double operator(const double s, const double t, const double Mj) const {
+  double operator()(const double s, const double t, const double Mj) const {
     // kinematic components
     const double Mj2 = Mj * Mj;
     const double x = (2.0 * Mp_ * Mj + Mj2) / (s - Mp2_);
     const double ep = exp(t * 1.13);
     // 2 and (optional) 3 gluon term
-    return (A2g(x, Mj2) + A3g(x, Mj2)) * ep;
+    return (A_2g(x, Mj2) + A_3g(x, Mj2)) * ep;
   }
 
 private:
@@ -53,7 +53,7 @@ private:
     if (enable_3gluon_) {
       return 2.894e3 * v_ / (Mj2 * Mj2);
     } else {
-      return 0.
+      return 0.;
     }
   }
 
