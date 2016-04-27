@@ -1,0 +1,10 @@
+{
+  "mc" : {
+    "type": "Pc Simulation",
+    "photon_gen": {
+      "type": "Real Photon Beam",
+      "electron_energy": 11,
+      "range": [8,11]
+    }
+  }
+}
