@@ -1,12 +1,11 @@
 #ifndef PCSIM_GENERATOR_LOADED
 #define PCSIM_GENERATOR_LOADED
 
-#include <memory>
 #include <TRandom.h>
+#include <memory>
 
 #include <pcsim/core/configuration.hh>
 #include <pcsim/core/histogrammer.hh>
-
 
 namespace pcsim {
 
@@ -15,8 +14,7 @@ namespace pcsim {
 //
 // The base class owns a shared pointer to the random generator, and handles the
 // optional configuration and histogramming options
-template <class Derived, class Event>
-class generator : public configurable {
+template <class Derived, class Event> class generator : public configurable {
 public:
   using gen_type = Derived;
   using event_type = Event;
@@ -69,7 +67,6 @@ private:
   std::shared_ptr<TRandom> rng_;
   histogrammer_type histos_;
 };
-
 }
 
 #endif

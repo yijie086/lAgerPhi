@@ -3,7 +3,7 @@
 #include <pcsim/core/framework.hh>
 #include <pcsim/core/logger.hh>
 #include <pcsim/core/assert.hh>
-#include <pcsim/gen/photon_gen.hh>
+#include <pcsim/gen/bremsstrahlung.hh>
 #include <memory>
 #include <TRandom3.h>
 
@@ -25,14 +25,15 @@ int run_mc(const ptree& settings, const std::string& output) {
   rng->SetSeed(conf.get<int>("run"));
 
   // init the photon beam, add some diagnostic histos
-  photon_gen pg(settings, "mc/photon_gen", rng);
-  pg.add_histo(ofile, "Egamma", "Photon Beam Energy Spectrum",
-               {"Egamma", [](const photon_beam& b) { return b.energy; }, 100,
-                pg.range()});
+  gen::bremsstrahlung photon_gen(settings, "mc/photon_gen", rng);
+  photon_gen.add_histo(ofile, "Egamma", "Photon Beam Energy Spectrum",
+                       {"Egamma",
+                        [](const gen::photon_beam& b) { return b.energy; }, 100,
+                        photon_gen.range()});
 
   // generate our events
   for (size_t iev =0; iev < events; ++iev) {
-    auto photon = pg.generate();
+    auto photon = photon_gen.generate();
   }
 }
 

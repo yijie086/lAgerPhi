@@ -8,6 +8,7 @@
 
 // cross section definitions
 namespace pcsim {
+namespace physics {
 
 // diffractive (t-channel) J/Psi production cross section dsigma/dt
 // Values are in units of nb/GeV^2, from  Brodsky et. al.,
@@ -61,6 +62,8 @@ private:
   const double Mp2_;
   const double v_;
 };
+
+}
 }
 
 #endif

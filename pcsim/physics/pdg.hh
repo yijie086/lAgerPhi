@@ -8,6 +8,7 @@
 #include <TParticlePDG.h>
 
 namespace pcsim {
+namespace physics {
 
 constexpr int32_t pdg_nuclear_id(unsigned A, unsigned Z) {
   return 99000000 + A * 1000 + Z;
@@ -131,6 +132,7 @@ extern const TParticlePDG& PDG_K_MINUS;
 extern const TParticlePDG& PDG_PHOTON;
 extern const TParticlePDG& PDG_JPSI;
 
-} // ns pcsim
+} // physics
+} // pcsim
 
 #endif

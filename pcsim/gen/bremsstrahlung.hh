@@ -1,13 +1,14 @@
-#ifndef PCSIM_PHOTON_GEN_LOADED
-#define PCSIM_PHOTON_GEN_LOADED
+#ifndef PCSIM_GENERATOR_BREMSSTRAHLUNG_LOADED
+#define PCSIM_GENERATOR_BREMSSTRAHLUNG_LOADED
 
 #include <TF1.h>
 #include <pcsim/core/configuration.hh>
-#include <pcsim/core/interval.hh>
 #include <pcsim/core/generator.hh>
-#include <pcsim/physics/photon_beam.hh>
+#include <pcsim/core/interval.hh>
+#include <pcsim/physics/bremsstrahlung.hh>
 
 namespace pcsim {
+namespace gen {
 
 struct photon_beam {
   double energy; // Photon energy
@@ -17,13 +18,12 @@ struct photon_beam {
       : energy{E}, weight{w}, good{g} {}
 };
 
-
-class photon_gen : public generator<photon_gen, photon_beam> {
+class bremsstrahlung : public generator<bremsstrahlung, photon_beam> {
 public:
-  using base_type = generator<photon_gen, photon_beam>;
+  using base_type = generator<bremsstrahlung, photon_beam>;
 
-  photon_gen(const ptree& settings, const string_path& path,
-             std::shared_ptr<TRandom> r)
+  bremsstrahlung(const ptree& settings, const string_path& path,
+                 std::shared_ptr<TRandom> r)
       : base_type{settings, path, "Secondary Photon Beam Generator",
                   std::move(r)}
       , E0_{conf().get<double>("electron_energy")}
@@ -47,11 +47,11 @@ public:
 
 private:
   double intensity(const double k) {
-    return photon_intensity_10_param(E0_, k);
+    return physics::bremsstrahlung_intensity_10_param(E0_, k);
   }
   double calc_integral() {
     auto f = [=](double* x, double* p) {
-      return photon_intensity_10_param(E0_, x[0]);
+      return physics::bremsstrahlung_intensity_10_param(E0_, x[0]);
     };
     TF1 tf("brems10", f, range_.min, range_.max, 0);
     return tf.Integral(range_.min, range_.max);
@@ -65,8 +65,7 @@ private:
                       // f(range_.min)
 };
 
-
-
-}
+} // gen
+} // pcsim
 
 #endif

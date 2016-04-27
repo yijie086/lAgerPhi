@@ -11,6 +11,7 @@
 
 // cross section definitions
 namespace pcsim {
+namespace physics {
 
 // Cross section 
 // Values are in units of nb/GeV^2
@@ -29,6 +30,8 @@ public:
 private:
   const double coupling_;
 };
-}
+
+} // physics
+} // pcsim
 
 #endif
