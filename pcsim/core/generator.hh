@@ -51,7 +51,7 @@ public:
     const auto& event = derived().gen_impl(input...);
     // plot good events, if requested
     if (event.good) {
-      histos_.fill(event);
+      histos_.fill(event, event.weight);
     }
     return event;
   }
