@@ -93,30 +93,9 @@ enum class pdg_id : int32_t {
 
 // wrapper around ROOTs PDG database that automatically adds info on common
 // nuclei (therefor avoiding the need for a custom database)
-// implemented using a single persistent static database
 // note: nuclear masses in GeV from
 // http://hyperphysics.phy-astr.gsu.edu/hbase/pertab
-inline TParticlePDG* pdg_particle(const int32_t id) {
-  // use a leaky naked pointer to the TDatabasePDG, as using a shared_ptr
-  // segfaults on destruction
-  static TDatabasePDG* db;
-  if (!db) {
-    db = new TDatabasePDG{};
-    db->AddParticle("H-2", "Deuteron", 1.875613, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::H2));
-    db->AddParticle("H-3", "Triton", 2.808921, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::H3));
-    db->AddParticle("He-3", "Helium-3", 2.808391, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::He3));
-    db->AddParticle("He-4", "Helium-4", 3.727379, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::He4));
-    db->AddParticle("C-12", "Carbon-12", 11.1750, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::C12));
-    db->AddParticle("N-14", "Nitrogen-14", 13.0403, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::N14));
-  }
-  return db->GetParticle(id);
-}
+TParticlePDG* pdg_particle(const int32_t id);
 inline TParticlePDG* pdg_particle(const pdg_id id) {
   return pdg_particle(static_cast<int32_t>(id));
 }
@@ -131,7 +110,9 @@ extern const TParticlePDG& PDG_K_PLUS;
 extern const TParticlePDG& PDG_K_MINUS;
 extern const TParticlePDG& PDG_PHOTON;
 extern const TParticlePDG& PDG_JPSI;
-
+constexpr const double PDG_JPSI_WIDTH =
+    92.9e-6; // J/Psi width in [GeV], as the TParticlePDG version is incorrectly
+             // listed to be "stable" (zero width)
 } // physics
 } // pcsim
 
