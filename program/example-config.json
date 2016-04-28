@@ -5,6 +5,13 @@
       "type": "Real Photon Beam",
       "electron_energy": 11,
       "range": [8,11]
+    },
+    "jpsi_gen": {
+      "type": "t-channel J/Psi Production",
+      "xsec": {
+        "type": "t-channel J/Psi Production Cross Section",
+        "enable_3gluon": false
+      }
     }
   }
 }
