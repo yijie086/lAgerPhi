@@ -12,7 +12,7 @@ jpsi::jpsi(const ptree& settings, const string_path& path,
     , me_{physics::PDG_ELECTRON.Mass()}
     , Mjp_{physics::PDG_JPSI.Mass()}
     , Mp_{physics::PDG_PROTON.Mass()}
-    , Wjp_{physics::PDG_JPSI.Width()}
+    , Wjp_{physics::PDG_JPSI_WIDTH}
     , ctheta_min_{-1.}
     , ctheta_max_{1.} {}
 
@@ -20,7 +20,8 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   jpsi_event ev;
 
   // get B-W J/Psi mass
-  const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
+  //const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
+  const double Mj = Mjp_;
 
   // do we have enough energy to continue?
   const double Emin = (Mj * Mj + 2 * Mj * Mp_) / (2 * Mp_);
@@ -38,24 +39,24 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   // scattering in the photon-proton CM frame
   const auto cm = (ev.beam + ev.target);
   const auto beta_cm = cm.BoostVector();
-  auto photon_cm = ev.beam;
-  photon_cm.Boost(-beta_cm);
-  auto proton_cm = ev.target;
-  proton_cm.Boost(-beta_cm);
-  const double Ep_cm = proton_cm.E();
-  const double Pp_cm = proton_cm.Vect().Mag();
+  auto beam_cm = ev.beam;
+  beam_cm.Boost(-beta_cm);
+  auto target_cm = ev.target;
+  target_cm.Boost(-beta_cm);
+  const double Ep_cm = target_cm.E();
+  const double Pp_cm = target_cm.Vect().Mag();
   // set s and W (note, s == W^2 for t-channel processes
   ev.s = cm.M2();
   ev.W = std::sqrt(ev.s);
 
   // J/Psi and p' CM energy and momentum
-  const double Etot_cm = photon_cm.E() + Ep_cm;
+  const double Etot_cm = beam_cm.E() + Ep_cm;
   const double Ej_cm =
       (Etot_cm * Etot_cm + Mj * Mj - Mp_ * Mp_) / (2 * Etot_cm);
   const double Epp_cm =
       (Etot_cm * Etot_cm - Mj * Mj + Mp_ * Mp_) / (2 * Etot_cm);
   const double Pj_cm = std::sqrt(Ej_cm * Ej_cm - Mj * Mj);
-  const double Ppp_cm = std::sqrt(Ep_cm * Ep_cm - Mp_ * Mp_);
+  const double Ppp_cm = std::sqrt(Epp_cm * Epp_cm - Mp_ * Mp_);
 
   // get t, tmin and tmax
   ev.tmin = 2 * Mp_ * Mp_ - 2 * (Ep_cm * Epp_cm - Pp_cm * Ppp_cm * ctheta_min_);
@@ -81,7 +82,8 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   physics::decay_jpsi_lepton(rng(), ev.jpsi, me_, ev.positron, ev.electron);
 
   // get the cross section
-  ev.xsec = xsec_(ev.s, ev.t, Mj);
+  ev.xsec = xsec_(ev.s, ev.t, Mj) * (ev.tmax - ev.tmin);
+  ev.weight = ev.xsec;
 
   // all done!
   ev.good = true;

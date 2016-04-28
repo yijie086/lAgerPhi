@@ -13,8 +13,11 @@ namespace gen {
 
 struct jpsi_event {
   // cross section and integrated photon flux
+  // weight is equal to the cross section.
+  // The flux factor is needed to calculate the luminosity.
   double xsec = 0;
   double flux = 0;
+  double weight = 0;
   // scattering variables
   double s = 0;
   double t = 0;
@@ -32,7 +35,7 @@ struct jpsi_event {
   bool good = false;
 };
 
-class jpsi : generator<jpsi, jpsi_event> {
+class jpsi : public generator<jpsi, jpsi_event> {
 public:
   using base_type = generator<jpsi, jpsi_event>;
 

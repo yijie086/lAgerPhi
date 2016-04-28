@@ -15,9 +15,10 @@ struct photon_beam {
   double energy; // Photon energy
   double flux;   // additional factor to relate bremsstrahlung distribution to
                  // incoming electron flux
+  double weight; // each photon has unit weight
   bool good;     // Is this a good photon?
   constexpr photon_beam(double E, double f, bool g = true)
-      : energy{E}, flux{f}, good{g} {}
+      : energy{E}, flux{f}, weight{1.}, good{g} {}
 };
 
 class bremsstrahlung : public generator<bremsstrahlung, photon_beam> {
