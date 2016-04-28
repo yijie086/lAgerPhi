@@ -27,7 +27,7 @@ public:
     if (!index_ || !(index_ % (max_ / precision_))) {
       double cnt = index_ * precision_ / max_;
       cnt /= (precision_ / 100.);
-      char msg[10];
+      char msg[15];
       sprintf(msg, "  %3.2f%%\r", cnt);
       std::cout << msg << std::flush;
     }
