@@ -20,8 +20,7 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   jpsi_event ev;
 
   // get B-W J/Psi mass
-  //const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
-  const double Mj = Mjp_;
+  const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
 
   // do we have enough energy to continue?
   const double Emin = (Mj * Mj + 2 * Mj * Mp_) / (2 * Mp_);
