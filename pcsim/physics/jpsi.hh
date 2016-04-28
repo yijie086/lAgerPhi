@@ -32,7 +32,7 @@ public:
       , enable_3gluon_{conf().get<bool>("enable_3gluon")}
       , Mp_{PDG_PROTON.Mass()}
       , Mp2_{Mp_ * Mp_}
-      , v_{1. / 16. * TMath::Pi()} {}
+      , v_{1. / (16. * TMath::Pi())} {}
 
   double operator()(const double s, const double t, const double Mj) const {
     // kinematic components
@@ -62,7 +62,6 @@ private:
   const double Mp2_;
   const double v_;
 };
-
 }
 }
 
