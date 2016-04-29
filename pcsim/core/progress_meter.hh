@@ -14,7 +14,9 @@ public:
   constexpr static const size_t PRECISION = 1000.; // 0.1 percent
   explicit progress_meter(size_t max, size_t start_index = 0,
                           size_t precision = PRECISION)
-      : max_{max}, index_{start_index}, precision_{precision} {
+      : max_{max}
+      , index_{start_index}
+      , precision_{precision < max ? max : precision} {
     std::cout << "\nProcessing " << max_ << " events..." << std::endl;
     update();
   }
