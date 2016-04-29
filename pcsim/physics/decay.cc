@@ -16,12 +16,10 @@ void decay_jpsi_lepton(std::shared_ptr<TRandom> rng, const TLorentzVector& jpsi,
                        TLorentzVector& lminus) {
   // work in the J/Psi helicity frame
   const double phi = rng->Uniform(0., TMath::TwoPi());
-  const double theta = accept_reject_1D(rng, {0, TMath::Pi()},
-                                        [](const double theta) {
-                                          const double ctheta = std::cos(theta);
-                                          return 1 + ctheta * ctheta;
-                                        },
-                                        2.001);
+  const double ctheta = accept_reject_1D(
+      rng, {-1, 1}, [](const double ctheta) { return 1 + ctheta * ctheta; },
+      2.001);
+  const double theta = acos(ctheta);
   const double El = .5 * jpsi.M();
   const double Pl = std::sqrt(El * El - ml * ml);
   TVector3 mom;
