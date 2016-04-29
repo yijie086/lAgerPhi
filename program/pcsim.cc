@@ -10,6 +10,7 @@
 #include <pcsim/core/progress_meter.hh>
 #include <pcsim/gen/bremsstrahlung.hh>
 #include <pcsim/gen/jpsi.hh>
+#include <pcsim/gen/pc.hh>
 #include <pcsim/gen/spectrometer.hh>
 
 using namespace pcsim;
@@ -36,6 +37,7 @@ struct mc_controller {
   const int run;
   const size_t events;
   const bool spectrometer;
+  const bool pc_mode;
   std::shared_ptr<TFile> ofile;
   TTree* tree;
   std::shared_ptr<TRandom> rng;
@@ -48,6 +50,7 @@ struct mc_controller {
       , run{conf.get<int>("run")}
       , events{conf.get<size_t>("events")}
       , spectrometer{conf.get<bool>("spectrometer")}
+      , pc_mode{conf.get<bool>("pc_mode")}
       , ofile{std::make_shared<TFile>((output + ".root").c_str(), "recreate")}
       , tree{new TTree{"jpsi_event", "J/Psi Event Data"}}
       , rng{std::make_shared<TRandom3>()}
@@ -113,6 +116,9 @@ int run_mc(const ptree& settings, const std::string& output) {
   // init the J/Psi generator
   gen::jpsi jpsi_gen{settings, "mc/jpsi_gen", mc.rng};
 
+  // init the Pc generator
+  gen::pc pc_gen{settings, "mc/pc_gen", mc.rng};
+
   // init the spectrometers
   gen::spectrometer HMS{settings, "mc/HMS", mc.rng};
   gen::spectrometer SHMS{settings, "mc/SHMS", mc.rng};
@@ -126,7 +132,11 @@ int run_mc(const ptree& settings, const std::string& output) {
     mc.record_photon(photon);
 
     // generate a new physics event using this photon
-    mc.ev.gen = jpsi_gen.generate(photon);
+    if (!mc.pc_mode) {
+      mc.ev.gen = jpsi_gen.generate(photon);
+    } else {
+      mc.ev.gen = pc_gen.generate(photon);
+    }
 
     // make sure the physics event is good
     if (!mc.ev.gen.good) {
