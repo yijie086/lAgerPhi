@@ -16,6 +16,10 @@ namespace physics {
 void decay_jpsi_lepton(std::shared_ptr<TRandom> rng, const TLorentzVector& jpsi,
                        const double ml, TLorentzVector& lplus,
                        TLorentzVector& lminus);
+// Pc decay into p+J/Psi, ignoring the J/Psi spin and parity (using an isotropic
+// decay distribution)
+void decay_pc_iso(std::shared_ptr<TRandom> rng, const TLorentzVector& pc,
+                  TLorentzVector& proton, TLorentzVector& jpsi);
 } // physics
 } // pcsim
 
