@@ -1,6 +1,7 @@
 {
   "mc" : {
     "type": "Pc Simulation",
+    "spectrometer": true,
     "photon_gen": {
       "type": "Real Photon Beam",
       "electron_energy": 11,
@@ -11,6 +12,32 @@
       "xsec": {
         "type": "t-channel J/Psi Production Cross Section",
         "enable_3gluon": false
+      }
+    },
+    "HMS": {
+      "type": "spectrometer",
+      "momentum": {
+        "center": 4.0,
+        "dmin": 0.1,
+        "dmax": 0.1
+      },
+      "theta": 22,
+      "acceptance": {
+        "x": 24,
+        "y": 70
+      }
+    },
+    "SHMS" : {
+      "type": "spectrometer",
+      "momentum": {
+        "center": 3.0,
+        "dmin": 0.15,
+        "dmax": 0.25
+      },
+      "theta": -30,
+      "acceptance": {
+        "x": 20,
+        "y": 50
       }
     }
   }
