@@ -27,6 +27,7 @@ private:
   const double Mjp_; // J/Psi pole mass
   const double Mp_;  // proton mass
   const double Wjp_; // J/Psi decay width
+  const double Bje_; // J/Psi --> e+e- branching ratio
   const double ctheta_min_; // min and max cos(theta) that can be reached (equal
   const double ctheta_max_; // to -1 and +1)
 };

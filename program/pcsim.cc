@@ -71,6 +71,7 @@ struct mc_controller {
     tree->Branch("flux", &ev.flux);
     tree->Branch("xsec", &ev.gen.xsec);
     tree->Branch("weight", &ev.gen.weight);
+    tree->Branch("branching", &ev.gen.branching);
     tree->Branch("s", &ev.gen.s);
     tree->Branch("t", &ev.gen.t);
     tree->Branch("tmin", &ev.gen.tmin);

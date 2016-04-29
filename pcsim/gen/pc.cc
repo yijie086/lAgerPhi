@@ -14,6 +14,7 @@ pc::pc(const ptree& settings, const string_path& path,
     , Mjp_{physics::PDG_JPSI.Mass()}
     , Mp_{physics::PDG_PROTON.Mass()}
     , Wjp_{physics::PDG_JPSI_WIDTH}
+    , Bje_{physics::PDG_JPSI_BRANCHING_ELEC}
     , ctheta_min_{-1.}
     , ctheta_max_{1.} {}
 
@@ -32,12 +33,13 @@ jpsi_event pc::gen_impl(const photon_beam& photon) {
 
   // get the cross section
   ev.xsec = xsec_(ev.W);
-  ev.weight = ev.xsec;
   // bail if the cross section is zero
   if (!(ev.xsec > 0)) {
     ev.good = false;
     return ev;
   }
+  ev.weight = ev.xsec;
+  ev.branching = Bje_;
 
   // create our Pc and boost to the lab frame
   TLorentzVector pc{0, 0, 0, ev.W};

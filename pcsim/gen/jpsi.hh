@@ -12,10 +12,11 @@ namespace pcsim {
 namespace gen {
 
 struct jpsi_event {
-  // cross section and integrated photon flux
+  // xsec and branching
   // weight is equal to the cross section.
   double xsec = 0;
   double weight = 0;
+  double branching = 0;
   // scattering variables
   double s = 0;
   double t = 0;
@@ -48,6 +49,7 @@ private:
   const double Mjp_; // J/Psi pole mass
   const double Mp_;  // proton mass
   const double Wjp_; // J/Psi decay width
+  const double Bje_; // J/Psi --> e+e- branching ratio
   const double ctheta_min_; // min and max cos(theta) that can be reached (equal
   const double ctheta_max_; // to -1 and +1)
 };
