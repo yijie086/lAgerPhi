@@ -82,6 +82,8 @@ public:
   constexpr static const char* TYPE_KEY{"type"};
 
   configuration(const ptree& settings, const string_path& path);
+  configuration(const configuration& conf, const string_path& path)
+      : configuration{conf.settings_, path} {}
 
   // load the settings from a given ptree
   void load(const ptree& in_conf);
