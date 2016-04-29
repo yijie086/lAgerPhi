@@ -1,6 +1,7 @@
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TTree.h>
+#include <iomanip>
 #include <memory>
 #include <pcsim/core/assert.hh>
 #include <pcsim/core/configuration.hh>
@@ -12,8 +13,16 @@
 #include <pcsim/gen/jpsi.hh>
 #include <pcsim/gen/pc.hh>
 #include <pcsim/gen/spectrometer.hh>
+#include <sstream>
 
 using namespace pcsim;
+
+// util function
+std::string to_string_exp(double d) {
+  std::stringstream ss;
+  ss << std::scientific << d;
+  return ss.str();
+}
 
 // notes:
 //  * For a give number of incoming electrons Ne, the number of good
@@ -24,10 +33,13 @@ using namespace pcsim;
 //      dsigma = sum_i(w_i) / evgen / delta
 //    with delta the bin width
 struct mc_event {
-  uint64_t event = 0;    // current event index
-  uint64_t evgen = 0;    // number of generated events
-  uint64_t ngamma = 0;   // number of simulated photons on target
-  double tot_xsec = 0; // estimated total cross section
+  uint64_t event = 0;  // current event index
+  uint64_t evgen = 0;  // number of generated events
+  uint64_t ngamma = 0; // number of simulated photons on target
+  uint64_t nHMS = 0;   // number of accepted HMS tracks
+  uint64_t nSHMS = 0;  // number of accepted SHMS tracks
+  double xsec_gen = 0; // estimated total cross section for all generated events
+  double xsec_acc = 0; // estimated total cross section for accepted evens
   double flux = 0;     // generated fraction of the bremsstrahlung spectrum
   gen::jpsi_event gen;
   gen::spec_track HMS;
@@ -45,7 +57,8 @@ struct mc_controller {
   std::shared_ptr<TRandom> rng;
   progress_meter progress;
   mc_event ev;
-  double cum_xsec; // cumulative cross section
+  double cum_xsec_gen; // cumulative generated cross section
+  double cum_xsec_acc; // cumulative accepted cross section
 
   mc_controller(const ptree& settings, const std::string& output)
       : conf{settings, "mc"}
@@ -57,7 +70,8 @@ struct mc_controller {
       , tree{new TTree{"jpsi_event", "J/Psi Event Data"}}
       , rng{std::make_shared<TRandom3>()}
       , progress{events}
-      , cum_xsec{0} {
+      , cum_xsec_gen{0}
+      , cum_xsec_acc{0} {
     ofile->cd();
     init_tree();
     // use the run number as random seed for the RNG
@@ -69,7 +83,10 @@ struct mc_controller {
     tree->Branch("event", &ev.event, "event/l");
     tree->Branch("evgen", &ev.evgen, "evgen/l");
     tree->Branch("ngamma", &ev.ngamma, "ngamma/l");
-    tree->Branch("tot_xsec", &ev.tot_xsec);
+    tree->Branch("nHMS", &ev.nHMS, "nHMS/l");
+    tree->Branch("nSHMS", &ev.nSHMS, "nSHMS/l");
+    tree->Branch("xsec_gen", &ev.xsec_gen);
+    tree->Branch("xsec_acc", &ev.xsec_gen);
     tree->Branch("flux", &ev.flux);
     tree->Branch("xsec", &ev.gen.xsec);
     tree->Branch("weight", &ev.gen.weight);
@@ -107,19 +124,23 @@ struct mc_controller {
     // update the counter
     ev.evgen += 1;
     // update the estimated total cross section
-    cum_xsec += ev.gen.xsec;
-    ev.tot_xsec = cum_xsec / ev.evgen;
+    cum_xsec_gen += ev.gen.xsec;
+    ev.xsec_gen = cum_xsec_gen / ev.evgen;
   }
 
   void book_event() {
     ev.event += 1;
+    // update the estimated accepted cross section
+    cum_xsec_acc += ev.gen.xsec;
+    ev.xsec_acc = cum_xsec_acc / ev.evgen;
+    // book the data
     tree->Fill();
     progress.update();
   }
 };
 
 int run_mc(const ptree& settings, const std::string& output) { 
-  LOG_INFO("main", "PCSIM"); 
+  LOG_INFO("MC", "initializing PCSIM"); 
 
   // mc settings
   mc_controller mc{settings, output};
@@ -162,7 +183,13 @@ int run_mc(const ptree& settings, const std::string& output) {
     // check acceptance
     if (mc.spectrometer) {
       mc.ev.HMS = HMS.check(mc.ev.gen.positron, 1);
+      if (mc.ev.HMS.accept) {
+        mc.ev.nHMS++;
+      };
       mc.ev.SHMS = SHMS.check(mc.ev.gen.electron, -1);
+      if (mc.ev.SHMS.accept) {
+        mc.ev.nSHMS++;
+      };
       if (!mc.ev.HMS.accept || !mc.ev.SHMS.accept) {
         // not in acceptance, try again
         continue;
@@ -170,6 +197,22 @@ int run_mc(const ptree& settings, const std::string& output) {
     }
     // store this event
     mc.book_event();
+  }
+
+  // give some stats
+  LOG_INFO("MC", "Event generation complete");
+  LOG_INFO("MC", "Total number of photons on target: " + std::to_string(mc.ev.ngamma));
+  LOG_INFO("MC",
+           "Total number of generated events: " + std::to_string(mc.ev.evgen));
+  LOG_INFO("MC",
+           "Total cross section [nb]: " + to_string_exp(mc.ev.xsec_gen));
+  if (mc.spectrometer) {
+    LOG_INFO("MC", "Total number accepted positrons in the HMS: " +
+                       std::to_string(mc.ev.nHMS));
+    LOG_INFO("MC", "Total number accepted electrons in the SHMS: " +
+                       std::to_string(mc.ev.nSHMS));
+    LOG_INFO("MC", "Number of accepted events: " + std::to_string(mc.ev.event));
+    LOG_INFO("MC", "Accepted cross section [nb]: " + to_string_exp(mc.ev.xsec_acc));
   }
 
   return 0;

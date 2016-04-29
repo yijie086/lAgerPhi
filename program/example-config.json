@@ -1,7 +1,7 @@
 {
   "mc" : {
     "type": "Pc Simulation",
-    "spectrometer": true,
+    "spectrometer": false,
     "pc_mode": true,
     "photon_gen": {
       "type": "Real Photon Beam",
