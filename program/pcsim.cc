@@ -13,22 +13,43 @@
 
 using namespace pcsim;
 
+// notes:
+//  * For a give number of incoming electrons Ne, the number of good
+//    bremsstrahlung photons Nb that for the process of interest is given by: 
+//      Nb = Ne * flux * (evgen/ngamma)
+//  * When binning using the cross section as event weight w_i, the differential
+//    cross section in a bin is given by: 
+//      dsigma = sum_i(w_i) / evgen / delta
+//    with delta the bin width
+struct mc_event {
+  size_t event = 0;    // current event index
+  size_t evgen = 0;    // number of generated events
+  size_t ngamma = 0;   // number of simulated photons on target
+  double tot_xsec = 0; // estimated total cross section
+  double flux = 0;     // generated fraction of the bremsstrahlung spectrum
+  gen::jpsi_event gen;
+};
+
 // initialize the tree for J/Psi event data
-void init_tree(TTree& t, gen::jpsi_event& evbuf) {
-  t.Branch("xsec", &evbuf.xsec);
+void init_tree(TTree& t, mc_event& evbuf) {
+  t.Branch("event", &evbuf.event, "event/l");
+  t.Branch("evgen", &evbuf.evgen, "evgen/l");
+  t.Branch("ngamma", &evbuf.ngamma, "ngamma/l");
+  t.Branch("tot_xsec", &evbuf.tot_xsec);
   t.Branch("flux", &evbuf.flux);
-  t.Branch("weight", &evbuf.weight);
-  t.Branch("s", &evbuf.s);
-  t.Branch("t", &evbuf.t);
-  t.Branch("tmin", &evbuf.tmin);
-  t.Branch("tmax", &evbuf.tmax);
-  t.Branch("W", &evbuf.W);
-  t.Branch("beam", &evbuf.beam);
-  t.Branch("target", &evbuf.target);
-  t.Branch("recoil", &evbuf.recoil);
-  t.Branch("jpsi", &evbuf.jpsi);
-  t.Branch("positron", &evbuf.positron);
-  t.Branch("electron", &evbuf.electron);
+  t.Branch("xsec", &evbuf.gen.xsec);
+  t.Branch("weight", &evbuf.gen.weight);
+  t.Branch("s", &evbuf.gen.s);
+  t.Branch("t", &evbuf.gen.t);
+  t.Branch("tmin", &evbuf.gen.tmin);
+  t.Branch("tmax", &evbuf.gen.tmax);
+  t.Branch("W", &evbuf.gen.W);
+  t.Branch("beam", &evbuf.gen.beam);
+  t.Branch("target", &evbuf.gen.target);
+  t.Branch("recoil", &evbuf.gen.recoil);
+  t.Branch("jpsi", &evbuf.gen.jpsi);
+  t.Branch("positron", &evbuf.gen.positron);
+  t.Branch("electron", &evbuf.gen.electron);
 }
 
 int run_mc(const ptree& settings, const std::string& output) { 
@@ -45,7 +66,7 @@ int run_mc(const ptree& settings, const std::string& output) {
 
   // output event tree and data buffer
   TTree* t = new TTree{"jpsi_event", "J/Psi Event Data"};
-  gen::jpsi_event evbuf;
+  mc_event evbuf;
   init_tree(*t, evbuf);
 
   // init the RNG, use the run number as random seed
@@ -54,10 +75,12 @@ int run_mc(const ptree& settings, const std::string& output) {
 
   // init the photon beam, add some diagnostic histos
   gen::bremsstrahlung photon_gen(settings, "mc/photon_gen", rng);
+#if 0
   photon_gen.add_histo(ofile, "Egamma", "Photon Energy",
                        {"Egamma",
                         [](const gen::photon_beam& b) { return b.energy; }, 100,
                         photon_gen.range()});
+#endif
 
   // init the J/Psi generator, add some diagnostic histos
   gen::jpsi jpsi_gen(settings, "mc/jpsi_gen", rng);
@@ -65,17 +88,31 @@ int run_mc(const ptree& settings, const std::string& output) {
   progress_meter progress{events};
 
   // generate our events
-  for (size_t iev = 0; iev < events; ++iev) {
+  double cum_xsec = 0; // cumulative xsec
+  while (evbuf.event < events) {
+    // generate a photon
     auto photon = photon_gen.generate();
-    evbuf = jpsi_gen.generate(photon);
-    if (!evbuf.good) {
-      // rewind
-      iev -= 1;
+    evbuf.ngamma += 1;
+    // generate a new physics event using this photon
+    evbuf.gen = jpsi_gen.generate(photon);
+    // make sure the physics event is good
+    if (!evbuf.gen.good) {
       continue;
     }
+    // we have a good generated event, update the generator level counters
+    evbuf.evgen += 1;
+    cum_xsec += evbuf.gen.xsec;
+    evbuf.tot_xsec = cum_xsec / evbuf.evgen;
+    // check acceptance
+    // TODO
+    // store this event
+    evbuf.event += 1;
+    evbuf.flux = photon.flux;
     t->Fill();
     progress.update();
   }
+
+  t->AutoSave();
 
   return 0;
 }

@@ -19,8 +19,11 @@ jpsi::jpsi(const ptree& settings, const string_path& path,
 jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   jpsi_event ev;
 
+  // WARNING: using pole-mass for now, because built-in B-W distribution is
+  // acting weird due to the very narrow width of the J/Ps(small numbers and
+  // floating point precision...)i
   // get B-W J/Psi mass
-  //const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
+  // const double Mj = rng()->BreitWigner(Mjp_, Wjp_);
   const double Mj = Mjp_;
 
   // do we have enough energy to continue?
