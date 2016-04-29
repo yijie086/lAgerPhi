@@ -14,9 +14,7 @@ namespace gen {
 struct jpsi_event {
   // cross section and integrated photon flux
   // weight is equal to the cross section.
-  // The flux factor is needed to calculate the luminosity.
   double xsec = 0;
-  double flux = 0;
   double weight = 0;
   // scattering variables
   double s = 0;

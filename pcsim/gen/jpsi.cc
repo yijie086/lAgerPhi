@@ -33,7 +33,6 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   // setup the initial state
   ev.beam.SetPxPyPzE(0, 0, photon.energy, photon.energy);
   ev.target.SetPxPyPzE(0, 0, 0, Mp_);
-  ev.flux = photon.flux;
 
   // scattering in the photon-proton CM frame
   const auto cm = (ev.beam + ev.target);
@@ -62,6 +61,15 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   ev.tmax = 2 * Mp_ * Mp_ - 2 * (Ep_cm * Epp_cm - Pp_cm * Ppp_cm * ctheta_max_);
   ev.t = rng()->Uniform(ev.tmin, ev.tmax);
 
+  // get the cross section
+  ev.xsec = xsec_(ev.s, ev.t, Mj) * (ev.tmax - ev.tmin);
+  ev.weight = ev.xsec;
+  // bail if the cross section is zero
+  if (!(ev.xsec > 0)) {
+    ev.good = false;
+    return ev;
+  }
+
   // get the J/Psi and p' CM 4-vectors
   const double ctheta_cm =
       (ev.t + 2 * Ep_cm * Epp_cm - 2 * Mp_ * Mp_) / (2 * Pp_cm * Ppp_cm);
@@ -79,10 +87,6 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
 
   // get the decay leptons
   physics::decay_jpsi_lepton(rng(), ev.jpsi, me_, ev.positron, ev.electron);
-
-  // get the cross section
-  ev.xsec = xsec_(ev.s, ev.t, Mj) * (ev.tmax - ev.tmin);
-  ev.weight = ev.xsec;
 
   // all done!
   ev.good = true;
