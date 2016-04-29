@@ -1,7 +1,7 @@
 #ifndef PCSIM_CORE_SPLINE_LOADED
 #define PCSIM_CORE_SPLINE_LOADED
 
-#include <Spline3.h>
+#include <TSpline.h>
 #include <pcsim/core/configuration.hh>
 #include <pcsim/core/interval.hh>
 
@@ -13,9 +13,9 @@ class spline : public configurable {
 public:
   spline(const ptree& settings, const string_path& path)
       : configurable{settings, path}
-      , x_{conf().get_vector<double>(path + "/x")}
-      , y_{conf().get_vector<double>(path + "/y")}
-      , spline_{path.str().c_str(), &x_[0], &y_[0], x_.size()}
+      , x_{conf().get_vector<double>("x")}
+      , y_{conf().get_vector<double>("y")}
+      , spline_{path.str().c_str(), &x_[0], &y_[0], static_cast<int>(x_.size())}
       , xrange_{x_.front(), x_.back()} {}
 
   double eval(const double x) const {
@@ -28,10 +28,10 @@ public:
   double operator()(const double x) const { return eval(x); }
 
 private:
-  const std::vector<double> x_;
-  const std::vector<double> y_;
-  const TSpline3 spline_;
-  const interval<double> xrange_;
+  std::vector<double> x_;
+  std::vector<double> y_;
+  TSpline3 spline_;
+  interval<double> xrange_;
 };
 }
 
