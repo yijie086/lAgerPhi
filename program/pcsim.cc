@@ -30,6 +30,8 @@ struct mc_event {
   double tot_xsec = 0; // estimated total cross section
   double flux = 0;     // generated fraction of the bremsstrahlung spectrum
   gen::jpsi_event gen;
+  gen::spec_track HMS;
+  gen::spec_track SHMS;
 };
 
 struct mc_controller {
@@ -83,6 +85,17 @@ struct mc_controller {
     tree->Branch("jpsi", &ev.gen.jpsi);
     tree->Branch("positron", &ev.gen.positron);
     tree->Branch("electron", &ev.gen.electron);
+    // spectrometer data
+    tree->Branch("HMS.track", &ev.HMS.track);
+    tree->Branch("HMS.charge", &ev.HMS.charge);
+    tree->Branch("HMS.p", &ev.HMS.p);
+    tree->Branch("HMS.thx", &ev.HMS.thx);
+    tree->Branch("HMS.thy", &ev.HMS.thy);
+    tree->Branch("SHMS.track", &ev.SHMS.track);
+    tree->Branch("SHMS.charge", &ev.SHMS.charge);
+    tree->Branch("SHMS.p", &ev.SHMS.p);
+    tree->Branch("SHMS.thx", &ev.SHMS.thx);
+    tree->Branch("SHMS.thy", &ev.SHMS.thy);
   }
   void record_photon(const gen::photon_beam& photon) {
     // update the counter
@@ -148,8 +161,10 @@ int run_mc(const ptree& settings, const std::string& output) {
 
     // check acceptance
     if (mc.spectrometer) {
-      if (!HMS.check(mc.ev.gen.positron).accept ||
-          !SHMS.check(mc.ev.gen.electron).accept) {
+      mc.ev.HMS = HMS.check(mc.ev.gen.positron, 1);
+      mc.ev.SHMS = SHMS.check(mc.ev.gen.electron, -1);
+      if (!mc.ev.HMS.accept || !mc.ev.SHMS.accept) {
+        // not in acceptance, try again
         continue;
       }
     }

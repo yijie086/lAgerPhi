@@ -16,7 +16,20 @@ namespace pcsim {
 namespace gen {
 
 struct spec_track {
-  bool accept;
+  TLorentzVector track;
+  int charge = 0;
+  double p = 0;
+  double thx = 0;
+  double thy = 0;
+  bool accept = false;
+
+  spec_track() {}
+  spec_track(const TLorentzVector& track, const int charge)
+      : track{track}
+      , charge{charge}
+      , p{track.Vect().Mag()}
+      , thx{asin(track.X() / p)}
+      , thy{asin(track.Y() / p)} {}
 };
 
 class spectrometer : public generator<spectrometer, spec_track> {
@@ -26,18 +39,16 @@ public:
   spectrometer(const ptree& settings, const string_path& path,
                std::shared_ptr<TRandom> r);
 
-  spec_track check(TLorentzVector track) {
-    // rotate the track to the spectrometer center
+  spec_track check(TLorentzVector track, const int charge) {
+    // rotate to spectrometer system
     track.RotateY(-theta_);
-
-    const double p = track.Vect().Mag();
-    // get the angles
-    const double sx = track.X() / p;
-    const double sy = track.Y() / p;
-    const double thx = std::fabs(asin(sx));
-    const double thy = std::fabs(asin(sy));
-
-    return {p_range_.includes(p) && thx < x_acc_ && thy < y_acc_};
+    // create spectrometer track
+    spec_track t{track, charge};
+    // do we accept this track?
+    t.accept = p_range_.includes(t.p) && std::fabs(t.thx) < x_acc_ &&
+               std::fabs(t.thy) < y_acc_;
+    // that's all!
+    return t;
   }
 
 
