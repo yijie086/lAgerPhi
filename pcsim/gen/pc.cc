@@ -48,6 +48,9 @@ jpsi_event pc::gen_impl(const photon_beam& photon) {
   // get the decay proton and J/Psi
   physics::decay_pc_iso(rng(), pc, ev.recoil, ev.jpsi);
 
+  // get t from the J/Psi
+  ev.t = (ev.jpsi - ev.beam).M2();
+
   // get the J/Psi decay leptons
   physics::decay_jpsi_lepton(rng(), ev.jpsi, me_, ev.positron, ev.electron);
 

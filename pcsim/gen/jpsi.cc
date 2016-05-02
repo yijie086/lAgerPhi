@@ -77,15 +77,20 @@ jpsi_event jpsi::gen_impl(const photon_beam& photon) {
   ev.branching = Bje_;
 
   // get the J/Psi and p' CM 4-vectors
+  // NOTE:
+  //  * at small |t| (t ~ tmax) the J/Psi moves forward (in the photon
+  //    direction), i.e., cos\theta ~1, and the p' backwards (cos\theta~(-1)).
+  //    Hence, cos\theta here is for the J/Psi, with the proton flying in the
+  //    other direction.
   const double ctheta_cm =
       (ev.t + 2 * Ep_cm * Epp_cm - 2 * Mp_ * Mp_) / (2 * Pp_cm * Ppp_cm);
   const double theta_cm = std::acos(ctheta_cm);
   const double phi_cm = rng()->Uniform(0.0, TMath::TwoPi());
   TVector3 ptemp;
-  ptemp.SetMagThetaPhi(Ppp_cm, theta_cm, phi_cm);
-  ev.recoil = {ptemp, Epp_cm};
   ptemp.SetMagThetaPhi(Pj_cm, theta_cm, phi_cm);
-  ev.jpsi = {-ptemp, Ej_cm};
+  ev.jpsi = {ptemp, Ej_cm};
+  ptemp.SetMagThetaPhi(Ppp_cm, theta_cm, phi_cm);
+  ev.recoil = {-ptemp, Epp_cm};
 
   // return to the lab frame
   ev.recoil.Boost(beta_cm);
