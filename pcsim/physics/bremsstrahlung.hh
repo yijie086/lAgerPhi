@@ -1,8 +1,11 @@
 #ifndef PCSIM_PHYSICS_BREMSSTRAHLUNG_DEFINED
 #define PCSIM_PHYSICS_BREMSSTRAHLUNG_DEFINED
 
-#include <cmath>
 #include <TSpline.h>
+#include <cmath>
+#include <pcsim/core/configuration.hh>
+#include <pcsim/core/interval.hh>
+#include <pcsim/physics/constants.hh>
 
 // photon beam intensities
 namespace pcsim {
@@ -36,6 +39,51 @@ inline double bremsstrahlung_intensity_10_param(const double E0,
   static const TSpline3 brems10{"brems10", xv, yv, 18};
   return brems10.Eval(k / E0) * 0.1 / k;
 }
+
+// Configurable bremsstrahlung spectrum as a function of s, using either the
+// approximate formula, the 10% r.l. parameterization, or a flat spectrum
+class bremsstrahlung : public configurable {
+public:
+  // Bremsstrahlung models 
+  enum class model { FLAT, PARAM, APPROX };
+
+  bremsstrahlung(const ptree& settings, const string_path& path);
+
+  // get the maximum cross section, useful for accept-reject MC
+  double max() const { return max_; }
+
+  // calculate the s-range corresponding to the photon energy range
+  interval<double> calc_s_range() const;
+
+  // evaluate the cross section
+  double operator()(const double s) const {
+    const double Egamma = (s - physics::M_PROTON) * physics::ONE_OVER_2M_PROTON;
+    const double jacobian = physics::ONE_OVER_2M_PROTON;
+    double xsec = 0;
+    if (model_ == model::FLAT) {
+      xsec = 1. / jacobian;
+    } else if (model_ == model::PARAM) {
+      xsec = physics::bremsstrahlung_intensity_10_param(E0_, Egamma);
+    } else {
+      xsec = physics::bremsstrahlung_intensity_approx(rl_, E0_, Egamma);
+    }
+    return xsec * jacobian;
+  }
+
+private:
+  // utility functions for the constructor
+  model get_model() const;
+  double calc_max() const;
+
+  // settings
+  const model model_; // bremsstrahlung model
+  const double rl_;   // number of radiation lenghts (when using approx model,
+                      // set to zero otherwise)
+  const double E0_;   // primary electron beam energy
+  const interval<double> range_; // photon energy range
+  // constants
+  const double max_;             // the maximum intensity.
+};
 
 } // physics
 } // pcsim

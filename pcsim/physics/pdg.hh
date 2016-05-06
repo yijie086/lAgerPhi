@@ -110,9 +110,6 @@ extern const TParticlePDG& PDG_K_PLUS;
 extern const TParticlePDG& PDG_K_MINUS;
 extern const TParticlePDG& PDG_PHOTON;
 extern const TParticlePDG& PDG_JPSI;
-constexpr const double PDG_JPSI_WIDTH =
-    92.9e-6; // J/Psi width in [GeV], as the TParticlePDG version is incorrectly
-             // listed to be "stable" (zero width)
 constexpr const double PDG_JPSI_BRANCHING_ELEC =
     0.0602; // J/Psi->e+e- branching ratio
 } // physics

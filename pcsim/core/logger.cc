@@ -5,7 +5,7 @@ namespace pcsim {
 // Implementation: log_handler
 // =============================================================================
 log_handler::log_handler(const log_level level, std::ostream& sink)
-    : level_{level}, sink_(sink) {}
+    : level_{level}, sink_(&sink) {}
 
 void log_handler::set_level(const log_level level) {
   lock_type lock{mutex_};

@@ -20,6 +20,7 @@ template <class T> struct interval {
   constexpr bool excludes(const value_type value) const {
     return !includes(value);
   }
+  constexpr T width() const { return max - min; }
   // Implicitly conversion to std::pair<T,T> when needed.
   constexpr operator std::pair<value_type, value_type>() const {
     return std::make_pair(min, max);

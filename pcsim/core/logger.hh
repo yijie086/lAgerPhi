@@ -104,6 +104,7 @@ public:
 
   void set_level(const log_level level);
   void set_level(unsigned ulevel);
+  void set_output(std::ostream& sink) { sink_ = &sink; }
 
   void operator()(const log_level mlevel, const std::string& mtitle,
                   const std::string& mtext) {
@@ -112,14 +113,14 @@ public:
       return;
     time_t rt;
     time(&rt);
-    sink_ << "[" << rt << ", " << mtitle << ", "
-          << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
-          << std::endl;
+    (*sink_) << "[" << rt << ", " << mtitle << ", "
+             << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
+             << std::endl;
   }
 
 private:
   log_level level_;
-  std::ostream& sink_;
+  std::ostream* sink_;
   mutable mutex_type mutex_;
 };
 } // ns pcsim

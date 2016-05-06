@@ -49,10 +49,7 @@ public:
 
   template <class... Input> event_type generate(const Input&... input) {
     const auto& event = derived().gen_impl(input...);
-    // plot good events, if requested
-    if (event.good) {
-      histos_.fill(event, event.weight);
-    }
+    histos_.fill(event, event.weight);
     return event;
   }
   template <class... Input> event_type operator()(const Input&... input) {

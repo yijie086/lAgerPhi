@@ -34,7 +34,7 @@ public:
       , Mp2_{Mp_ * Mp_}
       , v_{1. / (16. * TMath::Pi())} {}
 
-  double operator()(const double s, const double t, const double Mj) const {
+  double operator()(double s, const double t, const double Mj) const {
     // kinematic components
     const double Mj2 = Mj * Mj;
     const double x = (2.0 * Mp_ * Mj + Mj2) / (s - Mp2_);

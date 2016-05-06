@@ -43,7 +43,7 @@ void decay_pc_iso(std::shared_ptr<TRandom> rng, const TLorentzVector& pc,
   static const double Mp = PDG_PROTON.Mass();
   static const double Mj = PDG_JPSI.Mass();
 
-  // work in the j/psi helicity frame
+  // work in the Pc CM frame
   const double phi = rng->Uniform(0., TMath::TwoPi());
   const double ctheta = rng->Uniform(-1, 1);
   const double theta = acos(ctheta);

@@ -17,7 +17,7 @@ public:
       : max_{max}
       , index_{start_index}
       , precision_{precision < max ? max : precision} {
-    std::cout << "\nProcessing " << max_ << " events..." << std::endl;
+    std::cerr << "\nProcessing " << max_ << " events..." << std::endl;
     update();
   }
   void update(size_t i = 1) {
@@ -31,10 +31,10 @@ public:
       cnt /= (precision_ / 100.);
       char msg[15];
       sprintf(msg, "  %3.2f%%\r", cnt);
-      std::cout << msg << std::flush;
+      std::cerr << msg << std::flush;
     }
   }
-  ~progress_meter() { std::cout << "      Done!" << std::endl; }
+  ~progress_meter() { std::cerr << "      Done!" << std::endl; }
 
 private:
   const size_t max_;
