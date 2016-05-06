@@ -27,12 +27,7 @@ namespace physics {
 //  with Mp the proton mass, Mj the ccbar mass (J/Psi BW mass)
 class jpsi_xsec : public configurable {
 public:
-  jpsi_xsec(const configuration& cf, const string_path& path)
-      : configurable{cf, path}
-      , enable_3gluon_{conf().get<bool>("enable_3gluon")}
-      , Mp_{PDG_PROTON.Mass()}
-      , Mp2_{Mp_ * Mp_}
-      , v_{1. / (16. * TMath::Pi())} {}
+  jpsi_xsec(const configuration& cf, const string_path& path);
 
   double operator()(double s, const double t, const double Mj) const {
     // kinematic components
@@ -57,6 +52,7 @@ private:
     }
   }
 
+  const std::string model_;
   const bool enable_3gluon_;
   const double Mp_;
   const double Mp2_;

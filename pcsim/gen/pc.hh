@@ -27,8 +27,8 @@ private:
   interval<double> calc_s_range() const;
 
   // cross sections
-  const physics::pc_xsec xsec_;
   const physics::bremsstrahlung brems_;
+  const physics::pc_xsec xsec_;
   const double xsec_max_; // the maximum cross section
 
   // Phase space limits

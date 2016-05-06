@@ -12,8 +12,8 @@ pc::pc(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r)
     : base_type{conf, path, "s-channel Charmed Pentaquark Generator",
                 std::move(r)}
-    , brems_{conf, path / "photon_beam"}
     , xsec_{conf, path / "xsec"}
+    , brems_{conf, path / "photon_beam"}
     , xsec_max_{xsec_.max() * brems_.max()}
     , s_range_{brems_.calc_s_range()} {
   LOG_INFO("pc", "s range: [" + std::to_string(s_range_.min) + ", " +

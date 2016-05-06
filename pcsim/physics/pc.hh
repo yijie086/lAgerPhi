@@ -27,10 +27,10 @@ public:
       , sigma_{conf().get<double>("width") / 2.} // sigma is FWHM/2
       , coupling_{conf().get<double>("coupling")}
       , max_{calc_maximum()} {
-    LOG_INFO("pc_xsec", "Mean: " + std::to_string(mean_) + " GeV");
-    LOG_INFO("pc_xsec", "Width: " + std::to_string(sigma_ * 2) + " GeV");
-    LOG_INFO("pc_xsec", "Amplitude: " + std::to_string(ampl_));
-    LOG_INFO("pc_xsec", "Coupling: " + std::to_string(coupling_));
+    LOG_INFO("pc_xsec", "Mean: " + conf().get<std::string>("mean") + " GeV");
+    LOG_INFO("pc_xsec", "Width: " + conf().get<std::string>("width") + " GeV");
+    LOG_INFO("pc_xsec", "Amplitude: " + conf().get<std::string>("ampl"));
+    LOG_INFO("pc_xsec", "Coupling: " + conf().get<std::string>("coupling"));
   }
 
   // we throw flat in s, hence the cross section is expressed as a function of

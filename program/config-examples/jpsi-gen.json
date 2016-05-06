@@ -7,18 +7,16 @@
     "generator": {
       "type": "jpsi",
       "xsec": {
-        "type": "t-channel",
-        "enable_3gluon": false
+        "type": "2gluon"
       },
       "photon_beam": {
-        "type": "bremsstrahlung",
-        "model": "param",
+        "type": "param",
         "electron_energy": 11,
         "range": [8,11]
       }
     },
     "acceptance": {
-      "type": "perfect"
+      "type": "4pi"
     }
   }
 }
