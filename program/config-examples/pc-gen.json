@@ -20,7 +20,7 @@
       }
     },
     "acceptance": {
-      "type": "perfect"
+      "type": "4pi"
     }
   }
 }

@@ -11,8 +11,8 @@ namespace pcsim {
 // object
 class spline : public configurable {
 public:
-  spline(const ptree& settings, const string_path& path)
-      : configurable{settings, path}
+  spline(const configuration& conf, const string_path& path)
+      : configurable{conf, path}
       , x_{conf().get_vector<double>("x")}
       , y_{conf().get_vector<double>("y")}
       , spline_{path.str().c_str(), &x_[0], &y_[0], static_cast<int>(x_.size())}

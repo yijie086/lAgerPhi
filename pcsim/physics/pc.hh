@@ -20,8 +20,8 @@ namespace physics {
 // Values are in units of nb/GeV^2
 class pc_xsec : public configurable {
 public:
-  pc_xsec(const ptree& settings, const string_path& path)
-      : configurable(settings, path)
+  pc_xsec(const configuration& cf, const string_path& path)
+      : configurable(cf, path)
       , ampl_{conf().get<double>("ampl")}
       , mean_{conf().get<double>("mean")}
       , sigma_{conf().get<double>("width") / 2.} // sigma is FWHM/2

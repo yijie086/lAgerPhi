@@ -51,8 +51,8 @@ struct mc_controller {
   mc_event ev;
   double volume; // sum of the phase space volume for all events
 
-  mc_controller(const ptree& settings, const std::string& output)
-      : conf{settings, "mc"}
+  mc_controller(const configuration& cf, const std::string& output)
+      : conf{cf}
       , run{conf["run"]}
       , events{conf["events"]}
       , generator{conf.get<std::string>("generator/type")}
@@ -125,11 +125,11 @@ struct mc_controller {
   }
 };
 
-int run_mc(const ptree& settings, const std::string& output) {
+int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim", "initializing PCSIM");
 
   // mc settings
-  mc_controller mc{settings, output};
+  mc_controller mc{cf, output};
 
   // init the physics generator
 
@@ -137,9 +137,9 @@ int run_mc(const ptree& settings, const std::string& output) {
   std::unique_ptr<gen::jpsi> jpsi_gen;
 
   if (mc.generator == "pc") {
-    pc_gen = std::make_unique<gen::pc>(settings, "mc/generator", mc.rng);
+    pc_gen = std::make_unique<gen::pc>(mc.conf, "generator", mc.rng);
   } else if (mc.generator == "jpsi") {
-    jpsi_gen = std::make_unique<gen::jpsi>(settings, "mc/generator", mc.rng);
+    jpsi_gen = std::make_unique<gen::jpsi>(mc.conf, "generator", mc.rng);
   } else {
     throw mc.conf.value_error("generator/type");
   }
@@ -147,9 +147,9 @@ int run_mc(const ptree& settings, const std::string& output) {
   // init the spectrometers
   std::unique_ptr<gen::spectrometer> HMS;
   std::unique_ptr<gen::spectrometer> SHMS;
-  if (mc.acceptance == "dual-arm") {
-    HMS = std::make_unique<gen::spectrometer>(settings, "mc/HMS", mc.rng);
-    SHMS = std::make_unique<gen::spectrometer>(settings, "mc/SHMS", mc.rng);
+  if (mc.acceptance == "2arm") {
+    HMS = std::make_unique<gen::spectrometer>(mc.conf, "HMS", mc.rng);
+    SHMS = std::make_unique<gen::spectrometer>(mc.conf, "HMS", mc.rng);
   }
 
   // generate our events
@@ -189,7 +189,7 @@ int run_mc(const ptree& settings, const std::string& output) {
            "Total number of generated events: " + std::to_string(mc.ev.evgen));
   LOG_INFO("pcsim",
            "Total cross section [nb]: " + to_string_exp(mc.ev.xsec_gen));
-  if (mc.acceptance != "perfect") {
+  if (mc.acceptance != "4pi") {
     LOG_INFO("pcsim", "Total number accepted positrons in the HMS: " +
                           std::to_string(mc.ev.nHMS));
     LOG_INFO("pcsim", "Total number accepted electrons in the SHMS: " +

@@ -31,28 +31,46 @@ namespace pcsim {
 // and provide for error handling
 // =============================================================================
 framework::framework(int argc, char* argv[],
-                     pcsim_function_type pcsim_function)
-    : pcsim_function_{pcsim_function} {
-  try {
-    LOG_INFO("pcsim", "Starting pcsim framework");
+                     pcsim_function_type pcsim_function) try
     // suppress ROOT signal handler
-    root_suppress_signals();
+    : dummy_{root_suppress_signals()}
     // parse the command line
-    args_ = parse_arguments(argc, argv);
+    , args_{parse_arguments(argc, argv)}
     // configuration
-    settings_ = get_settings();
-    LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
-    // run and events
-    int run = args_["run"].as<int>();
-    int events = args_["events"].as<int>();
-    settings_.put("mc.run", run);
-    settings_.put("mc.events", events);
-    // output root
-    output_ = args_["out"].as<std::string>();
-    char suffix[1024];
-    sprintf(suffix, ".run%06i-%i", run, events);
-    output_ += suffix;
-    LOG_INFO("pcsim", "Output files will be written to: " + output_ + ".*");
+    , conf_{get_settings(), "mc"}
+    // framework function
+    ,pcsim_function_{pcsim_function} {
+  // talk to the user
+  LOG_INFO("pcsim", "Starting pcsim framework");
+  LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
+
+  // get our run info and number of events to be generated
+  const int run = get_option<int>("run");
+  const int events = get_option<int>("events");
+
+  // output file names
+  output_ = args_["out"].as<std::string>();
+  // add generator name and acceptance
+  output_ += "." + conf_.get<std::string>("generator/type");
+  output_ += "." + conf_.get<std::string>("acceptance/type");
+  // add optional tag
+  auto tag = conf_.get_optional<std::string>("tag");
+  if (tag && tag->size()) {
+    output_ += "." + *tag;
+  }
+  // add the run info and number of generated events
+  char info[1024];
+  sprintf(info, ".run%05i-%i", run, events);
+  output_ += info;
+
+  // communicate file name to user
+  LOG_INFO("pcsim", "Output files will be written to: " + output_ + ".*");
+
+  // write the a copy of the configuration file to the output
+  ptree settings;
+  conf_.save(settings);
+  write_json(output_ + ".json", settings);
+
   } catch (const framework_help& h) {
     std::cerr << h.what() << std::endl;
     exit(0);
@@ -71,11 +89,11 @@ framework::framework(int argc, char* argv[],
     LOG_CRITICAL("std::exception", "Please contact developer for support.");
     throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
-}
+
 int framework::run() const {
   try{
     LOG_INFO("pcsim", "Starting event generator...");
-    int ret = pcsim_function_(settings_, output_);
+    int ret = pcsim_function_(conf_, output_);
     LOG_INFO("pcsim", "Finished.");
     return ret;
   } catch (const pcsim::exception& e) {
@@ -110,10 +128,9 @@ po::variables_map framework::parse_arguments(int argc, char* argv[]) const {
     po::options_description opts_visible{"Allowed options"};
     opts_visible.add_options()("help,h", "Produce help message")(
         "conf,c", po::value<std::string>()->required()->notifier(file_exists),
-        "Configuration JSON file")("run,r", po::value<int>()->required(),
+        "Configuration JSON file")("run,r", po::value<int>(),
                                    "Run number (also the random seed)")(
-        "events,e", po::value<int>()->required(),
-        "Number of events to generate")(
+        "events,e", po::value<int>(), "Number of events to generate")(
         "verb,v", po::value<unsigned>()->default_value(
                       static_cast<unsigned>(log_level::INFO)),
         "Verbosity level (0 -> 7; 0: silent, 4: default, 5: debug)")(
@@ -164,7 +181,7 @@ ptree framework::get_settings() const {
 // Suppress the ROOT signal handlers, as they can cause undefined behavior and
 // interfere with debugging
 // =============================================================================
-void framework::root_suppress_signals() const {
+int framework::root_suppress_signals() const {
   gSystem->ResetSignal(kSigChild);
   gSystem->ResetSignal(kSigBus);
   gSystem->ResetSignal(kSigSegmentationViolation);
@@ -175,6 +192,7 @@ void framework::root_suppress_signals() const {
   gSystem->ResetSignal(kSigUrgent);
   gSystem->ResetSignal(kSigFloatingException);
   gSystem->ResetSignal(kSigWindowChanged);
+  return 0;
 }
 } // ns pcsim
 

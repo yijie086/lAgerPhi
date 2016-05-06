@@ -8,12 +8,12 @@
 namespace pcsim {
 namespace gen {
 
-pc::pc(const ptree& settings, const string_path& path,
+pc::pc(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r)
-    : base_type{settings, path, "s-channel Charmed Pentaquark Generator",
+    : base_type{conf, path, "s-channel Charmed Pentaquark Generator",
                 std::move(r)}
-    , brems_{settings, path / "photon_beam"}
-    , xsec_{settings, path / "xsec"}
+    , brems_{conf, path / "photon_beam"}
+    , xsec_{conf, path / "xsec"}
     , xsec_max_{xsec_.max() * brems_.max()}
     , s_range_{brems_.calc_s_range()} {
   LOG_INFO("pc", "s range: [" + std::to_string(s_range_.min) + ", " +

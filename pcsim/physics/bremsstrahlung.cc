@@ -7,8 +7,8 @@ namespace pcsim {
 namespace physics {
 
 // bremsstrahlung constructor
-bremsstrahlung::bremsstrahlung(const ptree& settings, const string_path& path)
-    : configurable{settings, path}
+bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path)
+    : configurable{cf, path}
     , model_{get_model()}
     , rl_{(model_ == model::APPROX) ? conf().get<double>("rl") : 0.}
     , E0_{conf().get<double>("electron_energy")}

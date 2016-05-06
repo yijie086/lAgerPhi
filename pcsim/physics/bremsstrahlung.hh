@@ -47,7 +47,7 @@ public:
   // Bremsstrahlung models 
   enum class model { FLAT, PARAM, APPROX };
 
-  bremsstrahlung(const ptree& settings, const string_path& path);
+  bremsstrahlung(const configuration& conf, const string_path& path);
 
   // get the maximum cross section, useful for accept-reject MC
   double max() const { return max_; }

@@ -99,6 +99,11 @@ public:
   // get the type info
   std::string type() const { return get<std::string>(TYPE_KEY); }
 
+  // add a value to the configuration
+  template <class T> void set(const string_path& key, const T& value) {
+    settings_.put(key, value);
+  }
+
   // Universal getter
   // Use these instead of the get<T>() member functions below for more readible
   // code
@@ -207,8 +212,11 @@ private:
 namespace pcsim {
 class configurable {
 public:
+  // ptree-constructor is deprecated, configuration constructor prefered
   configurable(const ptree& settings, const string_path& path)
       : conf_{settings, path}, path_{path} {}
+  configurable(const configuration& conf, const string_path& path)
+      : conf_{conf, path}, path_{path} {}
   const string_path& path() const { return path_; }
   const configuration& conf() const { return conf_; }
   configuration& conf() { return conf_; }

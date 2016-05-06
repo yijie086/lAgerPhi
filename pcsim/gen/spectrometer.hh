@@ -39,7 +39,7 @@ class spectrometer : public generator<spectrometer, spec_track> {
 public:
   using base_type = generator<spectrometer, spec_track>;
 
-  spectrometer(const ptree& settings, const string_path& path,
+  spectrometer(const configuration& conf, const string_path& path,
                std::shared_ptr<TRandom> r);
 
   spec_track check(TLorentzVector track, const int charge) {

@@ -21,9 +21,9 @@ public:
   using histogrammer_type = histogrammer<event_type>;
   using histo_var_type = typename histogrammer_type::histo_var_type;
 
-  generator(const ptree& settings, const string_path& path,
+  generator(const configuration& conf, const string_path& path,
             const std::string& title, std::shared_ptr<TRandom> r)
-      : configurable{settings, path}
+      : configurable{conf, path}
       , histos_{path, "", format_title(title, "from:")}
       , rng_{std::move(r)} {}
 

@@ -33,7 +33,7 @@ class jpsi : public generator<jpsi, jpsi_event> {
 public:
   using base_type = generator<jpsi, jpsi_event>;
 
-  jpsi(const ptree& settings, const string_path& path,
+  jpsi(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r);
 
   jpsi_event gen_impl();

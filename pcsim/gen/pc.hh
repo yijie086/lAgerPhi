@@ -17,7 +17,7 @@ class pc : public generator<pc, jpsi_event> {
 public:
   using base_type = generator<pc, jpsi_event>;
 
-  pc(const ptree& settings, const string_path& path,
+  pc(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r);
 
   jpsi_event gen_impl();

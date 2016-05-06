@@ -27,8 +27,8 @@ namespace physics {
 //  with Mp the proton mass, Mj the ccbar mass (J/Psi BW mass)
 class jpsi_xsec : public configurable {
 public:
-  jpsi_xsec(const ptree& settings, const string_path& path)
-      : configurable{settings, path}
+  jpsi_xsec(const configuration& cf, const string_path& path)
+      : configurable{cf, path}
       , enable_3gluon_{conf().get<bool>("enable_3gluon")}
       , Mp_{PDG_PROTON.Mass()}
       , Mp2_{Mp_ * Mp_}

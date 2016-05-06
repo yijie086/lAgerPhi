@@ -25,11 +25,11 @@ double s_threshold(const double M) { return Egamma2s(E_threshold(M)); }
 
 namespace gen {
 
-jpsi::jpsi(const ptree& settings, const string_path& path,
+jpsi::jpsi(const configuration& conf, const string_path& path,
            std::shared_ptr<TRandom> r)
-    : base_type{settings, path, "t-channel J/#Psi Generator", std::move(r)}
-    , xsec_{settings, path / "xsec"}
-    , brems_{settings, path / "photon_beam"}
+    : base_type{conf, path, "t-channel J/#Psi Generator", std::move(r)}
+    , xsec_{conf, path / "xsec"}
+    , brems_{conf, path / "photon_beam"}
     , s_range_{s_threshold(physics::M_JPSI), brems_.calc_s_range().max}
     , t_range_{calc_t_range(s2Egamma(s_range_.max))}
     , xsec_max_{calc_max_xsec() * brems_.max()} {
