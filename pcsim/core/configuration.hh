@@ -1,17 +1,16 @@
 #ifndef PCSIM_CORE_CONFIGURATION_LOADED
 #define PCSIM_CORE_CONFIGURATION_LOADED
 
-#include <string>
-#include <map>
-
-#include <boost/property_tree/ptree.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <boost/property_tree/exceptions.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/optional.hpp>
-#include <boost/lexical_cast.hpp>
-
+#include <boost/property_tree/ptree.hpp>
+#include <map>
 #include <pcsim/core/exception.hh>
+#include <pcsim/core/interval.hh>
 #include <pcsim/core/stringify.hh>
+#include <string>
 
 namespace pcsim {
 // necessary type aliases
@@ -76,6 +75,11 @@ public:
 // in the associated settings ptree.
 // =============================================================================
 namespace pcsim {
+
+namespace configuration_impl {
+  class value_proxy;
+}
+
 class configuration {
 public:
   constexpr static const char* DEFAULTS{"defaults"};
@@ -94,6 +98,12 @@ public:
 
   // get the type info
   std::string type() const { return get<std::string>(TYPE_KEY); }
+
+  // Universal getter
+  // Use these instead of the get<T>() member functions below for more readible
+  // code
+  configuration_impl::value_proxy value(const string_path& key) const;
+  configuration_impl::value_proxy operator[](const string_path& key) const;
 
   // Three pairs of functions to get a setting by its key.
   //
@@ -143,27 +153,29 @@ public:
   template <class T> T get_bitpattern(const string_path& key) const;
   template <class T>
   T get_bitpattern(const string_path& key, const translation_map<T>& tr) const;
-  // special version to get a std::pair from a "range" vector
+  // special version to get an interval from a "range" vector
   // 1. optional versions
   template <class T>
-  optional<std::pair<T, T>> get_optional_range(const string_path& key) const;
+  optional<interval<T>> get_optional_range(const string_path& key) const;
   template <class T>
-  optional<std::pair<T, T>>
-  get_optional_range(const string_path& key,
-                     const translation_map<T>& tr) const;
+  optional<interval<T>> get_optional_range(const string_path& key,
+                                           const translation_map<T>& tr) const;
   // 2. throwing versions
-  template <class T> std::pair<T, T> get_range(const string_path& key) const;
+  template <class T> interval<T> get_range(const string_path& key) const;
   template <class T>
-  std::pair<T, T> get_range(const string_path& key,
-                            const translation_map<T>& tr) const;
+  interval<T> get_range(const string_path& key,
+                        const translation_map<T>& tr) const;
 
   // Helper functions to construct exceptions
   configuration_path_error path_error(const string_path& path) const;
   configuration_key_error key_error(const string_path& key) const;
   configuration_value_error value_error(const string_path& key,
                                         const std::string& value) const;
+  configuration_value_error value_error(const string_path& key) const;
   configuration_translation_error
   translation_error(const string_path& key, const std::string& value) const;
+  configuration_translation_error
+  translation_error(const string_path& key) const;
   template <class T>
   configuration_translation_error
   translation_error(const string_path& key, const std::string& value,
@@ -250,6 +262,29 @@ public:
                                   const string_path& settings_path,
                                   const string_path& defaults_path);
 };
+
+// =============================================================================
+// Implementation: configuration value proxies with auto casting
+// =============================================================================
+namespace configuration_impl {
+class value_proxy {
+public:
+  value_proxy(const configuration& conf, string_path key)
+      : conf_{conf}, key_{std::move(key)} {}
+
+  template <class T> operator T() const { return conf_.get<T>(key_); }
+  template <class T> operator std::vector<T>() const {
+    return conf_.get_vector<T>(key_);
+  }
+  template <class T> operator interval<T>() const {
+    return conf_.get_range<T>(key_);
+  }
+
+private:
+  const configuration& conf_;
+  const string_path key_;
+};
+}
 
 // =============================================================================
 // Implementation: configuration getters
@@ -399,9 +434,9 @@ T configuration::get_bitpattern(const string_path& key,
   }
   return *s;
 }
-// and "range" (pair) version
+// and "range" (interval) version
 template <class T>
-optional<std::pair<T, T>>
+optional<interval<T>>
 configuration::get_optional_range(const string_path& key) const {
   auto range = get_optional_vector<T>(key);
   if (range) {
@@ -413,7 +448,7 @@ configuration::get_optional_range(const string_path& key) const {
   return {};
 }
 template <class T>
-optional<std::pair<T, T>>
+optional<interval<T>>
 configuration::get_optional_range(const string_path& key,
                                   const translation_map<T>& tr) const {
   auto range = get_optional_vector(key, tr);
@@ -426,7 +461,7 @@ configuration::get_optional_range(const string_path& key,
   return {};
 }
 template <class T>
-std::pair<T, T> configuration::get_range(const string_path& key) const {
+interval<T> configuration::get_range(const string_path& key) const {
   auto range = get_optional_range<T>(key);
   if (!range) {
     throw key_error(key);
@@ -434,8 +469,8 @@ std::pair<T, T> configuration::get_range(const string_path& key) const {
   return *range;
 }
 template <class T>
-std::pair<T, T> configuration::get_range(const string_path& key,
-                                         const translation_map<T>& tr) const {
+interval<T> configuration::get_range(const string_path& key,
+                                     const translation_map<T>& tr) const {
   auto range = get_optional_range(key, tr);
   if (!range) {
     throw key_error(key);

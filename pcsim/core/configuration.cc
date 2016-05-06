@@ -53,6 +53,15 @@ void configuration::save(ptree& out_conf) const {
     LOG_INFO(defaults_path_.str(), "Settings saved.");
   }
 }
+// universal getter
+configuration_impl::value_proxy
+configuration::value(const string_path& key) const {
+  return {*this, key};
+}
+configuration_impl::value_proxy configuration::
+operator[](const string_path& key) const {
+  return {*this, key};
+}
 
 configuration_path_error
 configuration::path_error(const string_path& path) const {
@@ -66,10 +75,18 @@ configuration::value_error(const string_path& key,
                            const std::string& value) const {
   return {key, value, settings_path_, defaults_path_};
 }
+configuration_value_error
+configuration::value_error(const string_path& key) const {
+  return {key, get<std::string>(key), settings_path_, defaults_path_};
+}
 configuration_translation_error
 configuration::translation_error(const string_path& key,
                                  const std::string& value) const {
   return {key, value, settings_path_, defaults_path_};
+}
+configuration_translation_error
+configuration::translation_error(const string_path& key) const {
+  return {key, get<std::string>(key), settings_path_, defaults_path_};
 }
 } // ns pcsim
 // =============================================================================
