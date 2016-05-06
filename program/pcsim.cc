@@ -47,7 +47,7 @@ struct mc_controller {
   std::shared_ptr<TFile> ofile;
   TTree* tree;
   std::shared_ptr<TRandom> rng;
-  progress_meter progress;
+  //progress_meter progress;
   mc_event ev;
   double volume; // sum of the phase space volume for all events
 
@@ -61,7 +61,7 @@ struct mc_controller {
       , ofile{std::make_shared<TFile>((output + ".root").c_str(), "recreate")}
       , tree{new TTree{"jpsi_event", "J/Psi Event Data"}}
       , rng{std::make_shared<TRandom3>()}
-      , progress{events}
+      //, progress{events}
       , volume{0} {
     // redirect logger to use the log file
     global::logger.set_output(logfile);
@@ -121,7 +121,7 @@ struct mc_controller {
     ev.xsec_acc = volume * ev.event / ev.evgen / ev.ntrials;
     // book the data
     tree->Fill();
-    progress.update();
+    //progress.update();
   }
 };
 
@@ -148,8 +148,10 @@ int run_mc(const configuration& cf, const std::string& output) {
   std::unique_ptr<gen::spectrometer> HMS;
   std::unique_ptr<gen::spectrometer> SHMS;
   if (mc.acceptance == "2arm") {
-    HMS = std::make_unique<gen::spectrometer>(mc.conf, "HMS", mc.rng);
-    SHMS = std::make_unique<gen::spectrometer>(mc.conf, "HMS", mc.rng);
+    HMS =
+        std::make_unique<gen::spectrometer>(mc.conf, "acceptance/HMS", mc.rng);
+    SHMS =
+        std::make_unique<gen::spectrometer>(mc.conf, "acceptance/SHMS", mc.rng);
   }
 
   // generate our events

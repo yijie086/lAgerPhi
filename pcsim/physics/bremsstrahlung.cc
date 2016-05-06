@@ -18,10 +18,10 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path)
   tassert(range_.width() > 0, "Ensure Emin < Emax for the photon beam energy");
   tassert(range_.min > 0, "Ensure Emin > 0 for the photon beam energy");
   LOG_INFO("bremsstrahlung",
-           "Primary electron beam energy: " + std::to_string(E0_) + " GeV");
-  LOG_INFO("bremsstrahlung", "Photon energy range: [" +
+           "Primary electron beam energy [GeV]: " + std::to_string(E0_));
+  LOG_INFO("bremsstrahlung", "Photon energy range [GeV]: [" +
                                  std::to_string(range_.min) + ", " +
-                                 std::to_string(range_.max) + "] GeV");
+                                 std::to_string(range_.max) + "]");
 }
 
 interval<double> bremsstrahlung::calc_s_range() const {

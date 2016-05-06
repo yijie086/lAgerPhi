@@ -1,6 +1,6 @@
 {
   "mc" : {
-    "type": "J/Psi - Pc Simulation",
+    "type": "pcsim",
     "run": 1,
     "events": 1000,
     "tag": "",

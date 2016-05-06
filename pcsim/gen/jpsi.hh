@@ -44,8 +44,8 @@ private:
   interval<double> calc_t_range(double Egamma) const;
 
   // cross sections
-  const physics::jpsi_xsec xsec_;
   const physics::bremsstrahlung brems_;
+  const physics::jpsi_xsec xsec_;
 
   // phase space limits
   const interval<double> s_range_;

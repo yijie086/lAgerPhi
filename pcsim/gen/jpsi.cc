@@ -28,11 +28,15 @@ namespace gen {
 jpsi::jpsi(const configuration& conf, const string_path& path,
            std::shared_ptr<TRandom> r)
     : base_type{conf, path, "t-channel J/#Psi Generator", std::move(r)}
-    , xsec_{conf, path / "xsec"}
     , brems_{conf, path / "photon_beam"}
+    , xsec_{conf, path / "xsec"}
     , s_range_{s_threshold(physics::M_JPSI), brems_.calc_s_range().max}
     , t_range_{calc_t_range(s2Egamma(s_range_.max))}
     , xsec_max_{calc_max_xsec() * brems_.max()} {
+  LOG_INFO("jpsi", "s range [GeV2]: [" + std::to_string(s_range_.min) + ", " +
+                       std::to_string(s_range_.max) + "]");
+  LOG_INFO("jpsi", "t range [GeV2]: [" + std::to_string(t_range_.min) + ", " +
+                       std::to_string(t_range_.max) + "]");
   LOG_INFO("jpsi", "J/Psi t-channel generator initialized");
 }
 

@@ -16,8 +16,9 @@ pc::pc(const configuration& conf, const string_path& path,
     , brems_{conf, path / "photon_beam"}
     , xsec_max_{xsec_.max() * brems_.max()}
     , s_range_{brems_.calc_s_range()} {
-  LOG_INFO("pc", "s range: [" + std::to_string(s_range_.min) + ", " +
-                     std::to_string(s_range_.max) + "] GeV^2");
+  LOG_INFO("pc", "s range [GeV2]: [" + std::to_string(s_range_.min) + ", " +
+                     std::to_string(s_range_.max) + "]");
+  LOG_INFO("pc", "Pc s-channel generator initialized");
 }
 
 // generate a good e-p->gamma,p->Pc->J/Psi,p->e+e-,p event

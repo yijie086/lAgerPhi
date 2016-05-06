@@ -68,6 +68,7 @@ public:
 private:
   const interval<double> p_range_;
   const double theta_;
+  const int charge_;
   const double x_acc_;
   const double y_acc_;
 

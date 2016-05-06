@@ -1,14 +1,13 @@
 {
   "mc" : {
-    "type": "J/Psi - Pc Simulation",
+    "type": "pcsim",
     "run": 1,
     "events": 1000,
     "tag": "",
     "generator": {
       "type": "jpsi",
       "xsec": {
-        "type": "brodsky-fit",
-        "enable_3gluon": false
+        "type": "2gluon"
       },
       "photon_beam": {
         "type": "param",
@@ -17,7 +16,7 @@
       }
     },
     "acceptance": {
-      "type": "dual-arm",
+      "type": "2arm",
       "HMS": {
         "type": "spectrometer",
         "theta": -37,
@@ -26,6 +25,7 @@
           "dmin": 1.1,
           "dmax": 1.1
         },
+        "charge": -1,
         "acceptance": {
           "x": 2400,
           "y": 7000
@@ -39,6 +39,7 @@
           "dmin": 0.15,
           "dmax": 0.25
         },
+        "charge": 1,
         "acceptance": {
           "x": 20,
           "y": 50
