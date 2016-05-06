@@ -34,17 +34,14 @@ interval<double> bremsstrahlung::calc_s_range() const {
 
 // private utility function to read the correct BS model from the configuration
 bremsstrahlung::model bremsstrahlung::get_model() const {
-  if (conf().get<std::string>("model") == "flat") {
-    LOG_INFO("bremsstrahlung", "Model: flat");
+  if (conf().get<std::string>("type") == "flat") {
     LOG_INFO("bremsstrahlung", "Using a flat BS distribution");
     return model::FLAT;
-  } else if (conf().get<std::string>("model") == "param") {
-    LOG_INFO("bremsstrahlung", "Model: param");
+  } else if (conf().get<std::string>("type") == "param") {
     LOG_INFO("bremsstrahlung",
              "Using parameterization of the exact BS spectrum for 0.1 RL.");
     return model::PARAM;
   } else {
-    LOG_INFO("bremsstrahlung", "Model: approx");
     LOG_INFO("bremsstrahlung", "RL: " + conf().get<std::string>("rl"));
     LOG_INFO("bremsstrahlung", "Using approximation of the exact BS spectrum)");
     return model::APPROX;

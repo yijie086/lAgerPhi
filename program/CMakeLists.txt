@@ -5,7 +5,7 @@
 ## function to build our programs
 function (BUILD_PROGRAM EXE)
   ## program name
-  set (PROG "${PROJECT_NAME}-${EXE}")
+  set (PROG "${EXE}")
   ## Sources and install headers
   set (SOURCES "${EXE}.cc")
   ## compile and link

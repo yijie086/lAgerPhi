@@ -1,0 +1,26 @@
+{
+  "mc" : {
+    "type": "pcsim",
+    "run": 1,
+    "events": 1000,
+    "tag": "",
+    "generator": {
+      "type": "pc",
+      "xsec": {
+        "type": "gaus",
+        "coupling": 1.0,
+        "ampl": 10000,
+        "mean": 4.450,
+        "width": 0.039
+      },
+      "photon_beam": {
+        "type": "param",
+        "electron_energy": 11,
+        "range": [8,11]
+      }
+    },
+    "acceptance": {
+      "type": "perfect"
+    }
+  }
+}

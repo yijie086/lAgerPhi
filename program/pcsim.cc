@@ -41,8 +41,8 @@ struct mc_controller {
   const configuration conf;
   const int run;
   const size_t events;
-  const bool spectrometer;
-  const bool pc_mode;
+  const std::string generator;
+  const std::string acceptance;
   std::ofstream logfile;
   std::shared_ptr<TFile> ofile;
   TTree* tree;
@@ -53,10 +53,10 @@ struct mc_controller {
 
   mc_controller(const ptree& settings, const std::string& output)
       : conf{settings, "mc"}
-      , run{conf.get<int>("run")}
-      , events{conf.get<size_t>("events")}
-      , spectrometer{conf.get<bool>("spectrometer")}
-      , pc_mode{conf.get<bool>("pc_mode")}
+      , run{conf["run"]}
+      , events{conf["events"]}
+      , generator{conf.get<std::string>("generator/type")}
+      , acceptance{conf.get<std::string>("acceptance/type")}
       , logfile(output + ".log")
       , ofile{std::make_shared<TFile>((output + ".root").c_str(), "recreate")}
       , tree{new TTree{"jpsi_event", "J/Psi Event Data"}}
@@ -135,16 +135,19 @@ int run_mc(const ptree& settings, const std::string& output) {
 
   std::unique_ptr<gen::pc> pc_gen;
   std::unique_ptr<gen::jpsi> jpsi_gen;
-  if (mc.pc_mode) {
-    pc_gen = std::make_unique<gen::pc>(settings, "mc/pc", mc.rng);
+
+  if (mc.generator == "pc") {
+    pc_gen = std::make_unique<gen::pc>(settings, "mc/generator", mc.rng);
+  } else if (mc.generator == "jpsi") {
+    jpsi_gen = std::make_unique<gen::jpsi>(settings, "mc/generator", mc.rng);
   } else {
-    jpsi_gen = std::make_unique<gen::jpsi>(settings, "mc/jpsi", mc.rng);
+    throw mc.conf.value_error("generator/type");
   }
 
   // init the spectrometers
   std::unique_ptr<gen::spectrometer> HMS;
   std::unique_ptr<gen::spectrometer> SHMS;
-  if (mc.spectrometer) {
+  if (mc.acceptance == "dual-arm") {
     HMS = std::make_unique<gen::spectrometer>(settings, "mc/HMS", mc.rng);
     SHMS = std::make_unique<gen::spectrometer>(settings, "mc/SHMS", mc.rng);
   }
@@ -162,7 +165,7 @@ int run_mc(const ptree& settings, const std::string& output) {
     mc.record_geninfo();
 
     // check acceptance
-    if (mc.spectrometer) {
+    if (HMS && SHMS) {
       mc.ev.HMS = HMS->check(mc.ev.gen.electron, -1);
       if (mc.ev.HMS.accept) {
         mc.ev.nHMS++;
@@ -186,7 +189,7 @@ int run_mc(const ptree& settings, const std::string& output) {
            "Total number of generated events: " + std::to_string(mc.ev.evgen));
   LOG_INFO("pcsim",
            "Total cross section [nb]: " + to_string_exp(mc.ev.xsec_gen));
-  if (mc.spectrometer) {
+  if (mc.acceptance != "perfect") {
     LOG_INFO("pcsim", "Total number accepted positrons in the HMS: " +
                           std::to_string(mc.ev.nHMS));
     LOG_INFO("pcsim", "Total number accepted electrons in the SHMS: " +

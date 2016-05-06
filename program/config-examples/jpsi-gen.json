@@ -1,0 +1,24 @@
+{
+  "mc" : {
+    "type": "J/Psi - Pc Simulation",
+    "run": 1,
+    "events": 1000,
+    "tag": "",
+    "generator": {
+      "type": "jpsi",
+      "xsec": {
+        "type": "t-channel",
+        "enable_3gluon": false
+      },
+      "photon_beam": {
+        "type": "bremsstrahlung",
+        "model": "param",
+        "electron_energy": 11,
+        "range": [8,11]
+      }
+    },
+    "acceptance": {
+      "type": "perfect"
+    }
+  }
+}
