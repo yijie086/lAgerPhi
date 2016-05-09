@@ -200,6 +200,9 @@ int run_mc(const configuration& cf, const std::string& output) {
              "Number of accepted events: " + std::to_string(mc.ev.event));
     LOG_INFO("pcsim",
              "Accepted cross section [nb]: " + to_string_exp(mc.ev.xsec_acc));
+    LOG_INFO("pcsim", "Acceptance [%]: " +
+                          std::to_string(static_cast<float>(mc.ev.event) /
+                                         mc.ev.evgen * 100.f));
   }
 
   return 0;
