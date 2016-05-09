@@ -38,12 +38,29 @@ bremsstrahlung::model bremsstrahlung::get_model() const {
     LOG_INFO("bremsstrahlung", "Using a flat BS distribution");
     return model::FLAT;
   } else if (conf().get<std::string>("type") == "param") {
+    const double rl = conf()["rl"];
+    model m;
+    if (rl == 0.01) {
+      m = model::PARAM_001;
+    } else if (rl == 0.05) {
+      m = model::PARAM_005;
+    } else if (rl == 0.1) {
+      m = model::PARAM_010;
+    } else {
+      LOG_ERROR(
+          "bremsstrahlung",
+          "No parameterization available for the requested radiation length.");
+      LOG_ERROR("bremsstrahlung", "Use 'approx' instead of 'param' if to use "
+                                  "arbitrary radiation lengths.");
+      throw conf().value_error("rl");
+    }
+    LOG_INFO("bremsstrahlung", "RL: " + conf().get<std::string>("rl"));
     LOG_INFO("bremsstrahlung",
-             "Using parameterization of the exact BS spectrum for 0.1 RL.");
-    return model::PARAM;
+             "Using parameterization of the exact BS spectrum");
+    return m;
   } else {
     LOG_INFO("bremsstrahlung", "RL: " + conf().get<std::string>("rl"));
-    LOG_INFO("bremsstrahlung", "Using approximation of the exact BS spectrum)");
+    LOG_INFO("bremsstrahlung", "Using approximation of the exact BS spectrum");
     return model::APPROX;
   }
 }
@@ -53,12 +70,16 @@ bremsstrahlung::model bremsstrahlung::get_model() const {
 double bremsstrahlung::calc_max() const {
   double max = 0;
   const double jacobian = physics::ONE_OVER_2M_PROTON;
-  // for a flat distribution, the max is given by 1/range
+  // for a flat distribution, the max is given by 1
   if (model_ == model::FLAT) {
     max = 1. / jacobian;
     // for the parameterization, the spectrum is monotonously falling
-  } else if (model_ == model::PARAM) {
-    max = physics::bremsstrahlung_intensity_10_param(E0_, range_.min);
+  } else if (model_ == model::PARAM_001) {
+    max = physics::bremsstrahlung_intensity_001_param(E0_, range_.min);
+  } else if (model_ == model::PARAM_005) {
+    max = physics::bremsstrahlung_intensity_005_param(E0_, range_.min);
+  } else if (model_ == model::PARAM_010) {
+    max = physics::bremsstrahlung_intensity_010_param(E0_, range_.min);
     // the approximate spectrum is also monotonously falling
   } else {
     max = physics::bremsstrahlung_intensity_approx(rl_, E0_, range_.min);
