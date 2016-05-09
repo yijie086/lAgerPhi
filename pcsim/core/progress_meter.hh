@@ -11,12 +11,12 @@
 namespace pcsim {
 class progress_meter {
 public:
-  constexpr static const size_t PRECISION = 1000.; // 0.1 percent
+  constexpr static const size_t PRECISION = 10000.; // 0.01 percent
   explicit progress_meter(size_t max, size_t start_index = 0,
                           size_t precision = PRECISION)
       : max_{max}
       , index_{start_index}
-      , precision_{precision < max ? max : precision} {
+      , precision_{precision > max ? max : precision} {
     std::cerr << "\nProcessing " << max_ << " events..." << std::endl;
     update();
   }

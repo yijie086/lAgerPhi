@@ -2,8 +2,8 @@
   "mc" : {
     "type": "pcsim",
     "run": 1,
-    "events": 1000,
-    "tag": "",
+    "events": 10000,
+    "tag": "set1-SHMSonly",
     "generator": {
       "type": "jpsi",
       "xsec": {
@@ -11,6 +11,7 @@
       },
       "photon_beam": {
         "type": "param",
+        "rl": 0.05,
         "electron_energy": 11,
         "range": [8,11]
       }
@@ -19,23 +20,23 @@
       "type": "2arm",
       "HMS": {
         "type": "spectrometer",
-        "theta": -37,
+        "theta": -21.0,
         "momentum": {
-          "center": 1.9,
-          "dmin": 1.1,
-          "dmax": 1.1
+          "center": 4.2,
+          "dmin": 100.1,
+          "dmax": 100.1
         },
         "charge": -1,
         "acceptance": {
-          "x": 2400,
-          "y": 7000
+          "x": 24000,
+          "y": 70000
         }
       },
       "SHMS" : {
         "type": "spectrometer",
-        "theta": 8,
+        "theta": 15.0,
         "momentum": {
-          "center": 8.5,
+          "center": 5.80,
           "dmin": 0.15,
           "dmax": 0.25
         },
