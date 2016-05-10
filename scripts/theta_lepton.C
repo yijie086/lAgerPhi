@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-// generate theta vs p plots for different spectrometer settings
-
 const std::string PATH = "../data";
 const std::vector<std::string> SET = {"set1", "set2", "set3", "set4"};
 
@@ -103,8 +101,7 @@ void plot_theta_lepton(const std::string& path, const std::string& proc,
 
 void theta_lepton() {
   for (const auto& set : SET) {
-//    plot_theta_lepton(PATH, "jpsi", set);
- //   plot_theta_lepton(PATH, "pc", set);
+    plot_theta_lepton(PATH, "jpsi", set);
+    plot_theta_lepton(PATH, "pc", set);
   }
-  plot_theta_lepton(PATH, "jpsi", "set1");
 }
