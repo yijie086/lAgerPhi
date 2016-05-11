@@ -30,7 +30,9 @@ jpsi::jpsi(const configuration& conf, const string_path& path,
     : base_type{conf, path, "t-channel J/#Psi Generator", std::move(r)}
     , brems_{conf, path / "photon_beam"}
     , xsec_{conf, path / "xsec"}
-    , s_range_{s_threshold(physics::M_JPSI), brems_.calc_s_range().max}
+    , s_range_{std::fmax(brems_.calc_s_range().min,
+                         s_threshold(physics::M_JPSI)),
+               brems_.calc_s_range().max}
     , t_range_{calc_t_range(s2Egamma(s_range_.max))}
     , xsec_max_{calc_max_xsec() * brems_.max()} {
   LOG_INFO("jpsi", "s range [GeV2]: [" + std::to_string(s_range_.min) + ", " +
