@@ -48,11 +48,21 @@ framework::framework(int argc, char* argv[],
   const int run = get_option<int>("run");
   const int events = get_option<int>("events");
 
-  // output file names
+  // output file name
+
+  // path
   output_ = args_["out"].as<std::string>();
-  // add generator name and acceptance
+  if (output_.back() != '/') {
+    output_ += '/';
+  }
+
+  // what MC program are we running?
+  output_ += conf_.get<std::string>("type");
+
+  // add generator name and acceptance simulation
   output_ += "." + conf_.get<std::string>("generator/type");
   output_ += "." + conf_.get<std::string>("acceptance/type");
+  
   // add optional tag
   auto tag = conf_.get_optional<std::string>("tag");
   if (tag && tag->size()) {
