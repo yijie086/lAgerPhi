@@ -47,8 +47,10 @@ public:
 
     // rotate to spectrometer system
     track.RotateY(-theta_);
+
     // create spectrometer track
     spec_track t{track, charge};
+
     // do we accept this track?
     t.accept = p_range_.includes(t.p) && std::fabs(t.thx) < x_acc_ &&
                std::fabs(t.thy) < y_acc_;
@@ -70,8 +72,9 @@ public:
       const double py = t.p * sin(t.thy);
       const double pz = sqrt(t.p * t.p - px * px - py * py);
       t.track.SetXYZM(px, py, pz, t.track.M());
+
       // rotate back to lab frame
-      track.RotateY(theta_);
+      t.track.RotateY(theta_);
     }
 
     // that's all!
