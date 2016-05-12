@@ -3,7 +3,7 @@
     "type": "pcsim",
     "run": 1,
     "events": 10000,
-    "tag": "set1-SHMSonly",
+    "tag": "set2",
     "generator": {
       "type": "pc",
       "xsec": {
@@ -20,27 +20,32 @@
         "range": [8,11]
       }
     },
-    "acceptance": {
+    "detector": {
       "type": "2arm",
       "HMS": {
         "type": "spectrometer",
-        "theta": -21,
+        "theta": -21.5,
         "momentum": {
-          "center": 4.2,
-          "dmin": 100.1,
-          "dmax": 100.1
+          "center": 4.0,
+          "dmin": 0.1,
+          "dmax": 0.1
         },
         "charge": -1,
         "acceptance": {
-          "x": 24000,
-          "y": 70000
+          "x": 24,
+          "y": 70
+        },
+        "smearing": {
+          "momentum": 0,
+          "x": 0,
+          "y": 0
         }
       },
       "SHMS" : {
         "type": "spectrometer",
-        "theta": 15.0,
+        "theta": 16.3,
         "momentum": {
-          "center": 5.80,
+          "center": 5.90,
           "dmin": 0.15,
           "dmax": 0.25
         },
@@ -48,6 +53,11 @@
         "acceptance": {
           "x": 20,
           "y": 50
+        },
+        "smearing": {
+          "momentum": 0,
+          "x": 0,
+          "y": 0
         }
       }
     }

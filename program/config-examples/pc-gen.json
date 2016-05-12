@@ -20,7 +20,7 @@
         "range": [8,11]
       }
     },
-    "acceptance": {
+    "detector": {
       "type": "4pi"
     }
   }

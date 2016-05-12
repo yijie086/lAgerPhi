@@ -3,7 +3,7 @@
     "type": "pcsim",
     "run": 1,
     "events": 10000,
-    "tag": "set2",
+    "tag": "set2-smear",
     "generator": {
       "type": "jpsi",
       "xsec": {
@@ -32,9 +32,9 @@
           "y": 70
         },
         "smearing": {
-          "momentum": 0,
-          "x": 0,
-          "y": 0
+          "momentum": 0.001,
+          "x": 0.8,
+          "y": 1.0
         }
       },
       "SHMS" : {
@@ -51,9 +51,9 @@
           "y": 50
         },
         "smearing": {
-          "momentum": 0.0,
-          "x": 0,
-          "y": 0
+          "momentum": 0.001,
+          "x": 1.0,
+          "y": 1.0
         }
       }
     }

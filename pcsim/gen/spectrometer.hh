@@ -33,6 +33,7 @@ struct spec_track {
       , p{track.Vect().Mag()}
       , thx{asin(track.X() / p)}
       , thy{asin(track.Y() / p)} {}
+
 };
 
 class spectrometer : public generator<spectrometer, spec_track> {
@@ -51,16 +52,30 @@ public:
     // do we accept this track?
     t.accept = p_range_.includes(t.p) && std::fabs(t.thx) < x_acc_ &&
                std::fabs(t.thy) < y_acc_;
+
+    // apply smearing if we accepted the track (avoiding unnecessary work)
+    if (t.accept) {
+      // smear kinematics
+      if (p_smear_>0) {
+        t.p = rng()->Gaus(t.p, p_smear_ * t.p);
+      }
+      if (x_smear_ > 0) {
+        t.thx = rng()->Gaus(t.thx, x_smear_);
+      }
+      if (y_smear_ > 0) {
+        t.thy = rng()->Gaus(t.thy, y_smear_);
+      }
+      // recalculate track
+      const double px = t.p * sin(t.thx);
+      const double py = t.p * sin(t.thy);
+      const double pz = sqrt(t.p * t.p - px * px - py * py);
+      t.track.SetXYZM(px, py, pz, t.track.M());
+      // rotate back to lab frame
+      track.RotateY(theta_);
+    }
+
     // that's all!
 
-    static int debug = 0;
-    if (false && t.p > 6 && p_range_.includes(t.p)) {
-      std::cout << "\n"
-                << t.p << " " << p_range_.min << " " << p_range_.max << " ("
-                << t.thx << "," << t.thy << ") (" << x_acc_ << "," << y_acc_
-                << ") " << (t.accept ? "accept" : "reject") << "\n";
-      tassert(++debug < 100, "DEBUG");
-    }
     return t;
   }
 
@@ -71,7 +86,9 @@ private:
   const int charge_;
   const double x_acc_;
   const double y_acc_;
-
+  const double p_smear_;
+  const double x_smear_;
+  const double y_smear_;
 };
 
 } // gen

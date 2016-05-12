@@ -42,7 +42,7 @@ struct mc_controller {
   const int run;
   const size_t events;
   const std::string generator;
-  const std::string acceptance;
+  const std::string detector;
   std::ofstream logfile;
   std::shared_ptr<TFile> ofile;
   TTree* tree;
@@ -56,7 +56,7 @@ struct mc_controller {
       , run{conf["run"]}
       , events{conf["events"]}
       , generator{conf.get<std::string>("generator/type")}
-      , acceptance{conf.get<std::string>("acceptance/type")}
+      , detector{conf.get<std::string>("detector/type")}
       , logfile(output + ".log")
       , ofile{std::make_shared<TFile>((output + ".root").c_str(), "recreate")}
       , tree{new TTree{"jpsi_event", "J/Psi Event Data"}}
@@ -95,16 +95,16 @@ struct mc_controller {
     tree->Branch("positron", &ev.gen.positron);
     tree->Branch("electron", &ev.gen.electron);
     // spectrometer data
-    tree->Branch("HMS.track", &ev.HMS.track);
-    tree->Branch("HMS.charge", &ev.HMS.charge);
-    tree->Branch("HMS.p", &ev.HMS.p);
-    tree->Branch("HMS.thx", &ev.HMS.thx);
-    tree->Branch("HMS.thy", &ev.HMS.thy);
-    tree->Branch("SHMS.track", &ev.SHMS.track);
-    tree->Branch("SHMS.charge", &ev.SHMS.charge);
-    tree->Branch("SHMS.p", &ev.SHMS.p);
-    tree->Branch("SHMS.thx", &ev.SHMS.thx);
-    tree->Branch("SHMS.thy", &ev.SHMS.thy);
+    tree->Branch("HMS_track", &ev.HMS.track);
+    tree->Branch("HMS_charge", &ev.HMS.charge);
+    tree->Branch("HMS_p", &ev.HMS.p);
+    tree->Branch("HMS_thx", &ev.HMS.thx);
+    tree->Branch("HMS_thy", &ev.HMS.thy);
+    tree->Branch("SHMS_track", &ev.SHMS.track);
+    tree->Branch("SHMS_charge", &ev.SHMS.charge);
+    tree->Branch("SHMS_p", &ev.SHMS.p);
+    tree->Branch("SHMS_thx", &ev.SHMS.thx);
+    tree->Branch("SHMS_thy", &ev.SHMS.thy);
   }
   void record_geninfo() {
     // update the counters
@@ -147,11 +147,11 @@ int run_mc(const configuration& cf, const std::string& output) {
   // init the spectrometers
   std::unique_ptr<gen::spectrometer> HMS;
   std::unique_ptr<gen::spectrometer> SHMS;
-  if (mc.acceptance == "2arm") {
+  if (mc.detector == "2arm") {
     HMS =
-        std::make_unique<gen::spectrometer>(mc.conf, "acceptance/HMS", mc.rng);
+        std::make_unique<gen::spectrometer>(mc.conf, "detector/HMS", mc.rng);
     SHMS =
-        std::make_unique<gen::spectrometer>(mc.conf, "acceptance/SHMS", mc.rng);
+        std::make_unique<gen::spectrometer>(mc.conf, "detector/SHMS", mc.rng);
   }
 
   // generate our events
@@ -166,7 +166,7 @@ int run_mc(const configuration& cf, const std::string& output) {
     // we have a good generated event, update the generator level counters
     mc.record_geninfo();
 
-    // check acceptance
+    // check detector
     if (HMS && SHMS) {
       mc.ev.HMS = HMS->check(mc.ev.gen.electron, -1);
       if (mc.ev.HMS.accept) {
@@ -177,7 +177,7 @@ int run_mc(const configuration& cf, const std::string& output) {
         mc.ev.nSHMS++;
       };
       if (!mc.ev.HMS.accept || !mc.ev.SHMS.accept) {
-        // not in acceptance, try again
+        // not in detector, try again
         continue;
       }
     }
@@ -191,7 +191,7 @@ int run_mc(const configuration& cf, const std::string& output) {
            "Total number of generated events: " + std::to_string(mc.ev.evgen));
   LOG_INFO("pcsim",
            "Total cross section [nb]: " + to_string_exp(mc.ev.xsec_gen));
-  if (mc.acceptance != "4pi") {
+  if (mc.detector != "4pi") {
     LOG_INFO("pcsim", "Total number accepted positrons in the HMS: " +
                           std::to_string(mc.ev.nHMS));
     LOG_INFO("pcsim", "Total number accepted electrons in the SHMS: " +

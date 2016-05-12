@@ -61,7 +61,7 @@ framework::framework(int argc, char* argv[],
 
   // add generator name and acceptance simulation
   output_ += "." + conf_.get<std::string>("generator/type");
-  output_ += "." + conf_.get<std::string>("acceptance/type");
+  output_ += "." + conf_.get<std::string>("detector/type");
   
   // add optional tag
   auto tag = conf_.get_optional<std::string>("tag");
