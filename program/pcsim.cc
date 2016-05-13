@@ -35,6 +35,7 @@ struct mc_event {
   gen::jpsi_event gen;
   gen::spec_track HMS;
   gen::spec_track SHMS;
+  TLorentzVector jpsi_rc; // reconstructed J/Psi from HMS/SHMS info
 };
 
 struct mc_controller {
@@ -105,6 +106,7 @@ struct mc_controller {
     tree->Branch("SHMS_p", &ev.SHMS.p);
     tree->Branch("SHMS_thx", &ev.SHMS.thx);
     tree->Branch("SHMS_thy", &ev.SHMS.thy);
+    tree->Branch("jpsi_rc", &ev.jpsi_rc);
   }
   void record_geninfo() {
     // update the counters
@@ -180,6 +182,8 @@ int run_mc(const configuration& cf, const std::string& output) {
         // not in detector, try again
         continue;
       }
+      // reconstructed J/Psi from the HMS and SHMS smeared tracks
+      mc.ev.jpsi_rc = mc.ev.HMS.track + mc.ev.SHMS.track;
     }
     // store this event
     mc.book_event();
