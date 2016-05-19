@@ -36,6 +36,8 @@ struct mc_event {
   gen::spec_track HMS;
   gen::spec_track SHMS;
   TLorentzVector jpsi_rc; // reconstructed J/Psi from HMS/SHMS info
+  double Egamma_rc;       // reconstructed photon energy from jpsi_rc
+  double t_rc;            // reconstructed t from jpsi_rc
 };
 
 struct mc_controller {
@@ -107,6 +109,8 @@ struct mc_controller {
     tree->Branch("SHMS_thx", &ev.SHMS.thx);
     tree->Branch("SHMS_thy", &ev.SHMS.thy);
     tree->Branch("jpsi_rc", &ev.jpsi_rc);
+    tree->Branch("Egamma_rc", &ev.Egamma_rc);
+    tree->Branch("t_rc", &ev.t_rc);
   }
   void record_geninfo() {
     // update the counters
@@ -184,6 +188,15 @@ int run_mc(const configuration& cf, const std::string& output) {
       }
       // reconstructed J/Psi from the HMS and SHMS smeared tracks
       mc.ev.jpsi_rc = mc.ev.HMS.track + mc.ev.SHMS.track;
+      // reconstructed photon
+      mc.ev.Egamma_rc =
+          (2 * physics::M_PROTON * mc.ev.jpsi_rc.E() - physics::M2_JPSI -
+           physics::M2_ELECTRON) /
+          (2 * physics::M_PROTON -
+           2 * mc.ev.jpsi_rc.E() * (1 - mc.ev.jpsi_rc.CosTheta()));
+      // reconstructed t
+      TLorentzVector gamma_rc{0, 0, mc.ev.Egamma_rc, mc.ev.Egamma_rc};
+      mc.ev.t_rc = (gamma_rc - mc.ev.jpsi_rc).M2();
     }
     // store this event
     mc.book_event();
@@ -196,9 +209,9 @@ int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim",
            "Total cross section [nb]: " + to_string_exp(mc.ev.xsec_gen));
   if (mc.detector != "4pi") {
-    LOG_INFO("pcsim", "Total number accepted positrons in the HMS: " +
+    LOG_INFO("pcsim", "Total number accepted electrons in the HMS: " +
                           std::to_string(mc.ev.nHMS));
-    LOG_INFO("pcsim", "Total number accepted electrons in the SHMS: " +
+    LOG_INFO("pcsim", "Total number accepted positrons in the SHMS: " +
                           std::to_string(mc.ev.nSHMS));
     LOG_INFO("pcsim",
              "Number of accepted events: " + std::to_string(mc.ev.event));

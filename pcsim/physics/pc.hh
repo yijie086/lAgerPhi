@@ -2,8 +2,11 @@
 #define PCSIM_PHYSICS_PC_DEFINED
 
 #include <TF1.h>
+#include <TLorentzVector.h>
 #include <TMath.h>
+#include <TRandom.h>
 #include <cmath>
+#include <memory>
 #include <pcsim/core/configuration.hh>
 #include <pcsim/core/interval.hh>
 #include <pcsim/core/logger.hh>
@@ -60,6 +63,30 @@ private:
   const double sigma_;    // cross section width
   const double coupling_; // branching ratio of Pc -> J/Psi+p channel
   const double max_;      // cross section maximum
+};
+
+// Simulate the Pc --> J/Psi,p decay, using the appropriate angular
+// distribution for the requested spin/parity mode
+class pc_decay : public configurable {
+public:
+  // Pc decay distributions (depending on spin/parity)
+  enum class mode {ISO, S52_PLUS};
+
+  pc_decay(const configuration& conf, const string_path& path,
+           std::shared_ptr<TRandom> r);
+
+  void operator()(const TLorentzVector& pc, TLorentzVector& proton,
+                  TLorentzVector& jpsi) const;
+
+private:
+   // utility function for the constructor
+   mode get_mode() const;
+   
+   // settings
+   const mode mode_;
+
+   // random generator
+   std::shared_ptr<TRandom> rng_;
 };
 
 } // physics

@@ -3,7 +3,6 @@
 #include <pcsim/core/logger.hh>
 #include <pcsim/physics/constants.hh>
 #include <pcsim/physics/decay.hh>
-#include <pcsim/physics/pdg.hh>
 
 namespace pcsim {
 namespace gen {
@@ -12,8 +11,9 @@ pc::pc(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r)
     : base_type{conf, path, "s-channel Charmed Pentaquark Generator",
                 std::move(r)}
-    , xsec_{conf, path / "xsec"}
     , brems_{conf, path / "photon_beam"}
+    , xsec_{conf, path / "xsec"}
+    , decay_{conf, path / "decay", rng()}
     , xsec_max_{xsec_.max() * brems_.max()}
     , s_range_{brems_.calc_s_range()} {
   LOG_INFO("pc", "s range [GeV2]: [" + std::to_string(s_range_.min) + ", " +
@@ -63,7 +63,7 @@ jpsi_event pc::gen_impl() {
   pc.Boost(beta_cm);
 
   // get the decay proton and J/Psi
-  physics::decay_pc_iso(rng(), pc, ev.recoil, ev.jpsi);
+  decay_(pc, ev.recoil, ev.jpsi);
 
   // get t from the J/Psi
   ev.t = (ev.jpsi - ev.beam).M2();

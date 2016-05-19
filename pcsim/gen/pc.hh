@@ -29,6 +29,7 @@ private:
   // cross sections
   const physics::bremsstrahlung brems_;
   const physics::pc_xsec xsec_;
+  const physics::pc_decay decay_;
   const double xsec_max_; // the maximum cross section
 
   // Phase space limits

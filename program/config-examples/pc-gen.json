@@ -18,6 +18,9 @@
         "rl": 0.05,
         "electron_energy": 11,
         "range": [8,11]
+      },
+      "decay": {
+        "type": "5/2+"
       }
     },
     "detector": {
