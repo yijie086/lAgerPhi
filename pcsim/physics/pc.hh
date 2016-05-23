@@ -28,7 +28,7 @@ public:
       , ampl_{conf().get<double>("ampl")}
       , mean_{conf().get<double>("mean")}
       , sigma_{conf().get<double>("width") / 2.} // sigma is FWHM/2
-      , coupling_{conf().get<double>("coupling")}
+      , coupling2_{std::pow(conf().get<double>("coupling"), 2)}
       , max_{calc_maximum()} {
     LOG_INFO("pc_xsec", "Mean: " + conf().get<std::string>("mean") + " GeV");
     LOG_INFO("pc_xsec", "Width: " + conf().get<std::string>("width") + " GeV");
@@ -41,7 +41,8 @@ public:
   double operator() (const double s) const {
     const double W = sqrt(s);
     const double jacobian = 1 / (2 * W);
-    return coupling_ * ampl_ * TMath::Gaus(W, mean_, sigma_) * jacobian;
+    return coupling2_ * ampl_ * TMath::Gaus(W, mean_, sigma_) *
+           jacobian;
   }
 
   double max() const {
@@ -61,7 +62,7 @@ private:
   const double ampl_;     // maximum cross section value
   const double mean_;     // cross section mean
   const double sigma_;    // cross section width
-  const double coupling_; // branching ratio of Pc -> J/Psi+p channel
+  const double coupling2_; // branching ratio of Pc -> J/Psi+p channel
   const double max_;      // cross section maximum
 };
 
