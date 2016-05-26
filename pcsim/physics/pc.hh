@@ -71,7 +71,7 @@ private:
 class pc_decay : public configurable {
 public:
   // Pc decay distributions (depending on spin/parity)
-  enum class mode {ISO, S52_PLUS};
+  enum class mode { ISO, S52_PLUS, S52_MINUS, S32_PLUS, S32_MINUS };
 
   pc_decay(const configuration& conf, const string_path& path,
            std::shared_ptr<TRandom> r);

@@ -23,6 +23,15 @@ pc_decay::mode pc_decay::get_mode() const {
   } else if (conf().get<std::string>("type") == "5/2+") {
     LOG_INFO("pc_decay", "Using fit to 5/2+ decay distribution");
     return mode::S52_PLUS;
+  } else if (conf().get<std::string>("type") == "5/2-") {
+    LOG_INFO("pc_decay", "Using fit to 5/2- decay distribution");
+    return mode::S52_MINUS;
+  } else if (conf().get<std::string>("type") == "3/2+") {
+    LOG_INFO("pc_decay", "Using fit to 3/2+ decay distribution");
+    return mode::S32_PLUS;
+  } else if (conf().get<std::string>("type") == "3/2-") {
+    LOG_INFO("pc_decay", "Using fit to 3/2- decay distribution");
+    return mode::S32_MINUS;
   } else {
     LOG_ERROR("pc_decay", "Invalid spin/parity combination");
     throw conf().value_error("type");
@@ -53,6 +62,38 @@ void pc_decay::operator()(const TLorentzVector& pc, TLorentzVector& proton,
                                        0.110057 * x5 + 0.0931712 * x6;
                               },
                               0.63);
+  } else if (mode_ == mode::S52_MINUS) {
+    // result from a pol7 fit to a digitized version of figure 5c from
+    // PRD92-034022(2015)
+    ctheta = accept_reject_1D(rng_, {-1, 1},
+                              [](const double x) {
+                                const double x2 = x * x;
+                                const double x3 = x2 * x;
+                                const double x4 = x3 * x;
+                                const double x5 = x4 * x;
+                                const double x6 = x5 * x;
+                                const double x7 = x6 * x;
+                                return 1.31241 - 1.19802 * x + 1.58351 * x2 +
+                                       17.1514 * x3 + 20.8306 * x4 -
+                                       4.43848 * x5 + 2.67151 * x6 +
+                                       6.06378 * x7;
+                              },
+                              44.06);
+  } else if (mode_ == mode::S32_PLUS) {
+    // result from a expo fit to a digitized version of figure 5b from
+    // PRD92-034022(2015)
+    ctheta = accept_reject_1D(
+        rng_, {-1, 1}, [](const double x) { return exp(-5.944 - x); }, 0.00713);
+  } else if (mode_ == mode::S32_MINUS) {
+    // result from a pol2 fit to a digitized version of figure 6b from
+    // PRD92-034022(2015)
+    ctheta =
+        accept_reject_1D(rng_, {-1, 1},
+                         [](const double x) {
+                           const double x2 = x * x;
+                           return 0.00845846 - 0.0128146 * x + 0.00526053 * x2;
+                         },
+                         0.0266);
   } else {
     tassert(false, "SHOULD NEVER HAPPEN");
   }
