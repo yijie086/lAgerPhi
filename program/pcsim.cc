@@ -142,7 +142,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   std::unique_ptr<gen::pc> pc_gen;
   std::unique_ptr<gen::jpsi> jpsi_gen;
 
-  if (mc.generator == "pc") {
+  if (mc.generator == "pc" || mc.generator.substr(0, 3) == "pc-") {
     pc_gen = std::make_unique<gen::pc>(mc.conf, "generator", mc.rng);
   } else if (mc.generator == "jpsi") {
     jpsi_gen = std::make_unique<gen::jpsi>(mc.conf, "generator", mc.rng);
@@ -190,10 +190,16 @@ int run_mc(const configuration& cf, const std::string& output) {
       mc.ev.jpsi_rc = mc.ev.HMS.track + mc.ev.SHMS.track;
       // reconstructed photon
       mc.ev.Egamma_rc =
+          (physics::M2_JPSI - 2 * physics::M_PROTON * mc.ev.jpsi_rc.E()) /
+          (2 * mc.ev.jpsi_rc.E() - 2 * physics::M_PROTON -
+           2 * mc.ev.jpsi_rc.Pz());
+#if 0
+      mc.ev.Egamma_rc = 
           (2 * physics::M_PROTON * mc.ev.jpsi_rc.E() - physics::M2_JPSI -
            physics::M2_ELECTRON) /
           (2 * physics::M_PROTON -
            2 * mc.ev.jpsi_rc.E() * (1 - mc.ev.jpsi_rc.CosTheta()));
+#endif
       // reconstructed t
       TLorentzVector gamma_rc{0, 0, mc.ev.Egamma_rc, mc.ev.Egamma_rc};
       mc.ev.t_rc = (gamma_rc - mc.ev.jpsi_rc).M2();
