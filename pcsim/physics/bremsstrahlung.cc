@@ -72,7 +72,7 @@ double bremsstrahlung::calc_max() const {
   const double jacobian = physics::ONE_OVER_2M_PROTON;
   // for a flat distribution, the max is given by 1
   if (model_ == model::FLAT) {
-    max = 1. / jacobian;
+    max = 1.;
     // for the parameterization, the spectrum is monotonously falling
   } else if (model_ == model::PARAM_001) {
     max = physics::bremsstrahlung_intensity_001_param(E0_, range_.min);

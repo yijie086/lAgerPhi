@@ -81,7 +81,7 @@ public:
     const double jacobian = physics::ONE_OVER_2M_PROTON;
     double xsec = 0;
     if (model_ == model::FLAT) {
-      xsec = 1. / jacobian;
+      xsec = 1.;
     } else if (model_ == model::PARAM_001) {
       xsec = physics::bremsstrahlung_intensity_001_param(E0_, Egamma);
     } else if (model_ == model::PARAM_005) {
