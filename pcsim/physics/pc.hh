@@ -56,7 +56,7 @@ private:
   double calc_maximum() const {
     auto func = [this](double* x, double* p) { return this->operator()(x[0]); };
     TF1 f("pc_xsec", func, S_RANGE.min, S_RANGE.max, 0);
-    return f.GetMaximum();
+    return f.GetMaximum() * 1.01;
   }
 
   const double ampl_;     // maximum cross section value
