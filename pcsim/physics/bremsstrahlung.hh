@@ -77,7 +77,7 @@ public:
 
   // evaluate the cross section
   double operator()(const double s) const {
-    const double Egamma = (s - physics::M_PROTON) * physics::ONE_OVER_2M_PROTON;
+    const double Egamma = (s - physics::M2_PROTON) * physics::ONE_OVER_2M_PROTON;
     const double jacobian = physics::ONE_OVER_2M_PROTON;
     double xsec = 0;
     if (model_ == model::FLAT) {
