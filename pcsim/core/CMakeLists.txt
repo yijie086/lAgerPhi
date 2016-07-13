@@ -31,7 +31,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 ## Compile and Link
 ################################################################################
 add_library(${LIBRARY} ${SOURCES})
-#target_link_libraries(${LIBRARY} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION}

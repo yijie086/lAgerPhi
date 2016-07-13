@@ -18,10 +18,10 @@ if(NOT TARGET pcsim AND NOT pcsim_BINARY_DIR)
 endif()
  
 # These are IMPORTED targets created by pcsim-targets.cmake
-set(PCSIM_LIBRARIES "")
+set(PCSIM_LIBRARIES "pcsim_core pcsim_gen pcsim_physics")
 
 # Add the external libraries
 find_package(root REQUIRED)
-set(PCSIM_LIBRARIES ${PCSIM_LIBRARIES} ${ROOT_LIBRARIES})
-set(PCSIM_INCLUDE_DIRS ${PCSIM_INCLUDE_DIRS}
-  ${ROOT_INCLUDE_DIRS})
+find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+set(PCSIM_LIBRARIES ${PCSIM_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+set(PCSIM_INCLUDE_DIRS ${PCSIM_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})

@@ -26,8 +26,8 @@ include_directories(${ROOT_INCLUDE_DIR})
 ################################################################################
 ## Compile and Link
 ################################################################################
-add_library(${LIBRARY} STATIC ${SOURCES})
-set_target_properties(${LIRBARY} PROPERTIES 
+add_library(${LIBRARY} ${SOURCES})
+set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION}
   PUBLIC_HEADER "${HEADERS}")
