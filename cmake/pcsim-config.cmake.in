@@ -11,14 +11,17 @@ enable_language(CXX)
 get_filename_component(PCSIM_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(PCSIM_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@/..")
 set(PCSIM_DEFINITIONS "@CONF_DEFINITIONS@")
- 
+
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET pcsim AND NOT pcsim_BINARY_DIR)
   include("${PCSIM_CMAKE_DIR}/pcsim-targets.cmake")
 endif()
  
 # These are IMPORTED targets created by pcsim-targets.cmake
-set(PCSIM_LIBRARIES "pcsim_core pcsim_gen pcsim_physics")
+set(PCSIM_LIBRARIES 
+  "pcsim_core" 
+  "pcsim_gen" 
+  "pcsim_physics")
 
 # Add the external libraries
 find_package(root REQUIRED)

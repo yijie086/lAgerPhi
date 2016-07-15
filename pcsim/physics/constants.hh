@@ -4,6 +4,9 @@
 namespace pcsim {
 namespace physics {
 
+// Fine structure
+constexpr const double ALPHA = 0.0072973525664;
+
 // Mass (in [GeV])
 constexpr const double M_ELECTRON = 0.000510999; // electron mass
 constexpr const double M_PROTON = 0.938272;      // proton mass
