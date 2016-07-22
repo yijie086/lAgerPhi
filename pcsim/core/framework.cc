@@ -192,6 +192,7 @@ ptree framework::get_settings() const {
 // interfere with debugging
 // =============================================================================
 int framework::root_suppress_signals() const {
+  return 0; // this somehow does not work anymore after the newest ROOT update
   gSystem->ResetSignal(kSigChild);
   gSystem->ResetSignal(kSigBus);
   gSystem->ResetSignal(kSigSegmentationViolation);
