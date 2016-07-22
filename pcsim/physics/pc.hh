@@ -19,8 +19,7 @@ namespace physics {
 //    Wang, Qian, Xiao-Hai Liu, and Qiang Zhao. 2015. “Photoproduction of Hidden
 //    Charm Pentaquark States Pc+(4380)and Pc+(4450).” Physical Review D 92 (3):
 //    034022–27. doi:10.1103/PhysRevD.92.034022.
-// numbers, needs MAJOR refinements!
-// Values are in units of nb/GeV^2
+// numbers, values are in units of nb
 class pc_xsec : public configurable {
 public:
   pc_xsec(const configuration& cf, const string_path& path)
@@ -36,13 +35,9 @@ public:
     LOG_INFO("pc_xsec", "Coupling: " + conf().get<std::string>("coupling"));
   }
 
-  // we throw flat in s, hence the cross section is expressed as a function of
-  // s = W^2 with Jacobian dW/ds == 1/(2*W)
   double operator() (const double s) const {
     const double W = sqrt(s);
-    const double jacobian = 1 / (2 * W);
-    return coupling2_ * ampl_ * TMath::Gaus(W, mean_, sigma_) *
-           jacobian;
+    return coupling2_ * ampl_ * TMath::Gaus(W, mean_, sigma_);
   }
 
   double max() const {
@@ -59,11 +54,11 @@ private:
     return f.GetMaximum() * 1.01;
   }
 
-  const double ampl_;     // maximum cross section value
-  const double mean_;     // cross section mean
-  const double sigma_;    // cross section width
+  const double ampl_;      // maximum cross section value
+  const double mean_;      // cross section mean
+  const double sigma_;     // cross section width
   const double coupling2_; // branching ratio of Pc -> J/Psi+p channel
-  const double max_;      // cross section maximum
+  const double max_;       // cross section maximum
 };
 
 // Simulate the Pc --> J/Psi,p decay, using the appropriate angular
