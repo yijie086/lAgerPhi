@@ -193,13 +193,6 @@ int run_mc(const configuration& cf, const std::string& output) {
           (physics::M2_JPSI - 2 * physics::M_PROTON * mc.ev.jpsi_rc.E()) /
           (2 * mc.ev.jpsi_rc.E() - 2 * physics::M_PROTON -
            2 * mc.ev.jpsi_rc.Pz());
-#if 0
-      mc.ev.Egamma_rc = 
-          (2 * physics::M_PROTON * mc.ev.jpsi_rc.E() - physics::M2_JPSI -
-           physics::M2_ELECTRON) /
-          (2 * physics::M_PROTON -
-           2 * mc.ev.jpsi_rc.E() * (1 - mc.ev.jpsi_rc.CosTheta()));
-#endif
       // reconstructed t
       TLorentzVector gamma_rc{0, 0, mc.ev.Egamma_rc, mc.ev.Egamma_rc};
       mc.ev.t_rc = (gamma_rc - mc.ev.jpsi_rc).M2();
