@@ -5,7 +5,7 @@
 ################################################################################
 cmake_minimum_required (VERSION 2.8)
 project (pcsim)
-set (PCSIM_MAJOR_VERSION 1)
+set (PCSIM_MAJOR_VERSION 2)
 set (PCSIM_MINOR_VERSION 0)
 set (PCSIM_PATCH_VERSION 0)
 set (PCSIM_VERSION 
