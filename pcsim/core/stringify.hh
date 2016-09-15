@@ -1,13 +1,11 @@
 #ifndef PCSIM_CORE_STRINGIFY_LOADED
 #define PCSIM_CORE_STRINGIFY_LOADED
 
-#include <string>
-#include <utility>
-#include <type_traits>
-
 #include <boost/lexical_cast.hpp>
-
 #include <pcsim/core/type_traits.hh>
+#include <string>
+#include <type_traits>
+#include <utility>
 
 namespace pcsim {
 

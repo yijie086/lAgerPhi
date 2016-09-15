@@ -85,7 +85,7 @@ void log(const std::string& mtitle, const std::string& mtext,
 
 // =============================================================================
 // log_handler class designed for global usage,
-// threading seutil
+// threading secure
 // =============================================================================
 namespace pcsim {
 class log_handler {

@@ -29,7 +29,7 @@ class configuration_translation_error;
 } // ns pcsim
 
 // =============================================================================
-// Consistend way to format object paths/names/titles
+// Consistent way to format object paths/names/titles
 //
 // Note: * for optimal compatiblity with ROOT, a '/' path separator should be
 //         used.

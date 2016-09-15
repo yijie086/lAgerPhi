@@ -42,7 +42,7 @@ void configuration::load(const ptree& in_conf) {
   } catch (ptree_error& e) {
     // shouldn't happen
     throw configuration_error("Processing error", e.what());
-  } 
+  }
 }
 // save
 void configuration::save(ptree& out_conf) const {
@@ -50,7 +50,7 @@ void configuration::save(ptree& out_conf) const {
   LOG_DEBUG(settings_path_.str(), "Settings saved.");
   if (!out_conf.get_child_optional(defaults_path_)) {
     out_conf.put_child(defaults_path_, defaults_);
-    LOG_INFO(defaults_path_.str(), "Settings saved.");
+    LOG_DEBUG(defaults_path_.str(), "Settings saved.");
   }
 }
 // universal getter
@@ -95,8 +95,8 @@ configuration::translation_error(const string_path& key) const {
 namespace pcsim {
 // path error
 configuration_path_error::configuration_path_error(const string_path& path)
-    : configuration_error{"Cannot find the configuration path '" +
-                              path.str() + "'",
+    : configuration_error{"Cannot find the configuration path '" + path.str() +
+                              "'",
                           "configuration_path_error"} {}
 // key error
 configuration_key_error::configuration_key_error(
