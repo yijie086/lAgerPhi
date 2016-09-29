@@ -1,71 +1,87 @@
-#ifndef PCSIM_GENERATOR_LOADED
-#define PCSIM_GENERATOR_LOADED
+#ifndef PCSIM_CORE_GENERATOR_LOADED
+#define PCSIM_CORE_GENERATOR_LOADED
 
 #include <TRandom.h>
 #include <memory>
-
 #include <pcsim/core/configuration.hh>
-#include <pcsim/core/histogrammer.hh>
 
 namespace pcsim {
 
-// Base class for all generators. Using a recursive template implementation for
-// maximum runtime performace.
+// base struct to be used for generator data
+struct generator_data {
+  double phase_space = 1;   // phase space volume
+  double cross_section = 1; // cross section
+};
+
+// Base class for all generators
 //
-// The base class owns a shared pointer to the random generator, and handles the
-// optional configuration and histogramming options
-template <class Derived, class Event> class generator : public configurable {
+// Owns a shared pointer to the random generator, and handles the optional
+// configuration options
+template <class Data, class... Input> class generator : public configurable {
 public:
-  using gen_type = Derived;
-  using event_type = Event;
-  using histogrammer_type = histogrammer<event_type>;
-  using histo_var_type = typename histogrammer_type::histo_var_type;
+  using data_type = Data;
 
-  generator(const configuration& conf, const string_path& path,
+  generator(const configurable& conf, const string_path& path,
             const std::string& title, std::shared_ptr<TRandom> r)
-      : configurable{conf, path}
-      , histos_{path, "", format_title(title, "from:")}
-      , rng_{std::move(r)} {}
+      : configurable{conf, path}, rng_{std::move(r)} {}
 
-  // add a 1D histo
-  void add_histo(std::shared_ptr<TFile> file, const std::string& name,
-                 const std::string& title, const histo_var_type& var) {
-    histos_.add_histo(file, name, title, var);
-  }
-  void add_histo(std::shared_ptr<TFile> file, const std::string& name,
-                 const histo_var_type& var) {
-    add_histo(std::move(file), name, name, var);
-  }
-  // add a 2D histo
-  void add_histo(std::shared_ptr<TFile> file, const std::string& name,
-                 const std::string& title, const histo_var_type& var_x,
-                 const histo_var_type& var_y) {
-    histos_.add_histo(file, name, title, var_x, var_y);
-  }
-  void add_histo(std::shared_ptr<TFile> file, const std::string& name,
-                 const histo_var_type& var_x, const histo_var_type& var_y) {
-    add_histo(std::move(file), name, name, var_x, var_y);
-  }
-
-  template <class... Input> event_type generate(const Input&... input) {
-    const auto& event = derived().gen_impl(input...);
-    histos_.fill(event, event.weight);
-    return event;
-  }
-  template <class... Input> event_type operator()(const Input&... input) {
-    return generate(input...);
-  }
-
-  std::shared_ptr<TRandom> rng() const { return rng_; }
+  virtual data_type generate(const Input&... input) = 0;
+  data_type operator()(const Input&... input) { return generate(input...); }
+  std::shared_ptr<TRandom> rng() const { return rng_ }
 
 private:
-  gen_type& derived() { return static_cast<gen_type&>(*this); }
-  const gen_type& derived() const {
-    return static_cast<const gen_type&>(*this);
+  std::shared_ptr<TRandom> rng_;
+};
+
+// Base class for event generators that handle the following steps:
+//    * initial generation
+//    * accept-reject
+//    * event building
+// Keeps track of the generated cross section
+template <class Event> class event_generator : public generator<Event> {
+public:
+  using event_type = Event;
+  using base_type = generator<Event>;
+
+  event_generator(const configurable& conf, const string_path& path,
+                  const std::string& title, std::shared_ptr<TRandom> r)
+      : base_type{conf, path, title, std::move(r)}
+      , phase_space_{0}
+      , ntrials_{0}
+      , nevents_{0}
+      , max_cross_section_{0} {}
+
+  virtual event_type generate() {
+    // generate a phase space point
+    event_type event;
+    do {
+      ntrials_ += 1;
+      generate_event(event);
+      tassert(event.cross_section <= max_cross_section_,
+              "Invalid cross section maximum");
+      // accept or reject
+      double test = rng()->Uniform(0, max_cross_section_);
+    } while (test > event.cross_section);
+    phase_space_ += event.phase_space;
+    // event builder step
+    build_event(event);
+    // that's all
+    return event;
   }
 
-  std::shared_ptr<TRandom> rng_;
-  histogrammer_type histos_;
+  double cross_section() const { return phase_space_ / ntrials_; }
+  double nevents() const { return nevents; }
+
+protected:
+  virtual void generate_event(event_type&) const = 0;
+  virtual void build_event(event_type&) const = 0;
+  void set_max_cross_section(double max) { max_cross_section_ = max; }
+
+private:
+  double phase_space_;       // cumulative phase space
+  size_t ntrials_;           // total number of trials
+  size_t nevents_;           // total number generated events
+  double max_cross_section_; // cross section maximum
 };
 }
 
