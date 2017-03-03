@@ -23,9 +23,6 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ## ROOT
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
-## boost
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
 ################################################################################
 ## Compile and Link

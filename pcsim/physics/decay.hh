@@ -2,22 +2,22 @@
 #define PCSIM_PHYSICS_DECAY_LOADED
 
 #include <TLorentzVector.h>
-#include <TRandom.h>
-#include <memory>
+#include <tuple>
 
 namespace pcsim {
 namespace physics {
+namespace decay {
 
-// J/Psi leptonic decay, assuming helicity conservation (1+cos^2\theta_CM).
-// arguments:
-//  rng: the random generator to be used
-//  jpsi: J/Psi 4-vector
-//  ml: lepton mass (electron or muon mass)
-//  lplus, lminus: reference to the decay lepton 4-vectors
-void decay_jpsi_lepton(std::shared_ptr<TRandom> rng, const TLorentzVector& jpsi,
-                       const double ml, TLorentzVector& lplus,
-                       TLorentzVector& lminus);
+// two body decay of a particle 'part' into two particles with masses
+// 'mass'.first and 'mass'.second and angles of the first decay particle
+// ('theta1', 'phi1')
+//
+// Note: the angles are assumed to be in the helicity frame of 'part'
+std::pair<TLorentzVector, TLorentzVector>
+two_body(const TLorentzVector& part, const std::pair<double, double>& mass,
+         const double theta_1, const double phi_1);
 
+} // decay
 } // physics
 } // pcsim
 

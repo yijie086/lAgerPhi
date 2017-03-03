@@ -1,42 +1,51 @@
 #include "decay.hh"
-#include <TMath.h>
-#include <pcsim/core/accept_reject.hh>
+#include <cmath>
 
 namespace pcsim {
 namespace physics {
+namespace decay {
 
-// J/Psi leptonic decay, assuming helicity conservation (1+cos^2\theta_CM).
-// arguments:
-//  rng: the random generator to be used
-//  jpsi: J/Psi 4-vector
-//  ml: lepton mass (electron or muon mass)
-//  lplus, lminus: reference to the decay lepton 4-vectors
-void decay_jpsi_lepton(std::shared_ptr<TRandom> rng, const TLorentzVector& jpsi,
-                       const double ml, TLorentzVector& lplus,
-                       TLorentzVector& lminus) {
-  // work in the j/psi helicity frame
-  const double phi = rng->Uniform(0., TMath::TwoPi());
-  const double ctheta = accept_reject_1D(
-      rng, {-1, 1}, [](const double ctheta) { return 1 + ctheta * ctheta; },
-      2.001);
-  const double theta = acos(ctheta);
-  const double El = .5 * jpsi.M();
-  const double pl = std::sqrt(El * El - ml * ml);
+// two body decay of a particle 'part' into two particles with masses
+// 'mass'.first and 'mass'.second and angles of the first decay particle
+// ('theta1', 'phi1')
+//
+// Note: the angles are assumed to be in the helicity frame of 'part'
+std::pair<TLorentzVector, TLorentzVector>
+two_body(const TLorentzVector& part, const std::pair<double, double>& mass,
+         const double theta_1, const double phi_1) {
+  // calculate the CM kinematics
+  const double E = part.M();
+  const double M2_1 = mass.first * mass.first;
+  const double M2_2 = mass.second * mass.second;
+  const double E_1 = (E * E + M2_1 - M2_2) / (2 * E);
+  const double E_2 = (E * E - M2_1 + M2_2) / (2 * E);
+  const double P_1 = sqrt(E_1 * E_1 - M2_1);
+  const double P_2 = sqrt(E_2 * E_2 - M2_2);
+
+  // create the 4-vectors in the part helicity frame
   TVector3 mom;
-  mom.SetMagThetaPhi(pl, theta, phi);
-  lplus = {mom, El};
-  lminus = {-mom, El};
-  // boost to a rotated lab-frame pointing in the j/psi direction
-  const TLorentzVector jpsi_rot{0, 0, jpsi.Vect().Mag(), jpsi.E()};
-  const auto beta = jpsi_rot.BoostVector();
-  lplus.Boost(beta);
-  lminus.Boost(beta);
-  // rotate to the regular lab frame
-  TVector3 dir{jpsi.Vect().Unit()};
-  lplus.RotateUz(dir);
-  lminus.RotateUz(dir);
-  // all done!
+  mom.SetMagThetaPhi(P_1, theta_1, phi_1);
+  TLorentzVector p_1{mom, E_1};
+  // decay particle 1 and two are back-to-back in the CM frame
+  mom.SetMagThetaPhi(P_2, theta_1, phi_1);
+  TLorentzVector p_2{-mom, E_2};
+
+  // boost back to the rotated version of the original frame pointing in the
+  // direction of part
+  const TLorentzVector part_rot{0,0, part.Vect().Mag(), part.E()};
+  const TVector3 beta = part_rot.BoostVector();
+  p_1.Boost(beta);
+  p_2.Boost(beta);
+
+  // rotate to the original frame
+  TVector3 dir{part.Vect().Unit()};
+  p_1.RotateUz(dir);
+  p_2.RotateUz(dir);
+
+  // that's all
+  return {p_1, p_2};
 }
 
+} // decay
 } // physics
 } // pcsim

@@ -1,7 +1,7 @@
 ################################################################################
 ## CMAKE Settings
 ################################################################################
-set (SUBDIR "physics")
+set (SUBDIR "gen")
 set (LIBRARY "${PROJECT_NAME}_${SUBDIR}")
 set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 
@@ -20,12 +20,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## External Libraries
 ################################################################################
-## ROOT
-find_package(ROOT REQUIRED)
+find_package(root REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
-## boost
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
 ################################################################################
 ## Compile and Link
