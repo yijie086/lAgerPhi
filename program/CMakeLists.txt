@@ -39,4 +39,4 @@ include_directories(${Boost_INCLUDE_DIRS})
 ################################################################################
 ## Build all programs
 ################################################################################
-BUILD_PROGRAM(pcsim-upsilon)
+BUILD_PROGRAM(pcsim-vm)
