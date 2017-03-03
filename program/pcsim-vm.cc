@@ -22,7 +22,7 @@ std::string to_string_exp(double d) {
   ss << std::scientific << d;
   return ss.str();
 }
-struct upsilon_event : event {
+struct vm_event : event {
   int evgen;
   double W = 0;
   double Q2 = 0;
@@ -35,22 +35,22 @@ struct upsilon_event : event {
   TLorentzVector scat;
   TLorentzVector photon;
   TLorentzVector recoil;
-  TLorentzVector upsilon;
+  TLorentzVector vm;
   TLorentzVector positron;
   TLorentzVector electron;
 
   int scat_index = -1;
   int photon_index = -1;
-  int ups_index = -1;
+  int vm_index = -1;
   int recoil_index = -1;
   int positron_index = -1;
   int electron_index = -1;
 
-  upsilon_event() { part.reserve(30); }
+  vm_event() { part.reserve(30); }
 
   void link(TFile& f) {
     f.cd();
-    t_ = new TTree("upsilon_event", "Upsilon Event Data");
+    t_ = new TTree("vm_event", "Upsilon Event Data");
     t_->Branch("event", &event_);
     t_->Branch("evgen", &evgen);
     t_->Branch("cross_section", &cross_section);
@@ -65,7 +65,7 @@ struct upsilon_event : event {
     t_->Branch("target", &target);
     t_->Branch("scat", &scat);
     t_->Branch("photon", &photon);
-    t_->Branch("upsilon", &upsilon);
+    t_->Branch("vm", &vm);
     t_->Branch("recoil", &recoil);
     t_->Branch("positron", &positron);
     t_->Branch("electron", &electron);
@@ -78,7 +78,7 @@ struct upsilon_event : event {
     }
   }
 
-  upsilon_event& operator=(const upsilon_event& rhs) {
+  vm_event& operator=(const vm_event& rhs) {
     static_cast<event&>(*this) = rhs;
     evgen = rhs.evgen;
     W = rhs.W;
@@ -89,7 +89,7 @@ struct upsilon_event : event {
     t = rhs.t;
     scat_index = rhs.scat_index;
     photon_index = rhs.photon_index;
-    ups_index = rhs.ups_index;
+    vm_index = rhs.vm_index;
     recoil_index = rhs.recoil_index;
     positron_index = rhs.positron_index;
     electron_index = rhs.electron_index;
@@ -98,14 +98,14 @@ struct upsilon_event : event {
     target = part[target_index].mom;
     scat = part[scat_index].mom;
     photon = part[photon_index].mom;
-    upsilon = part[ups_index].mom;
+    vm = part[vm_index].mom;
     recoil = part[recoil_index].mom;
     electron = part[electron_index].mom;
     positron = part[positron_index].mom;
     return *this;
   }
 
-  ~upsilon_event() {
+  ~vm_event() {
     if (t_) {
       t_->AutoSave();
     }
@@ -116,11 +116,11 @@ private:
   TTree* t_ = 0;
 };
 
-class upsilon_generator : public event_generator<upsilon_event> {
+class vm_generator : public event_generator<vm_event> {
 public:
-  using parent_type = event_generator<upsilon_event>;
+  using parent_type = event_generator<vm_event>;
 
-  upsilon_generator(const configuration& cf, const string_path& path,
+  vm_generator(const configuration& cf, const string_path& path,
                     std::shared_ptr<TRandom> r)
       : parent_type{cf, path, r}
       , electron_gen{std::make_unique<gen::beam>(conf(), "beam", r)}
@@ -162,12 +162,12 @@ protected:
       return;
     }
 
-    // create upsilon and recoil
+    // create vm and recoil
     gen::exclusive_data excl_data = excl_gen->generate(photon_data, p_in);
     e.t = excl_data.t;
     e.part.push_back({excl_data.vm, mc_particle::VIRTUAL});
     e.part.push_back({excl_data.recoil, mc_particle::FINAL});
-    e.ups_index = 4;
+    e.vm_index = 4;
     e.recoil_index = 5;
     e.cross_section *= excl_data.cross_section;
     e.phase_space *= excl_data.phase_space;
@@ -190,7 +190,7 @@ private:
 };
 
 int run_mc(const configuration& cf, const std::string& output) {
-  LOG_INFO("pcsim-upsilon", "initializing PCSIM-upsilon");
+  LOG_INFO("pcsim-vm", "initializing PCSIM-vm");
 
   // get RNG
   std::shared_ptr<TRandom> r {std::make_shared<TRandom3>()};
@@ -198,11 +198,11 @@ int run_mc(const configuration& cf, const std::string& output) {
 
   // make output file and buffer
   TFile ofile{(output + ".root").c_str(), "recreate"};
-  upsilon_event evbuf;
+  vm_event evbuf;
   evbuf.link(ofile);
 
   // get event generator
-  upsilon_generator gen{cf, "generator", r};
+  vm_generator gen{cf, "generator", r};
 
   // number of requested events:
   const size_t events = cf.get<size_t>("events");
