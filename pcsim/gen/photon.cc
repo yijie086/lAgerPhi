@@ -181,13 +181,6 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   event.W2 = target.mom.M2() + 2 * target.mass * event.nu - event.Q2;
   event.x = event.Q2 / (2. * event.nu * target.mass);
 
-  // only accept physical events
-  if (event.x < 0 || event.x > 1) {
-    event.cross_section = 0;
-    return event;
-  }
-
-
   // initiate our event with the vphoton flux and the phase space
   event.cross_section = flux(event.Q2, event.y, beam, target);
   event.phase_space = logQ2_range_.width() * logy_range_.width();
@@ -270,11 +263,15 @@ interval<double> vphoton::Q2_range(const particle& beam, const particle& target,
   const double E = beam.mom * target.mom / target.mass;
   const double E2 = E * E;
   const double m2 = beam.mass * beam.mass;
+  // lower and upper bound from t-channel process on electron leg
   const double comp1 = -2. * m2 + 2. * E2 * (1. - y);
   const double comp2 = 2. * sqrt((E2 - m2) * (E2 * (1. - y) * (1. - y) - m2));
   const double Q2_low = comp1 - comp2;
-  const double Q2_high = comp1 + comp2;
-  return {Q2_low, Q2_high};
+  const double Q2_high1 = comp1 + comp2;
+  // alternative upper bound from requirement that final state has at least the
+  // invariant mass of the a proton mass (W2min = target.mass)
+  const double Q2_high2 = 2 * target.mass * E * y;
+  return {Q2_low, fmin(Q2_high1, Q2_high2)};
 }
 
 } // gen
