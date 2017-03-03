@@ -20,40 +20,30 @@ brodsky_tchannel::brodsky_tchannel(const configuration& cf,
     , max_{calc_max_xsec(cf)} {}
 
 exclusive_data brodsky_tchannel::generate(const photon_data& phdat, const particle& target) {
-  exclusive_data event;
+  exclusive_data event{0, 0};
 
+  // check if we have enough energy available
   if (phdat.W2 <= threshold2_) {
-    event.cross_section = 0;
     return event;
   }
 
-  const auto exp_bt_lim = exp_bt_range(phdat.W2, phdat.Q2, target.mass);
-
-  // check if our t limits are physical (enough energy available, needed
-  // because due to rounding we can sometimes end up just below the lower
-  // bound)
-  if (isnan(exp_bt_lim.min) || isnan(exp_bt_lim.max) ||
-      exp_bt_lim.max <= exp_bt_lim.min) {
-    // reject the event if not
-    event.cross_section = 0;
-    return event;
-  }
-  // throw flat in exp_bt = exp(bt)
 #ifdef THROW_EXP_BT
-  event.t = std::log(rng()->Uniform(exp_bt_lim.min, exp_bt_lim.max)) / b_;
+  event.t = std::log(rng()->Uniform(max_exp_bt_range_.min, max_exp_bt_range_.max)) / b_;
 #else
-  const auto t_lim = t_range(phdat.W2, phdat.Q2, target.mass);
-  event.t = rng()->Uniform(t_lim.min, t_lim.max);
+  event.t = rng()->Uniform(max_t_range_.min, max_t_range_.max);
 #endif
- 
+
+  // check if this event is kinematically allowed
+  if (t_range(phdat.W2, phdat.Q2, target.mass).excludes(event.t)) {
+    return event;
+  }
+
   // initiate our event with the cross section and phase space
 #ifdef THROW_EXP_BT
-  event.cross_section = dsigma_dexp_bt(phdat.W2, target.mass) *
-                        exp_bt_lim.width() / max_exp_bt_range_.width();
+  event.cross_section = dsigma_dexp_bt(phdat.W2, target.mass);
   event.phase_space = max_exp_bt_range_.width();
 #else
-  event.cross_section = dsigma_dt(phdat.W2, event.t, target.mass) *
-                        t_lim.width() / max_t_range_.width();
+  event.cross_section = dsigma_dt(phdat.W2, event.t, target.mass);
   event.phase_space = max_t_range_.width();
 #endif
 
