@@ -61,7 +61,13 @@ framework::framework(int argc, char* argv[],
 
   // add generator name and acceptance simulation
   output_ += "." + conf_.get<std::string>("generator/type");
-  output_ += "." + conf_.get<std::string>("detector/type");
+
+  auto detector = conf_.get<std::string>("detector/type");
+  if (detector.size() > 0 && detector != "none") {
+    output_ += "." + conf_.get<std::string>("detector/type");
+  } else {
+    output_ += ".4pi";
+  }
   
   // add optional tag
   auto tag = conf_.get_optional<std::string>("tag");
@@ -81,6 +87,10 @@ framework::framework(int argc, char* argv[],
   conf_.save(settings);
   write_json(output_ + ".json", settings);
 
+  // redirect logger to use the log file
+  log_file_.open(output_ + ".log");
+  global::logger.set_output(log_file_);
+
   } catch (const framework_help& h) {
     std::cerr << h.what() << std::endl;
     exit(0);
@@ -99,6 +109,11 @@ framework::framework(int argc, char* argv[],
     LOG_CRITICAL("std::exception", "Please contact developer for support.");
     throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
+
+framework::~framework() {
+  // redirect output stream back to the standard output
+  global::logger.set_output(std::cout);
+}
 
 int framework::run() const {
   try{
@@ -122,6 +137,7 @@ int framework::run() const {
     throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
 }
+
 } // ns pcsim
 
 // =============================================================================
