@@ -17,7 +17,16 @@ brodsky_tchannel::brodsky_tchannel(const configuration& cf,
     , c2g_{conf().get<double>("c2g")}
     , max_t_range_{calc_max_t_range(cf)}
     , max_exp_bt_range_{exp(b_ * max_t_range_.min), exp(b_ * max_t_range_.max)}
-    , max_{calc_max_xsec(cf)} {}
+    , max_{calc_max_xsec(cf)} {
+  LOG_INFO("brodsky_tchannel",
+           "t range [GeV^2]: [" + std::to_string(max_t_range_.min) + ", " +
+               std::to_string(max_t_range_.max) + "]");
+  LOG_INFO("brodsky_tchannel", "b parameter [1/GeV^2]: " + std::to_string(b_));
+  LOG_INFO("brodsky_tchannel", "2-gluon parameter: " + std::to_string(c2g_));
+  LOG_INFO("brodsky_tchannel", "VM: " + std::string(vm_.pdg->GetName()));
+  LOG_INFO("brodsky_tchannel",
+           "recoil: " + std::string(recoil_.pdg->GetName()));
+}
 
 exclusive_data brodsky_tchannel::generate(const photon_data& phdat, const particle& target) {
   exclusive_data event{0, 0};
@@ -47,7 +56,10 @@ exclusive_data brodsky_tchannel::generate(const photon_data& phdat, const partic
   event.phase_space = max_t_range_.width();
 #endif
 
-  // create our final state particles in the CM frame
+  LOG_JUNK("brodsky_tchannel",
+           "xsec: " + std::to_string(event.cross_section) + " < " +
+               std::to_string(max_));
+
   // start with some convenient mass squares
   const double Mt2 = target.mass * target.mass;
   const double Mr2 = recoil_.mass * recoil_.mass;
@@ -56,6 +68,13 @@ exclusive_data brodsky_tchannel::generate(const photon_data& phdat, const partic
   const double W2 = phdat.W2;
   const double W = sqrt(W2);
   const double Q2 = phdat.Q2;
+  const double nu = phdat.nu;
+
+  // calculate additional kinematic quantities
+  event.xv = (Q2 + Mv2) / (2. * target.mass * nu);
+  event.Q2plusMv2 = Q2 + Mv2;
+
+  // create our final state particles in the CM frame
   // energies and momenta
   const double Et_cm = (W2 + Q2 + Mt2) / (2. * W);
   const double Pt_cm = sqrt(Et_cm * Et_cm - Mt2);
@@ -173,6 +192,9 @@ double brodsky_tchannel::calc_max_xsec(const configuration& cf) const {
 #endif
 }
 // max t-range when we have a photon that carries all of the beam energy
+// --> or when we have reached the user-defined maximum value of W
+// max t-range is reached for maximum Q2 for the given W (zero for the true
+// outer t-range)
 interval<double>
 brodsky_tchannel::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma, cf.get_vector3<TVector3>("beam/dir"),
@@ -180,7 +202,13 @@ brodsky_tchannel::calc_max_t_range(const configuration& cf) const {
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
-  return t_range((photon.mom + target.mom).M2(), 0., target.mass);
+  const auto opt_range_ = cf.get_optional_range<double>("photon/W_range");
+  const double Wmax = opt_range_
+                          ? fmin(opt_range_->max, (photon.mom + target.mom).M())
+                          : (photon.mom + target.mom).M();
+  const double Mnu = photon.mom * target.mom;
+  const double Q2max = target.mass * target.mass + 2 * Mnu - Wmax * Wmax;
+  return t_range(Wmax * Wmax, Q2max > 1e-10 ? Q2max : 0., target.mass);
 }
 
 // calculate the t-range as a function of W2, Q2 and target mass Mt

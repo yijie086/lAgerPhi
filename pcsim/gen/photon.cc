@@ -146,18 +146,32 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r)
     : photon{cf, path, std::move(r)}
     , y_range_{conf().get_range<double>("y_range")}
-    , Q2_range_{calc_max_Q2_range(cf)}
     , logy_range_{std::log(y_range_.min), std::log(y_range_.max)}
+    , Q2_range_{calc_max_Q2_range(cf)}
     , logQ2_range_{std::log(Q2_range_.min), std::log(Q2_range_.max)}
+    , W2_range_{calc_max_W2_range(cf)}
     , max_{calc_max_flux(cf)} {
   // initial info
-  LOG_INFO("vphoton", "Q2 range [GeV^2]:" + std::to_string(Q2_range_.min) +
-                          ", " + std::to_string(Q2_range_.max) + "]");
-  LOG_INFO("vphoton", "y range [GeV^2]:" + std::to_string(y_range_.min) +
-                          ", " + std::to_string(y_range_.max) + "]");
+  LOG_INFO("vphoton",
+           "Q2 range [GeV^2]: [" + std::to_string(Q2_range_.min) + ", " +
+               std::to_string(Q2_range_.max) + "]");
+  LOG_INFO("vphoton",
+           "y range [GeV^2]: [" + std::to_string(y_range_.min) + ", " +
+               std::to_string(y_range_.max) + "]");
+  if (conf().get_optional_range<double>("W_range")) {
+    LOG_INFO("vphoton",
+             "W range (optional) [GeV}: [" +
+                 std::to_string(sqrt(W2_range_.min)) + ", " +
+                 std::to_string(sqrt(W2_range_.max)) + "]");
+  } else {
+    LOG_INFO("vphoton",
+             "W range (default) [GeV}: [" +
+                 std::to_string(sqrt(W2_range_.min)) + ", " +
+                 std::to_string(sqrt(W2_range_.max)) + "]");
+  }
   // validate the setup
-  tassert(y_range_.min > 0, "Ensure y is a positive (non-zero) number");
-  tassert(y_range_.max > 0, "Ensure ymax <= 1");
+  tassert(y_range_.min > 0, "Ensure ymin > 0");
+  tassert(y_range_.max <= 1, "Ensure ymax <= 1");
   tassert(Q2_range_.width() > 0,
           "Ensure Q2min < Q2max for the virtual photon Q2 range");
   tassert(y_range_.width() > 0,
@@ -170,9 +184,14 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   // generate a value for Q2 and y
   event.y = exp(rng()->Uniform(logy_range_.min, logy_range_.max));
   event.Q2 = exp(rng()->Uniform(logQ2_range_.min, logQ2_range_.max));
+
+  LOG_JUNK("vphoton",
+           "Generated y: " + std::to_string(event.y) + " Q2: " +
+               std::to_string(event.Q2));
+
   // check Q2 boundaries for validity
   if (Q2_range(beam, target, event.y).excludes(event.Q2)) {
-    event.cross_section = 0;
+    LOG_JUNK("vphoton", "Values outside of valid Q2 range");
     return event;
   }
 
@@ -181,9 +200,24 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   event.W2 = target.mom.M2() + 2 * target.mass * event.nu - event.Q2;
   event.x = event.Q2 / (2. * event.nu * target.mass);
 
+  LOG_JUNK("vphoton",
+           "nu: " + std::to_string(event.nu) + " W2: " +
+               std::to_string(event.W2) + " x: " + std::to_string(event.x));
+  ;
+
+  // check if the invariants are in the range we want
+  if (W2_range_.excludes(event.W2)) {
+    LOG_JUNK("vphoton", "Values outside of valid W2 range");
+    return event;
+  }
+
   // initiate our event with the vphoton flux and the phase space
   event.cross_section = flux(event.Q2, event.y, beam, target);
   event.phase_space = logQ2_range_.width() * logy_range_.width();
+
+  LOG_JUNK("vphoton",
+           "xsec: " + std::to_string(event.cross_section) + "( < " +
+               std::to_string(max_) + ")");
 
   // bail if our cross section is not positive
   if (event.cross_section <= 0) {
@@ -200,7 +234,9 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
 }
  
 // calculate an upper limit for the flux for the requested kinematic limits
-// the max is reached for Q2 = Q2min, and is a function of y
+// the max is reached for Q2 = Q2max and y = ymin
+// ==> note: these values are obtained when using the functional form
+// differential in logQ2 and logy!
 double vphoton::calc_max_flux(const configuration& cf) const {
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
                       cf.get_vector3<TVector3>("beam/dir"),
@@ -208,13 +244,17 @@ double vphoton::calc_max_flux(const configuration& cf) const {
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
-  const double Q2 = Q2_range_.min;
+  const double Q2 = Q2_range_.max;
+#if 0
   auto flux_y = [&](const double* yy, const double*) {
     const double y = yy[0];
     return flux(Q2, y, beam, target);
   };
   TF1 flux_tf1("flux_y", flux_y, y_range_.min, y_range_.max, 0, 1);
   return flux_tf1.GetMaximum() * 1.001;
+#endif
+  const double y = y_range_.min;
+  return flux(Q2, y, beam, target);
 }
 // calculate max Q2 range
 interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
@@ -224,13 +264,42 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
-  const auto max_range_ = Q2_range(beam, target, y_range_.min);
+  const double Q2min =
+      fmax(Q2_range(beam, target, y_range_.min).min, .00051 * .00051);
+  // Q2 max is reached for the point where Q2_high1 equals Q2_high2
+  // which is (up to a precision of lepton mass squared):
+  // y = 2E/(M+2E)
+  // alternatively, if a y-cut is set below this point, the maximum is reached
+  // at maximum y
+  const double E = beam.mom * target.mom / target.mass;
+  const double Q2max =
+      Q2_range(beam, target,
+               fmin(2. * E / (target.mass + 2. * E), y_range_.max))
+          .max;
   const auto opt_range_ = cf.get_optional_range<double>("photon/Q2_range");
   if (opt_range_) {
-    return {fmax(opt_range_->min, max_range_.min),
-            fmin(opt_range_->max, max_range_.max)};
+    return {fmax(opt_range_->min, Q2min), fmin(opt_range_->max, Q2max)};
   }
-  return max_range_;
+  return {Q2min, Q2max};
+}
+// allow for the user to set a W2 range
+interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
+  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
+                      cf.get_vector3<TVector3>("beam/dir"),
+                      cf.get<double>("beam/energy")};
+  const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
+                        cf.get_vector3<TVector3>("target/dir"),
+                        cf.get<double>("target/energy")};
+  // at least target in final state, at most s in final state
+  const double W2min = target.mass * target.mass;
+  const double W2max = (beam.mom + target.mom).M2();
+  // check if the user requested a range
+  const auto opt_range_ = cf.get_optional_range<double>("photon/W_range");
+  if (opt_range_) {
+    return {fmax(opt_range_->min * opt_range_->min, W2min),
+            fmin(opt_range_->max * opt_range_->max, W2max)};
+  }
+  return {W2min, W2max};
 }
 
 // generate the scattered lepton vector for a given generated event
@@ -269,7 +338,7 @@ interval<double> vphoton::Q2_range(const particle& beam, const particle& target,
   const double Q2_low = comp1 - comp2;
   const double Q2_high1 = comp1 + comp2;
   // alternative upper bound from requirement that final state has at least the
-  // invariant mass of the a proton mass (W2min = target.mass)
+  // invariant mass of the target mass (W2min = target.mass)
   const double Q2_high2 = 2 * target.mass * E * y;
   return {Q2_low, fmin(Q2_high1, Q2_high2)};
 }

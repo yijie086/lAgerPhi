@@ -22,7 +22,10 @@ public:
       : generator{cf, path, std::move(r)}
       , beam_{static_cast<pdg_id>(conf().get<int>("type")),
               conf().get_vector3<TVector3>("dir"),
-              conf().get<double>("energy")} {}
+              conf().get<double>("energy")} {
+    LOG_INFO("beam", "type: " + std::string(beam_.pdg->GetName()));
+    LOG_INFO("beam", "energy [GeV]: " + std::to_string(beam_.mom.E()));
+  }
 
   virtual particle generate() { return beam_; }
 

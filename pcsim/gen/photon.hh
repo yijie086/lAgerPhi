@@ -87,6 +87,7 @@ private:
                             const double y) const;
   double calc_max_flux(const configuration& cf) const;
   interval<double> calc_max_Q2_range(const configuration& cf) const;
+  interval<double> calc_max_W2_range(const configuration& cf) const;
   particle generate_scat(const double Q2, const double y, particle beam,
                          const particle& target);
 
@@ -96,6 +97,8 @@ private:
   // derived kinematic boundaries
   const interval<double> logy_range_;
   const interval<double> logQ2_range_;
+  // additional cuts
+  const interval<double> W2_range_;
 
   // maximum flux
   const double max_;

@@ -30,6 +30,8 @@ struct vm_event : event {
   double x = 0;
   double y = 0;
   double t = 0;
+  double xv = 0;
+  double Q2plusMv2 = 0;
   TLorentzVector beam;
   TLorentzVector target;
   TLorentzVector scat;
@@ -61,6 +63,8 @@ struct vm_event : event {
     t_->Branch("x", &x);
     t_->Branch("y", &y);
     t_->Branch("t", &t);
+    t_->Branch("xv", &xv);
+    t_->Branch("Q2plusMv2", &Q2plusMv2);
     t_->Branch("beam", &beam);
     t_->Branch("target", &target);
     t_->Branch("scat", &scat);
@@ -87,6 +91,8 @@ struct vm_event : event {
     x = rhs.x;
     y = rhs.y;
     t = rhs.t;
+    xv = rhs.xv;
+    Q2plusMv2 = rhs.Q2plusMv2;
     scat_index = rhs.scat_index;
     photon_index = rhs.photon_index;
     vm_index = rhs.vm_index;
@@ -165,6 +171,8 @@ protected:
     // create vm and recoil
     gen::exclusive_data excl_data = excl_gen->generate(photon_data, p_in);
     e.t = excl_data.t;
+    e.xv = excl_data.xv;
+    e.Q2plusMv2 = excl_data.Q2plusMv2;
     e.part.push_back({excl_data.vm, mc_particle::VIRTUAL});
     e.part.push_back({excl_data.recoil, mc_particle::FINAL});
     e.vm_index = 4;

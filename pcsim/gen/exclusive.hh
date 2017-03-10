@@ -17,6 +17,8 @@ namespace gen {
 // (possible excited)
 struct exclusive_data : generator_data {
   double t;
+  double xv;
+  double Q2plusMv2;
   particle vm;     // vector meson
   particle recoil; // recoil
   exclusive_data(double xs, double ps) : generator_data(xs, ps) {}
