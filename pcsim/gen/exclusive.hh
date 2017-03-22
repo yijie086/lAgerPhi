@@ -19,6 +19,8 @@ struct exclusive_data : generator_data {
   double t;
   double xv;
   double Q2plusMv2;
+  double R;
+  double epsilon;
   particle vm;     // vector meson
   particle recoil; // recoil
   exclusive_data(double xs, double ps) : generator_data(xs, ps) {}
@@ -32,13 +34,13 @@ public:
             std::shared_ptr<TRandom> r)
       : generator{conf, path, std::move(r)} {}
   exclusive_data generate(const photon_data& photon,
-                                  const particle& target) = 0;
+                          const particle& target) = 0;
 };
 
-class brodsky_tchannel : public exclusive {
+class tchannel_vm : public exclusive {
 public:
-  brodsky_tchannel(const configuration& conf, const string_path& path,
-                   std::shared_ptr<TRandom> r);
+  tchannel_vm(const configuration& conf, const string_path& path,
+              std::shared_ptr<TRandom> r);
 
   virtual double max_cross_section() const { return max_; }
   virtual exclusive_data generate(const photon_data& photon,
@@ -47,6 +49,8 @@ public:
 protected:
   double dsigma_dt(const double W2, const double t, const double Mt) const;
   double dsigma_dexp_bt(const double W2, const double Mt) const;
+
+  double Rvm(const double Q2) const;
 
 private:
   double calc_max(const configuration& cf) const;
@@ -65,8 +69,10 @@ private:
   const double threshold2_;
 
   // cross section settings
-  const double b_;   // b-parameters
-  const double c2g_; // constant for 2-gluon amplitude
+  const double b_;    // b-parameters
+  const double c2g_;  // constant for 2-gluon amplitude
+  const double Rvm_a; // a-parameter for R
+  const double Rvm_n; // n-parameter for R
 
   // t range and cross section maxima
   // note: we actually throw flat in exp(bt), not in t
@@ -74,10 +80,6 @@ private:
   const interval<double> max_exp_bt_range_;
   const double max_;
 };
-
-
-
-
 
 } // gen
 } // pcsim

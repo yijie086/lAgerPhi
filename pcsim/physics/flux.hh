@@ -41,7 +41,7 @@ inline double gamma_t_log(const double Q2, const double y,
   const double nu2 = nu * nu;
   // density matrix element
   const double tworhopp =
-      (2. * E - nu) * (2. * E - nu) / (nu2 - m2) + 1 - 4 * m2 / Q2;
+      (2. * E - nu) * (2. * E - nu) / (nu2 + Q2) + 1 - 4 * m2 / Q2;
   // jacobian for dnu -> E dy
   // jacobian for dy -> y d(logy)
   const double jacobian = E * y;
@@ -49,6 +49,24 @@ inline double gamma_t_log(const double Q2, const double y,
   const double gamma_t = ALPHA / 2. / TMath::TwoPi() * sqrt(nu2 + Q2) /
                          (E2 - m2) * tworhopp * jacobian;
   return gamma_t;
+}
+// epsilon = Gamma_L / Gamma_T = 2rho++ / rho00
+inline double epsilon(const double Q2, const double y,
+                      const TLorentzVector& beam,
+                      const TLorentzVector& target) {
+  // target-rest-frame lepton energy
+  const double E = beam * target / target.M();
+  // beam particle masses
+  const double m = beam.M();
+  const double m2 = m * m;
+  // other kinematic variables
+  const double nu = y * E;
+  const double nu2 = nu * nu;
+  // density matrix element
+  const double tworhopp =
+      (2. * E - nu) * (2. * E - nu) / (nu2 + Q2) + 1 - 4 * m2 / Q2;
+  // const double rho00 = towrhopp + 4 * m2 / Q2 - 2;
+  return 1 + (4 * m2 / Q2 - 2) / tworhopp;
 }
 
 // transverse virtual photon flux d/dQ2dy
