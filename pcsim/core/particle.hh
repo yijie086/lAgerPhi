@@ -10,124 +10,125 @@
 
 namespace pcsim {
 
-// basic particle info 
-struct particle_info {
-  TParticlePDG* pdg; // pdg particle info
-  int32_t info;      // LUND particle code
-  int32_t charge;    // particle charge
+// particle info
+class particle {
+public:
+  // particle status
+  enum class status_code : int {
+    BEAM = 11,
+    SECONDARY_BEAM = 12,
+    SCAT = 13,
+    UNSTABLE = 21,
+    UNSTABLE_SCHC = 22,
+    FINAL = 31,
+    DECAYED = 32,
+    OTHER = 99
+  };
 
-  particle_info() = default;
-  explicit particle_info(const pdg_id id)
-      : pdg{pdg_particle(id)}
-      , info{static_cast<int32_t>(id)}
-      , charge{static_cast<int32_t>(pdg->Charge() / 3)} {}
-  particle_info(const particle_info& rhs) = default;
-
-  std::string name() const { return pdg->GetName(); }
-};
-
-// particle, will initialize mass and lifetime for unstable particles if
-// a random generator is provided in the constructor
-struct particle : particle_info {
-  double mass = 0;                      // mass in GeV/c^2
-  double lifetime = 0;                  // lifetime in cm/c
-  TLorentzVector mom = {0, 0, 0, 0};    // momentum in GeV/c
-  TLorentzVector vertex = {0, 0, 0, 0}; // vertex in cm
-
-  // normal constructors
+  // constructors
   particle() = default;
-  explicit particle(const pdg_id id)
-      : particle_info{id}, mass{pdg->Mass()}, mom{0, 0, 0, mass} {}
-  particle(const pdg_id id, const TVector3& p)
-      : particle_info{id}
-      , mass{pdg->Mass()}
-      , mom{p, sqrt(mass * mass + p.Mag2())} {}
-  particle(const pdg_id id, const TVector3& dir, const double E)
-      : particle_info{id}
-      , mass{pdg->Mass()}
-      , mom{dir.Unit() * sqrt(E * E - mass * mass), E} {}
-  particle(const particle& rhs)
-      : particle_info{static_cast<const particle_info&>(rhs)}
-      , mass{rhs.mass}
-      , lifetime{rhs.lifetime}
-      , mom{rhs.mom}
-      , vertex{rhs.vertex} {}
-  explicit particle(const particle_info& rhs)
-      : particle_info{rhs}, mass{pdg->Mass()} {}
-  // off-shell particle
-  particle(const pdg_id id, const TLorentzVector& pp)
-      : particle_info{id}, mass{pp.M()}, mom{pp} {}
-  // RNG constructors that generate mass and/or lifetime
-  particle(const pdg_id id, std::shared_ptr<TRandom> rng) : particle_info{id} {
+  particle(const particle& rhs) = default;
+  // particle with a given id
+  particle(const pdg_id id)
+      : type_{id}
+      , pdg_{pdg_particle(id)}
+      , charge_{static_cast<int>(pdg->Charge() / 3)} {}
+  // particle with a given momentum 3-vector
+  particle(const pdg_id id, const TVector3& p3)
+      : particle{id}
+      , mass_{pdg->Mass()}
+      , p_{p3, sqrt(mass_ * mass_ + p_.Mag2())} {}
+  // particle in a given direction with a given energy
+  particle(const pdg_id id, const TVector3 direction, const double E)
+      : particle{id}
+      , mass_{pdg->Mass()}
+      , p_{direction.Unit() * sqrt(E * E - mass_ * mass_), E} {}
+  // particle with a given 4-momentum (can be off-shell)
+  particle(const pdg_id id, const TLorentzVector p) {
+    particle{id}, mass_{p.M()}, p_{p} {}
+  }
+  // RNG constructors usefull in particular for unstable particles with a mass
+  // and lifetime that needs to be generated
+  particle(const pdg_id id, std::shared_ptr<TRandom> rng) : particle(id) {
     set_mass_lifetime(std::move(rng));
   }
-  particle(const pdg_id id, const TVector3& p, std::shared_ptr<TRandom> rng)
-      : particle_info{id} {
+  particle(const pdg_id id, const TVector3& p3, std::shared_ptr<TRandom> rng)
+      : particle{id} {
     set_mass_lifetime(std::move(rng));
-    mom.SetXYZM(p.X(), p.Y(), p.Z(), mass);
+    p_.SetXYZM(p.X(), p.Y(), p.Z(), mass_);
   }
-  //particle(const pdg_id id, const TVector3& dir, const double E,
-  //         std::shared_ptr<TRandom> rng)
-  //    : particle_info{id} {
-  //  set_mass_lifetime(std::move(rng));
-  //  mom = {dir.Unit() * sqrt(E * E - mass * mass), E};
-  //}
-  //particle(const particle_info& rhs, std::shared_ptr<TRandom> rng)
-      //: particle_info{rhs} {
-    //set_mass_lifetime(std::move(rng));
-  //}
 
-  void set_lifetime(std::shared_ptr<TRandom> rng) {
-    if (pdg->Width() > 0) {
-      lifetime = rng->Exp(pdg->Lifetime()) * TMath::Ccgs();
-    } else {
-      lifetime = 0;
+  // particle ID code
+  pdg_id type() const { return type_; }
+  int type() const { return static_cast<int>(type_); }
+
+  // full PDG info from the TDatabasePDG
+  TParticlePDG* pdg() { return pdg_; }
+
+  // particle status
+  status_code status() const { return status_; }
+  int status() const { return static_cast<int>(status_); }
+  void update_status(const status_code ns) { status_ = ns; }
+
+  // particle properties
+  int charge() const { return charge_; }
+  double mass() const { return mass_; }
+  double lifetime() const { return lifetime_; }
+  interval<int> parent() const { return parent_; }
+  interval<int> daughter() const { return daughter_; }
+  int daughter_begin() const { return daughter_.min; }
+  int daughter_end() const { return daughter_.max; }
+  int n_daughters() const { return daughter_.max - daughter_.min; }
+  int parent_first() const { return parent_.min; }
+  int parent_second() const { return parent_.max; }
+  int n_parents() const { return parent_.max - parent_.min; }
+
+  // get a reference to the momentum/vertex 4-vector
+  TLorentzVector& p() { return p_; };
+  const TLorentzVector& p() const { return p_; };
+  TLorentzVector& vertex() { return vertex_; }
+  const TLorentzVector& vertex() const { return vertex_; }
+
+  // add a daughter track
+  void add_daughter(const int index) {
+    if (daughter_.min > index || daughter_.min < 0) {
+      daughter_.min = index;
+    }
+    if (daughter_.max >= index || daughter_.max < 0) {
+      daughter_.max = index + 1;
     }
   }
-  void set_mass_lifetime(std::shared_ptr<TRandom> rng) {
-    if (pdg->Width() > 0) {
-      mass = rng->BreitWigner(pdg->Mass(), pdg->Width());
-      lifetime = rng->Exp(pdg->Lifetime()) * TMath::Ccgs();
+  void add_parent(const int index) {
+    if (parent_.min < 0) {
+      parent_.min = index;
+    } else if (parent_.max < 0) {
+      parent_.max = index;
     } else {
-      mass = pdg->Mass();
-      lifetime = 0;
+      tassert(false, "A particle can have only have up to 2 parents"
+                     "(tried to add additional parent to particle '" +
+                         std::string(pdg->Name()) + "')");
     }
   }
-};
+  void set_parents(const interval<int> indices) { parent_ = indices; }
 
-// full MC particle info, based on the LUND event record
-struct mc_particle : particle {
-  enum status_code { INITIAL, VIRTUAL, UNSTABLE, FINAL, SCAT, OTHER };
-  status_code status = OTHER; // particle status
-  // parent/daughter indeces are encoded from [begin, end] where begin is the
+private:
+  pdg_id type_{pdg_id::UNKNOWN};
+  TParticlePDG* pdg_{nullptr};
+  status_code status_{status_code::OTHER};
+
+  int charge_{0};
+  // actual mass and lifetime for this particle, can deviate from pole values
+  // for unstable particles!
+  double mass_{0};
+  double lifetime_{0};
+  TLorentzVector p_{0, 0, 0, 0};
+  TLorentzVector vertex_{0, 0, 0, 0};
+  // parent indices store the first (and optional second) parent of a particle.
+  // -1 if not stored
+  interval<int> parent_{-1, -1};
+  // daughter indices are encoded from [begin, end) where begin is the
   // first index and end one past the last index. (-1, -1) if none
-  interval<int> parent = {-1, -1};
-  interval<int> daughter = {-1, -1};
-
-  // normal constructors
-  explicit mc_particle(const pdg_id id) : particle{id} {}
-  mc_particle(const pdg_id id, const status_code status)
-      : particle{id}, status{status} {}
-  mc_particle(const mc_particle& rhs)
-      : particle{static_cast<const particle&>(rhs)}
-      , status{rhs.status}
-      , parent{rhs.parent}
-      , daughter{rhs.daughter} {}
-  explicit mc_particle(const particle& rhs) : particle{rhs} {}
-  mc_particle(const particle& rhs, const status_code status)
-      : particle{rhs}, status{status} {}
-
-  void add_daughter(int index) {
-    if (daughter.min > index || daughter.min < 0) {
-      daughter.min = index;
-    }
-    if (daughter.max >= index || daughter.max < 0) {
-      daughter.max = index + 1;
-    }
-  }
-  void set_parents(interval<int> p) {
-    parent = p;
-  }
+  interval<int> daughter_{-1, -1};
 };
 
 } // namespace pcsim
