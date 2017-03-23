@@ -4,13 +4,33 @@
 #include <cstdint>
 #include <memory>
 
-#include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 
 namespace pcsim {
 
+// Pentaquark particle codes
+// (slight deviation from PDG scheme:
+//   - parity code to allow for different parities in case exact parity isn't
+//     known
+//   - extra code in case we don't know the exact mass assignments of the
+//     penaquarks
+constexpr int32_t pdg_pentaquark_id(int q1, int q2, int q3, int q4, int qbar,
+                                    int twoJ, int parity = 0,
+                                    int extracode = 0) {
+  int pcode = 0;
+  if (parity == -1) {
+    pcode = 2;
+  } else if (parity == 1) {
+    pcode = 1;
+  }
+  return extracode * 100000000 + pcode * 10000000 + 9 * 1000000 + q1 * 100000 +
+         q2 * 10000 + q3 * 1000 + q4 * 100 + qbar * 10 + twoJ + 1;
+}
+
+// add possibility for nuclear id
+// prefixed by 4 9's
 constexpr int32_t pdg_nuclear_id(unsigned A, unsigned Z) {
-  return 99000000 + A * 1000 + Z;
+  return 9999000000 + A * 1000 + Z;
 }
 
 // particle ID enum
@@ -87,49 +107,25 @@ enum class pdg_id : int32_t {
   He4 = pdg_nuclear_id(4, 2),
   C12 = pdg_nuclear_id(12, 6),
   N14 = pdg_nuclear_id(14, 7),
+  // LHCb pentaquark hypetheses (in order of likelihood for the 4500 and 4380)
+  //                              q1 q2 q3 q4 qb 2J P  Extra
+  Pc_4500_52p = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1),
+  Pc_4500_52m = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2),
+  Pc_4500_32p = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3),
+  Pc_4500_32m = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4),
+  Pc_4380_32m = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1),
+  Pc_4380_32p = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2),
+  Pc_4380_52m = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3),
+  Pc_4380_52p = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4),
   // unknown
   unknown = -9999
 };
 
-// wrapper around ROOTs PDG database that automatically adds info on common
-// nuclei (therefor avoiding the need for a custom database)
-// implemented using a single persistent static database
-// note: nuclear masses in GeV from
-// http://hyperphysics.phy-astr.gsu.edu/hbase/pertab
-inline TParticlePDG* pdg_particle(const pdg_id id) {
-  // use a leaky naked pointer to the TDatabasePDG, as using a shared_ptr
-  // segfaults on destruction
-  static TDatabasePDG* db;
-  if (!db) {
-    db = new TDatabasePDG{};
-    db->AddParticle("H-2", "Deuteron", 1.875613, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::H2));
-    db->AddParticle("H-3", "Triton", 2.808921, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::H3));
-    db->AddParticle("He-3", "Helium-3", 2.808391, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::He3));
-    db->AddParticle("He-4", "Helium-4", 3.727379, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::He4));
-    db->AddParticle("C-12", "Carbon-12", 11.1750, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::C12));
-    db->AddParticle("N-14", "Nitrogen-14", 13.0403, true, 0, 1, "nucleus",
-                    static_cast<int32_t>(pdg_id::N14));
-  }
-  return db->GetParticle(static_cast<int32_t>(id));
-}
-
-// some often used particles (add as needed, don't forget pdg.cc)
-extern const TParticlePDG& PDG_ELECTRON;
-extern const TParticlePDG& PDG_PROTON;
-extern const TParticlePDG& PDG_ANTIPROTON;
-extern const TParticlePDG& PDG_PI_PLUS;
-extern const TParticlePDG& PDG_PI_MINUS;
-extern const TParticlePDG& PDG_K_PLUS;
-extern const TParticlePDG& PDG_K_MINUS;
-extern const TParticlePDG& PDG_PHOTON;
-extern const TParticlePDG& PDG_HE4;
-extern const TParticlePDG& PDG_C12;
-extern const TParticlePDG& PDG_N14;
+// Get PID info from the buildin ROOT PDG database
+// note: the custom particles (nuclei, pentaquarks, ...) under pdg_id are added
+// to the database.
+// Feel free to add other particles as-needed to the database in pdg.cc
+TParticlePDG* pdg_particle(const pdg_id id);
 
 } // ns pcsim
 
