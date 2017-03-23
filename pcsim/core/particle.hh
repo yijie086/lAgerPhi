@@ -112,6 +112,17 @@ public:
   void set_parents(const interval<int> indices) { parent_ = indices; }
 
 private:
+
+  void set_mass_lifetime(std::shared_ptr<TRandom> rng) {
+    if (pdg->Stable()) {
+      mass = pdg->Mass();
+      lifetime = 0;
+    else {
+      mass = rng->BreitWigner(pdg->Mass(), pdg->Width());
+      lifetime = rng->Exp(pdg->Lifetime());
+    }
+  }
+
   pdg_id type_{pdg_id::UNKNOWN};
   TParticlePDG* pdg_{nullptr};
   status_code status_{status_code::OTHER};
