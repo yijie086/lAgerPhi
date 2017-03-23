@@ -1,6 +1,7 @@
 #ifndef PCSIM_CORE_EVENT_LOADED
 #define PCSIM_CORE_EVENT_LOADED
 
+#include <pcsim/core/assert.hh>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
 #include <vector>

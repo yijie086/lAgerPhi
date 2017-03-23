@@ -10,21 +10,12 @@
 namespace pcsim {
 
 // =============================================================================
-// base struct to be used for generator data
-// =============================================================================
-struct generator_data {
-  double cross_section = 0; // cross section
-  double phase_space = 0;   // phase space volume
-  constexpr generator_data() = default;
-  constexpr generator_data(double xs, double ps)
-      : cross_section{xs}, phase_space{ps} {}
-};
-
-// =============================================================================
 // Base class for all generators
 //
 // Owns a shared pointer to the random generator, and handles the optional
 // configuration options
+//
+// Note: Data should be a struct with at least a cross_section data member
 // =============================================================================
 template <class Data, class... Input> class generator : public configurable {
 public:
