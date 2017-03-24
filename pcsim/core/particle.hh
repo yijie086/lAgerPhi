@@ -12,7 +12,11 @@
 
 namespace pcsim {
 
-// particle info
+// =============================================================================
+// particle 
+//
+// cornerstone class containing particle info
+// =============================================================================
 class particle {
 public:
   using ROOT::Math::XYZTVector::BetaVector;
@@ -27,8 +31,9 @@ public:
     SCAT = 13,
     UNSTABLE = 21,
     UNSTABLE_SCHC = 22,
-    FINAL = 31,
-    DECAYED = 32,
+    FINAL = 30,
+    DECAYED = 31,
+    DECAYED_SCHC = 32,
     OTHER = 99
   };
 
