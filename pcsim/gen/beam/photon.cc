@@ -43,6 +43,59 @@ inline double bremsstrahlung_intensity_010_param(const double E0,
   return brems10.Eval(k / E0) * 0.1 / k;
 }
 }
+
+namespace pcsim {
+namespace beam {
+static photon_data photon_data::make_real(const particle& lepton,
+                                          const particle& target,
+                                          const double E) {
+  particle::XYZVector vec{lepton.p().Unit()};
+  vec *= E;
+  photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}};
+  photon.scat_ = lepton.p() - photon.beam_.p();
+  photon.W2_ = (photon.beam_.p() + target.p()).M2();
+  photon.nu_ = (photon.p()).Dot(target.p()) / target.mass;
+  photon.y_ = photon.y_ * target.mass / (lepton.p()).Dot(target.p());
+
+  return photon;
+}
+static photon_data photon_data::make_virtual(const particle& lepton,
+                                             const particle& target,
+                                             const double Q2, const double y,
+                                             std::shared_ptr<TRandom> rng) {
+
+  // calculate scattered lepton
+  // work in target rest frame
+  particle::Boost boost{target.p().BoostToCM()}:
+  beam = lepton.p().Boost(boost);
+  // now work with z-axis along the lepton beam direction
+  const double E0 = beam.mom.E();
+  const double E1 = E0 * (1. - y);
+  const double theta1 = 2 * asin(sqrt(Q2 / (4. * E0 * E1)));
+  const double phi1 = rng->Uniform(0, TMath::TwoPi());
+  particle scat{lepton.type(),
+                {cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)},
+                E1};
+  // rotate to regular target rest frame, then boost to lab frame
+  scat.rotate_uz(beam.p());
+  scat.boost(-boost);
+
+  // calculate the actual photon 4-momentum
+  photon_data vphoton{lepton.p() - scat.p()};
+  vphoton.scat_ = scat;
+
+  // invariants
+  vphoton.Q2_ = Q2;
+  vphoton.y_ = y;
+  vphoton.nu_ = y * (target.p()).Dot(lepton.p()) / target.mass;
+  vphoton.W2_ = target.mass * target.mass + 2 * target.mass * vphoton.nu_ - Q2;
+  vphoton.x_ = Q2 / (2 * target.mass * vphoton.nu_);
+
+  return vphoton;
+}
+
+} // ns beam
+} // ns pcsim
  
 namespace pcsim {
 namespace gen{

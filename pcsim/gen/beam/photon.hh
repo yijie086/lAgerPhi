@@ -1,5 +1,5 @@
-#ifndef PCSIM_GEN_PHOTON_LOADED
-#define PCSIM_GEN_PHOTON_LOADED
+#ifndef PCSIM_BEAM_PHOTON_LOADED
+#define PCSIM_BEAM_PHOTON_LOADED
 
 #include <TRandom.h>
 #include <cmath>
@@ -7,22 +7,48 @@
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam.hh>
+#include <pcsim/gen/beam/beam.hh>
 #include <pcsim/physics/flux.hh>
 
 namespace pcsim {
-namespace gen {
+namespace beam {
 
-struct photon_data  : generator_data {
-  double W2;       // invariant mass of photon-target system
-  double Q2;       // photon virtuality
-  double nu;       //
-  double x;
-  double y;
-  particle scat;   // scattered lepton
-  particle photon; // photon (virtual or real)
+// =============================================================================
+// beam::photon_data
+//
+// secondary photon beam
+// =============================================================================
+class photon_data  : data {
+  // generalized constructors:
+  // make collinear real photon event with energy E
+  static photon_data make_real(const double E);
+
+  // generate virtual photon event with Q2 and y
+  // also needs access to a RNG to generate the azimuthal angle
+  static photon_data make_virtual(const double Q2, const double y,
+                                  std::shared_ptr<TRandom> rng);
+
   photon_data() = default;
-  photon_data(double xs, double ps) : generator_data(xs, ps) {}
+  photon_data(const particle::XYZTVector& p) : beam({pdg_id::photon, p}) {}
+
+private:
+  double W2_{0.}; // invariant mass of photon-target system
+  double Q2_{0.}; // photon virtuality
+  double nu_{0.}; // photon enery in target rest frame
+  double x_{0.};  // Bjorken x
+  double y_{0.};  // energy fraction of photon in target rest frame
+  particle scat_; // scattered lepton
+};
+
+double W2; // invariant mass of photon-target system
+double Q2; // photon virtuality
+double nu; //
+double x;
+double y;
+particle scat;   // scattered lepton
+particle photon; // photon (virtual or real)
+photon_data() = default;
+photon_data(double xs, double ps) : generator_data(xs, ps) {}
 };
 
 // =============================================================================
