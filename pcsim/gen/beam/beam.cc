@@ -1,9 +1,9 @@
 #include "beam.hh"
 
 namespace pcsim {
-namespace gen {
+namespace beam {
 
-factory<beam> beam::factory;
+factory<primary> primary::factory;
 //FACTORY_REGISTER(beam::factory, beam, "beam");
 
 } // gen
