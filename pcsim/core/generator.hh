@@ -17,19 +17,20 @@ namespace pcsim {
 //
 // Note: Data should be a struct with at least a cross_section data member
 // =============================================================================
-template <class Data, class... Input> class generator : public configurable {
+template <class Data, class... Input> class generator {
 public:
   using data_type = Data;
 
-  generator(const configuration& conf, const string_path& path,
-            std::shared_ptr<TRandom> r)
-      : configurable{conf, path}, rng_{std::move(r)} {}
+  generator(std::shared_ptr<TRandom> r) : rng_{std::move(r)} {}
 
+  // generate an event
   virtual data_type generate(const Input&... input) = 0;
   data_type operator()(const Input&... input) { return generate(input...); }
 
-  // contribution to the maximum cross section
-  virtual double max_cross_section() const { return 1; }
+  // contribution to the maximum cross section and phase space volume
+  // (to be implemented by child class)
+  virtual double max_cross_section() const = 0;
+  virtual double phase_space() const = 0;
 
 protected:
   // access the RNG
@@ -40,6 +41,8 @@ protected:
   //  range: generation range
   //  f: arbitrary function (continous within our range)
   //  fmax: maximum of f within our range
+  // this is useful for e.g. azimuthal distributions that don't impact the total
+  // cross section estimate
   template <class Func1D>
   double rand_f(const interval<double>& range, Func1D f, double fmax) const {
     const double x = rng()->Uniform(range.min, range.max);
@@ -65,19 +68,18 @@ private:
 //    * accept-reject
 //    * event building
 // Keeps track of the generated cross section
+//
+// Note: Event should derive from the event class (in core/event.hh)
 // =============================================================================
-template <class Event> class event_generator : public generator<Event> {
+template <class Event>
+class event_generator : public generator<Event>, public configurable {
 public:
   using event_type = Event;
   using base_type = generator<Event>;
 
   event_generator(const configuration& conf, const string_path& path,
                   std::shared_ptr<TRandom> r)
-      : base_type{conf, path, std::move(r)}
-      , phase_space_{0}
-      , ntrials_{0}
-      , nevents_{0}
-      , max_cross_section_{1} {}
+      : base_type{std::move(r)}, configurable{conf, path} {}
 
   virtual event_type generate() {
     // generate a phase space point
@@ -92,7 +94,6 @@ public:
       // accept or reject
       test = this->rng()->Uniform(0, max_cross_section_);
     } while (test > event.cross_section);
-    phase_space_ += event.phase_space * max_cross_section_;
     nevents_ += 1;
     // event builder step
     build_event(event);
@@ -100,21 +101,41 @@ public:
     return event;
   }
 
-  double cross_section() const { return phase_space_ / ntrials_; }
+  // total cross section is given by the size of the generator box 
+  // (phase_space * max_cross_section) times the fraction of accepted events
+  // compared to the number of trials
+  double cross_section() const {
+    return phase_space_ * max_cross_section_ * n_events_ / n_trials_;
+  }
   double nevents() const { return nevents_; }
 
+  // get the maximum cross section and total phase space volume
+  virtual double max_cross_section() const { return max_cross_section_; }
+  virtual double phase_space() const { return phase_space_; }
+
 protected:
+  // actual event generation step, to be implemented by child class
   virtual void generate_event(event_type&) const = 0;
+  // "event builder" step, to be implemented by child class
   virtual void build_event(event_type&) const = 0;
-  void add_max_cross_section(double max) { max_cross_section_ *= max; }
-  double max_cross_section() const { return max_cross_section_; }
+
+  // register a sub-process generator with this event generator.
+  // This stores the relevant phase_space and max_cross_section variables with
+  // the event generator
+  template <class Data, class... Input>
+  void add(const generator<Data, Input>& gen) {
+    max_cross_section_ *= gen.max_cross_section();
+    phase_space_ *= gen.phase_space();
+  }
+  void update_max_cross_section(double max) { max_cross_section_ *= max; }
+  void update_phase_space(const double ps) { phase_space *= ps; }
 
 private:
-  double phase_space_;       // cumulative phase space
-  size_t ntrials_;           // total number of trials
-  size_t nevents_;           // total number generated events
-  double max_cross_section_; // cross section maximum
+  double phase_space_{1.};       // phase space
+  size_t n_events_{0};           // total number generated events
+  size_t n_trials_{0};           // total number of trials
+  double max_cross_section_{1.}; // cross section maximum
 };
 
-}
+} // namespace pcsim
 #endif
