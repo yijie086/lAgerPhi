@@ -1,23 +1,24 @@
 #ifndef PCSIM_PHYSICS_DECAY_LOADED
 #define PCSIM_PHYSICS_DECAY_LOADED
 
-#include <TLorentzVector.h>
+#include <pcsim/core/particle.h>
+#include <pcsim/core/pdg.h>
 #include <tuple>
 
 namespace pcsim {
 namespace physics {
-namespace decay {
 
-// two body decay of a particle 'part' into two particles with masses
-// 'mass'.first and 'mass'.second and angles of the first decay particle
-// ('theta1', 'phi1')
+// =============================================================================
+// GENERIC TWO BODY DECAY
+// =============================================================================
+
+// two body decay of a particle 'part' into two particles xx (xx.first,
+// xx.second), with angles of the first decay particle ('theta1', 'phi1')
 //
 // Note: the angles are assumed to be in the helicity frame of 'part'
-std::pair<TLorentzVector, TLorentzVector>
-two_body(const TLorentzVector& part, const std::pair<double, double>& mass,
-         const double theta_1, const double phi_1);
+void decay_2body(const particle& part, const double theta_1, const double phi_1,
+                 std::pair<particle, particle>& xx)
 
-} // decay
 } // physics
 } // pcsim
 
