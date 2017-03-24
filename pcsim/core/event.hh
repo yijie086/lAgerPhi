@@ -14,23 +14,22 @@ namespace pcsim {
 // base event record that carries a list of all particles
 // derive form this class for more specialized event records
 // =============================================================================
-class event {
+class event : public generator_data {
 public:
   using vector_type = std::vector<particle>;
 
   event() = default;
   explicit event(const size_t evgen, const double xs = 1., const double w = 1.)
-      : evgen_{evgen}, cross_section_{xs}, weight_{w} {}
+      : generator_data{xs}, evgen_{evgen}, weight_{w} {}
 
-  // access cross section and weight info
+  // access evgen and weight info, cross section is available through the
+  // generator_data base class
   double evgen() const { return evgen_; }
-  double cross_section() const { return cross_section_; }
   double weight() const { return weight_; }
   int process() const { return process_; }
 
   // update weight and cross section
   void update_weight(const double w) { weight_ *= extra_weight; }
-  void update_cross_section(const double xs) { cross_section *= xs; }
   void update_process(const int proc) { process_ = proc; }
 
   // access particle info
@@ -67,7 +66,6 @@ private:
   void update_s();
 
   size_t evgen_{1.}; // total number of generated events including this event
-  double cross_section_{1.}; // estimated total cross section up to this point
   double weight_{1.};
   int process_{0}; // optional process identifier
   double s_;       // mandelstam s, automatically calculated from beam and target

@@ -9,13 +9,22 @@
 
 namespace pcsim {
 
+class generator_data {
+public:
+  explicit generator_data(const double xs = 1.) : cross_section_{xs} {}
+
+  void update_cross_section(const double xs) { cross_section_ *= xs; }
+  double cross_section() const { return cross_section_; }
+
+private:
+  double cross_section_;
+};
+
 // =============================================================================
 // Base class for all generators
 //
 // Owns a shared pointer to the random generator, and handles the optional
 // configuration options
-//
-// Note: Data should be a struct with at least a cross_section data member
 // =============================================================================
 template <class Data, class... Input> class generator {
 public:
@@ -89,11 +98,11 @@ public:
       ntrials_ += 1;
       event.part.clear();
       generate_event(event);
-      tassert(event.cross_section <= max_cross_section_,
+      tassert(event.cross_section() <= max_cross_section_,
               "Invalid cross section maximum");
       // accept or reject
       test = this->rng()->Uniform(0, max_cross_section_);
-    } while (test > event.cross_section);
+    } while (test > event.cross_section());
     nevents_ += 1;
     // event builder step
     build_event(event);

@@ -101,6 +101,9 @@ public:
 
 private:
   void set_mass_lifetime(std::shared_ptr<TRandom> rng);
+  XYZTVector make_4vector(const XYZVector v, const double t) {
+    return {v.X(), v.Y(), v.Z(), v.t()};
+  }
 
   pdg_id type_{pdg_id::UNKNOWN};
   TParticlePDG* pdg_{nullptr};
@@ -143,13 +146,13 @@ inline particle::particle(const pdg_id)
 inline particle::particle(const pdg_id id, const XYZVector& p3)
     : particle{id}
     , mass_{pdg->Mass()}
-    , p_{p3, sqrt(mass_ * mass_ + p_.Mag2())} {}
+    , p_{make_4vector(p3, sqrt(mass_ * mass_ + p_.Mag2()))} {}
 // particle in a given direction with a given energy
 inline particle::particle(const pdg_id id, const XYZVector& direction,
                           const double E)
     : particle{id}
     , mass_{pdg->Mass()}
-    , p_{direction.Unit() * sqrt(E * E - mass_ * mass_), E} {}
+    , p_{make_4vector(direction.Unit() * sqrt(E * E - mass_ * mass_), E)} {}
 // particle with a given 4-momentum (can be off-shell)
 inline particle::particle(const pdg_id id, const XYZTVector& p)
     : particle{id}, mass_{p.M()}, p_{p} {}
@@ -163,7 +166,7 @@ inline particle::particle(const pdg_id id, const XYZVector& p3,
                           std::shared_ptr<TRandom> rng)
     : particle{id} {
   set_mass_lifetime(std::move(rng));
-  p_.SetXYZM(p.X(), p.Y(), p.Z(), mass_);
+  p_.SetXYZT(p.X(), p.Y(), p.Z(), sqrt(mass_ * mass_ + p.Mag2()));
 }
 //
 // parent/daughter modifiers

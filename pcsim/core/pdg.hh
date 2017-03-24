@@ -107,12 +107,12 @@ enum class pdg_id : int32_t {
   He4 = pdg_nuclear_id(4, 2),
   C12 = pdg_nuclear_id(12, 6),
   N14 = pdg_nuclear_id(14, 7),
-  // LHCb pentaquark hypetheses (in order of likelihood for the 4500 and 4380)
+  // LHCb pentaquark hypetheses (in order of likelihood for the 4450 and 4380)
   //                              q1 q2 q3 q4 qb 2J P  Extra
-  Pc_4500_52p = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1),
-  Pc_4500_52m = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2),
-  Pc_4500_32p = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3),
-  Pc_4500_32m = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4),
+  Pc_4450_52p = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1),
+  Pc_4450_52m = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2),
+  Pc_4450_32p = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3),
+  Pc_4450_32m = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4),
   Pc_4380_32m = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1),
   Pc_4380_32p = pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2),
   Pc_4380_52m = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3),

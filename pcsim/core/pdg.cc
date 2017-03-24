@@ -29,15 +29,15 @@ public:
     db_->AddParticle("N-14", "Nitrogen-14", 13.0403, true, 0, 1, "nucleus",
                      static_cast<int32_t>(pdg_id::N14));
     // pentaquarks
-    // Pc(4500)
-    db_->AddParticle("Pc_4500_52p", "P_{c} (4500, 5/2+)", 4.500, false, 0.039,
-                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4500_52p));
-    db_->AddParticle("Pc_4500_52m", "P_{c} (4500, 5/2-)", 4.500, false, 0.039,
-                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4500_52m));
-    db_->AddParticle("Pc_4500_32p", "P_{c} (4500, 3/2+)", 4.500, false, 0.039,
-                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4500_32p));
-    db_->AddParticle("Pc_4500_32m", "P_{c} (4500, 3/2-)", 4.500, false, 0.039,
-                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4500_32m));
+    // Pc(4450)
+    db_->AddParticle("Pc_4450_52p", "P_{c} (4450, 5/2+)", 4.450, false, 0.039,
+                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4450_52p));
+    db_->AddParticle("Pc_4450_52m", "P_{c} (4450, 5/2-)", 4.450, false, 0.039,
+                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4450_52m));
+    db_->AddParticle("Pc_4450_32p", "P_{c} (4450, 3/2+)", 4.450, false, 0.039,
+                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4450_32p));
+    db_->AddParticle("Pc_4450_32m", "P_{c} (4450, 3/2-)", 4.450, false, 0.039,
+                     "pentaquark", static_cast<int32_t>(pdg_id::Pc_4450_32m));
     // Pc(4380)
     db_->AddParticle("Pc_4380_32m", "P_{c} (4380, 3/2-)", 4.380, false, 0.205,
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_4380_32m));
