@@ -48,10 +48,11 @@ namespace pcsim {
 namespace beam {
 static photon_data photon_data::make_real(const particle& lepton,
                                           const particle& target,
-                                          const double E) {
+                                          const double E,
+                                          const double xs = 1.) {
   particle::XYZVector vec{lepton.p().Unit()};
   vec *= E;
-  photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}};
+  photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}, xs};
   photon.scat_ = lepton.p() - photon.beam_.p();
   photon.W2_ = (photon.beam_.p() + target.p()).M2();
   photon.nu_ = (photon.p()).Dot(target.p()) / target.mass;
@@ -62,7 +63,8 @@ static photon_data photon_data::make_real(const particle& lepton,
 static photon_data photon_data::make_virtual(const particle& lepton,
                                              const particle& target,
                                              const double Q2, const double y,
-                                             std::shared_ptr<TRandom> rng) {
+                                             std::shared_ptr<TRandom> rng,
+                                             const double xs = 1.) {
 
   // calculate scattered lepton
   // work in target rest frame
@@ -81,7 +83,7 @@ static photon_data photon_data::make_virtual(const particle& lepton,
   scat.boost(-boost);
 
   // calculate the actual photon 4-momentum
-  photon_data vphoton{lepton.p() - scat.p()};
+  photon_data vphoton{lepton.p() - scat.p(), xs};
   vphoton.scat_ = scat;
 
   // invariants
@@ -107,11 +109,11 @@ factory<photon> photon::factory;
 
 bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
                                std::shared_ptr<TRandom> r)
-    : photon{cf, path, std::move(r)}
-    , model_{conf().get<bremsstrahlung::model>("model", bs_model_translator)}
-    , rl_{(model_ != model::FLAT) ? conf().get<double>("rl") : -1}
+    : photon{cf}
+    , model_{cf.get<bremsstrahlung::model>(path / "model", bs_model_translator)}
+    , rl_{(model_ != model::FLAT) ? cf.get<double>(path / "rl") : -1}
     , E_beam_{cf.get<double>("beam/energy")}
-    , E_range_{conf().get_range<double>("E_range")}
+    , E_range_{cf.get_range<double>(path / "E_range")}
     , max_{intensity(E_range_.min, E_beam_)} {
   // initial info
   LOG_INFO("bremsstrahlung", "Maximum primary electron beam energy [GeV]: " +
@@ -147,34 +149,29 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
   }
 }
 
-photon_data bremsstrahlung::generate(const particle& beam,
-                                     const particle& target) {
-  tassert(beam.mom.E() > E_range_.min,
+photon_data bremsstrahlung::generate(const beam::data& lepton,
+                                     const beam::data& target) {
+  tassert(lepton.beam().E() > E_range_.min,
           "Beam energy below bremsstrahlung generation window");
-  tassert(beam.mom.E() <= E_beam_,
-          "Beam energy higher than full electron beam energy.");
-  // generate an energy inside of the kinematically allowed window
-  const interval<double> Elim{E_range_.min, fmin(beam.mom.E(), E_range_.max)};
-  const double E = rng()->Uniform(Elim.min, Elim.max);
+  tassert(lepton.beam().E() <= E_beam_,
+          "Beam energy higher than maximum electron beam energy.");
+  // generate a value for E
+  const double E = rng()->Uniform(E_range_.min, E_range_.max);
+  LOG_JUNK("bremsstrahlung", "Generated E: " + std::to_string(E));
 
-  // if our beam energy lies inside the requested window, we need to multiply an
-  // additional phase space factor with the cross section
-  const double ps_fact = Elim.width() / E_range_.width();
-  // initialize our event with the bremsstrahlung intensity and the phase space
-  photon_data event{intensity(E, beam.mom.E()) * ps_fact, E_range_.width()};
+  // check if this value is in the allowed range
+  const interval<double> Elim{E_range_.min,
+                              fmin(lepton.beam().E(), E_range_.max)};
+  if (Elim.excludes(E)) {
+    LOG_JUNK("bremsstrahlung", "Value outside the valid E range");
+    return photon_data{0.};
+  }
 
-  // build our full photon event
-  event.photon.mom.SetVectM(beam.mom.Vect().Unit() * E, 0);
-  event.scat.mom = beam.mom - event.photon.mom;
-  // set the invariants
-  event.W2 = (event.photon.mom + target.mom).M2();
-  event.Q2 = 0;
-  event.nu = (event.photon.mom * target.mom) / target.mass;
-  event.x = 0;
-  event.y = event.nu / (beam.mom * target.mom) * target.mass;
+  photon_data pd = photon_data::make_real(lepton.beam(), target.beam(), E,
+                                          intensity(E, beam.mom.E()));
 
   // that's all!
-  return event;
+  return pd;
 }
 
 double bremsstrahlung::intensity(const double E, const double E_beam) const {
@@ -197,8 +194,8 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
 
 vphoton::vphoton(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r)
-    : photon{cf, path, std::move(r)}
-    , y_range_{conf().get_range<double>("y_range")}
+    : photon{cf}
+    , y_range_{cf.get_range<double>(path / "y_range")}
     , logy_range_{std::log(y_range_.min), std::log(y_range_.max)}
     , Q2_range_{calc_max_Q2_range(cf)}
     , logQ2_range_{std::log(Q2_range_.min), std::log(Q2_range_.max)}
@@ -232,11 +229,10 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
 }
 
 photon_data vphoton::generate(const particle& beam, const particle& target) {
-  photon_data event;
 
   // generate a value for Q2 and y
-  event.y = exp(rng()->Uniform(logy_range_.min, logy_range_.max));
-  event.Q2 = exp(rng()->Uniform(logQ2_range_.min, logQ2_range_.max));
+  const double y = exp(rng()->Uniform(logy_range_.min, logy_range_.max));
+  const double Q2 = exp(rng()->Uniform(logQ2_range_.min, logQ2_range_.max));
 
   LOG_JUNK("vphoton",
            "Generated y: " + std::to_string(event.y) + " Q2: " +
@@ -245,43 +241,31 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   // check Q2 boundaries for validity
   if (Q2_range(beam, target, event.y).excludes(event.Q2)) {
     LOG_JUNK("vphoton", "Values outside of valid Q2 range");
-    return event;
+    return pd{0};
   }
 
-  // set the invariants
-  event.nu = event.y * (target.mom * beam.mom) / target.mass;
-  event.W2 = target.mom.M2() + 2 * target.mass * event.nu - event.Q2;
-  event.x = event.Q2 / (2. * event.nu * target.mass);
+  photon_data pd =
+      photon_data::make_virtual(lepton.beam, target.beam, Q2, y, rng(),
+                                flux(Q2, y, lepton.beam(), target.beam()));
 
-  LOG_JUNK("vphoton",
-           "nu: " + std::to_string(event.nu) + " W2: " +
-               std::to_string(event.W2) + " x: " + std::to_string(event.x));
-  ;
+  LOG_JUNK("vphoton", "nu: " + std::to_string(pd.nu()) +
+                          " W2: " + std::to_string(pd.W2()) +
+                          " x: " + std::to_string(pd.x()));
 
   // check if the invariants are in the range we want
-  if (W2_range_.excludes(event.W2)) {
+  if (W2_range_.excludes(event.W2())) {
     LOG_JUNK("vphoton", "Values outside of valid W2 range");
     return event;
   }
 
-  // initiate our event with the vphoton flux and the phase space
-  event.cross_section = flux(event.Q2, event.y, beam, target);
-  event.phase_space = logQ2_range_.width() * logy_range_.width();
-
-  LOG_JUNK("vphoton",
-           "xsec: " + std::to_string(event.cross_section) + "( < " +
-               std::to_string(max_) + ")");
+  LOG_JUNK("vphoton", "xsec: " + std::to_string(pd.cross_section) + "( < " +
+                          std::to_string(max_) + ")");
 
   // bail if our cross section is not positive
-  if (event.cross_section <= 0) {
-    event.cross_section = 0;
-    return event;
+  if (pd.cross_section() < 0) {
+    pd.update_cross_section(0);
   }
  
-  // build our full photon event
-  event.scat = generate_scat(event.Q2, event.y, beam, target);
-  event.photon = {pdg_id::gamma, beam.mom - event.scat.mom};
-
   // that's all
   return event;
 }
@@ -318,7 +302,7 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
   const double Q2min =
-      fmax(Q2_range(beam, target, y_range_.min).min, .00051 * .00051);
+      fmax(Q2_range(beam, target, y_range_.min).min, beam.mass * beam.mass);
   // Q2 max is reached for the point where Q2_high1 equals Q2_high2
   // which is (up to a precision of lepton mass squared):
   // y = 2E/(M+2E)
@@ -355,30 +339,7 @@ interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
   return {W2min, W2max};
 }
 
-// generate the scattered lepton vector for a given generated event
-particle vphoton::generate_scat(const double Q2, const double y, particle beam,
-                                const particle& target) {
-  // to obtain the scattered lepton vector, we work in the target rest frame
-  TVector3 beta_t = target.mom.BoostVector();
-  beam.mom.Boost(-beta_t);
-  // work in rotated target rest frame with a z-axis along the lepton beam
-  // direction
-  const double E0 = beam.mom.E();
-  const double E1 = E0 * (1 - y);
-  const double sinby2 = sqrt(Q2 / (4. * E0 * E1));
-  const double theta1 = 2 * asin(sinby2);
-  const double phi1 = rng()->Uniform(0, TMath::TwoPi());
-  particle scat{pdg_id::e_minus,
-                {cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)},
-                E1};
-  // rotate to the regular target rest frame
-  TVector3 dir{beam.mom.Vect().Unit()};
-  scat.mom.RotateUz(dir);
-  // boost back to the lab frame
-  scat.mom.Boost(beta_t);
-  return scat;
-}
-
+#if 0 // TODO add to physics module
 // calculate the maximum Q2 range for a given beam, target and y
 interval<double> vphoton::Q2_range(const particle& beam, const particle& target,
                                    const double y) const {
@@ -395,6 +356,7 @@ interval<double> vphoton::Q2_range(const particle& beam, const particle& target,
   const double Q2_high2 = 2 * target.mass * E * y;
   return {Q2_low, fmin(Q2_high1, Q2_high2)};
 }
+#endif
 
 } // gen
 } // pcsim

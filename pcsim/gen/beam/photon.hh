@@ -21,15 +21,30 @@ namespace beam {
 class photon_data  : data {
   // generalized constructors:
   // make collinear real photon event with energy E
-  static photon_data make_real(const double E);
+  static photon_data make_real(const particle& lepton, const particle& target,
+                               const double E, const double xs = 1.);
 
   // generate virtual photon event with Q2 and y
   // also needs access to a RNG to generate the azimuthal angle
-  static photon_data make_virtual(const double Q2, const double y,
-                                  std::shared_ptr<TRandom> rng);
+  static photon_data make_virtual(const particle& lepton,
+                                  const particle& target, const double Q2,
+                                  const double y, std::shared_ptr<TRandom> rng,
+                                  const double xs = 1.);
 
   photon_data() = default;
-  photon_data(const particle::XYZTVector& p) : beam({pdg_id::photon, p}) {}
+  photon_data(const double xs) : data{xs} {}
+
+  photon_data(const particle::XYZTVector& p) : beam{{pdg_id::gamma, p}} {}
+  photon_data(const particle::XYZTVector& p, const double xs)
+      : beam{{pdg_id::gamma, p}, xs} {}
+
+  double W2() const { return W2_; }
+  double Q2() const { return Q2_; }
+  double nu() const { return nu_; }
+  double x() const { return x_; }
+  double y() const { return y_; }
+
+  const particle& scat() const { return scat_; }
 
 private:
   double W2_{0.}; // invariant mass of photon-target system
@@ -59,12 +74,10 @@ class photon : public generator<photon_data, particle, particle> {
 public:
   static factory<photon> factory;
 
-  photon(const configuration& conf, const string_path& path,
-         std::shared_ptr<TRandom> r)
-      : generator{conf, path, std::move(r)} {}
+  photon(std::shared_ptr<TRandom> r) : generator{std::move(r)} {}
 
-  virtual photon_data generate(const particle& beam,
-                               const particle& target) = 0;
+  virtual photon_data generate(const beam::data& beam,
+                               const beam::data& target) = 0;
 
 private:
   ; // nothing here
@@ -75,11 +88,13 @@ class bremsstrahlung : public photon {
 public:
   enum class model { FLAT, PARAM, APPROX };
 
-  bremsstrahlung(const configuration& conf, const string_path& path,
+  bremsstrahlung(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r);
 
-  virtual photon_data generate(const particle& beam, const particle& target);
+  virtual photon_data generate(const beam::data& beam,
+                               const beam::data& target);
   virtual double max_cross_section() const { return max_; }
+  virtual double phase_space() const { return E_range_.width(); }
 
 protected:
   double intensity(const double E, const double beam) const;
@@ -88,7 +103,7 @@ private:
   const model model_; // bremsstrahlung model
   const double rl_;   // number of radiation lenghts (when using approx model,
                       // set to zero otherwise)
-  const double E_beam_; // (maximum) electron beam energy
+  const double E_beam_;            // (maximum) electron beam energy
   const interval<double> E_range_; // photon energy range
   const double max_;               // the maximum intensity.
 };
@@ -99,23 +114,23 @@ public:
   vphoton(const configuration& cf, const string_path& path,
           std::shared_ptr<TRandom> r);
 
-  virtual photon_data generate(const particle& beam, const particle& target);
+  virtual photon_data generate(const beam::data& beam,
+                               const beam::data& target);
   virtual double max_cross_section() const { return max_; }
+  virtual double phase_space() const {
+    return logy_range_.width() * logQ2_range_.width();
+  }
 
 protected:
   double flux(const double Q2, const double y, const particle& beam,
               const particle& target) const {
-    return physics::flux::gamma_t_log(Q2, y, beam.mom, target.mom);
+    return physics::flux::gamma_t_log(Q2, y, beam, target);
   }
 
 private:
-  interval<double> Q2_range(const particle& beam, const particle& target,
-                            const double y) const;
   double calc_max_flux(const configuration& cf) const;
   interval<double> calc_max_Q2_range(const configuration& cf) const;
   interval<double> calc_max_W2_range(const configuration& cf) const;
-  particle generate_scat(const double Q2, const double y, particle beam,
-                         const particle& target);
 
   // primary kinematic boundaries
   const interval<double> y_range_;

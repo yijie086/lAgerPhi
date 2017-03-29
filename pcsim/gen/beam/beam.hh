@@ -17,8 +17,10 @@ class data : public generator_data {
 public:
   data() = default;
   data(const particle& part) : beam_{part} {}
+  data(const particle& part, const double xs)
+      : generator_data{xs}, beam_{part} {}
+  data(const double xs) : generator_data{xs} {}
 
-  particle& beam() { return beam_; }
   const particle& beam() const { return beam_; }
 
 private:
