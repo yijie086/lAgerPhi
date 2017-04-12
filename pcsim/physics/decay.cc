@@ -8,9 +8,10 @@ namespace decay {
 // xx.second), with angles of the first decay particle ('theta1', 'phi1')
 //
 // Note: the angles are assumed to be in the helicity frame of 'part'
-std::pair<particle, particle>
-decay_2body(const TLorentzVector& part, const double theta_1, const double phi_1,
-         const std::pair<particle, particle>& xx) {
+std::pair<particle, particle> decay_2body(const TLorentzVector& part,
+                                          const double theta_1,
+                                          const double phi_1,
+                                          std::pair<particle, particle>& xx) {
 
   // calculate the CM kinematics
   const double E = part.mass();

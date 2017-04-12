@@ -1,8 +1,8 @@
 #ifndef PCSIM_PHYSICS_DECAY_LOADED
 #define PCSIM_PHYSICS_DECAY_LOADED
 
-#include <pcsim/core/particle.h>
-#include <pcsim/core/pdg.h>
+#include <pcsim/core/particle.hh>
+#include <pcsim/core/pdg.hh>
 #include <tuple>
 
 namespace pcsim {
