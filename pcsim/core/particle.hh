@@ -23,6 +23,7 @@ public:
   using ROOT::Math::XYZTVector;
   using ROOT::Math::Boost;
   using ROOT::Math::XYZVector;
+  using ROOT::Math::Polar3DVector;
 
   // particle status
   enum class status_code : int {
@@ -68,6 +69,7 @@ public:
   // particle properties
   int charge() const { return charge_; }
   double mass() const { return mass_; }
+  double mass2() const { return mass_ * mass_; }
   double lifetime() const { return lifetime_; }
   interval<int> parent() const { return parent_; }
   interval<int> daughter() const { return daughter_; }
@@ -77,6 +79,8 @@ public:
   int parent_first() const { return parent_.min; }
   int parent_second() const { return parent_.max; }
   int n_parents() const { return parent_.max - parent_.min; }
+  double momentum() const { return p_.Vect().Mag(); }
+  double energy() const { return p_.E(); }
 
   // get a reference to the momentum/vertex 4-vector
   XYZTVector& p() { return p_; };
@@ -91,6 +95,7 @@ public:
   // coordate system of v
   // (algorithm taken from TVector3::RotateUz)
   void rotate_uz(const XYZVector& v);
+  void rotate_uz(const XYZTVector& v);
 
   // add a daughter track
   void add_daughter(const int index);
@@ -141,7 +146,8 @@ namespace pcsim {
 inline particle::particle(const pdg_id)
     : type_{id}
     , pdg_{pdg_particle(id)}
-    , charge_{static_cast<int>(pdg->Charge() / 3)} {}
+    , charge_{(id != pdg_id::unknown) static_cast<int>(pdg->Charge() / 3) : 0} {
+}
 // particle with a given momentum 3-vector
 inline particle::particle(const pdg_id id, const XYZVector& p3)
     : particle{id}
@@ -213,6 +219,9 @@ inline void particle::rotate_uz(const particle::XYZVector& v) {
   } else if (u3 < 0) { // phi = 0, theta = pi
     p_ = {-p.X(), p.Y(), -p.Z(), p.T()};
   }
+}
+inline void particle::rotate_uz(const particle::XYZTVector& v) {
+  rotate_uz(v.Vect());
 }
 inline void particle::boost(const particle::BetaVector& bv) {
   lorentzboost b{bv};
