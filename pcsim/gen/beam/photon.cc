@@ -2,8 +2,12 @@
 #include <TF1.h>
 #include <TSpline.h>
 #include <pcsim/core/assert.hh>
+#include <pcsim/physics/kinematics.hh>
 
+
+// =======================================================================================
 // local utility functions
+// =======================================================================================
 namespace {
 const pcsim::translation_map<pcsim::gen::bremsstrahlung::model>
     bs_model_translator{{"flat", pcsim::gen::bremsstrahlung::model::FLAT},
@@ -46,6 +50,16 @@ inline double bremsstrahlung_intensity_010_param(const double E0,
 
 namespace pcsim {
 namespace beam {
+
+// factory registration TODO fix
+factory<photon> photon::factory;
+//FACTORY_REGISTER(photon::factory, bremsstrahlung, "bremsstrahlung");
+//FACTORY_REGISTER(photon::factory, vphoton, "vphoton");
+
+
+// =======================================================================================
+// Create a new real photon
+// =======================================================================================
 static photon_data photon_data::make_real(const particle& lepton,
                                           const particle& target,
                                           const double E,
@@ -60,6 +74,10 @@ static photon_data photon_data::make_real(const particle& lepton,
 
   return photon;
 }
+
+// =======================================================================================
+// Create a new virtual photon
+// =======================================================================================
 static photon_data photon_data::make_virtual(const particle& lepton,
                                              const particle& target,
                                              const double Q2, const double y,
@@ -96,17 +114,9 @@ static photon_data photon_data::make_virtual(const particle& lepton,
   return vphoton;
 }
 
-} // ns beam
-} // ns pcsim
- 
-namespace pcsim {
-namespace gen{
-
-
-factory<photon> photon::factory;
-//FACTORY_REGISTER(photon::factory, bremsstrahlung, "bremsstrahlung");
-//FACTORY_REGISTER(photon::factory, vphoton, "vphoton");
-
+// =======================================================================================
+// bremsstrahlung constructor
+// =======================================================================================
 bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
                                std::shared_ptr<TRandom> r)
     : photon{cf}
@@ -149,6 +159,9 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
   }
 }
 
+// =======================================================================================
+// Generate a new bremstrahlung photon
+// =======================================================================================
 photon_data bremsstrahlung::generate(const beam::data& lepton,
                                      const beam::data& target) {
   tassert(lepton.beam().E() > E_range_.min,
@@ -174,6 +187,9 @@ photon_data bremsstrahlung::generate(const beam::data& lepton,
   return pd;
 }
 
+// =======================================================================================
+// return the bremstrahlung intensity for the prefered parameterization
+// =======================================================================================
 double bremsstrahlung::intensity(const double E, const double E_beam) const {
   if (model_ == model::FLAT) {
     return 1.;
@@ -192,6 +208,9 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
   }
 }
 
+// =======================================================================================
+// constructor for vphoton
+// =======================================================================================
 vphoton::vphoton(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r)
     : photon{cf}
@@ -228,6 +247,9 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
           "Ensure ymin < ymax for the virtual photon y range");
 }
 
+// =======================================================================================
+// generate a new virtual photon
+// =======================================================================================
 photon_data vphoton::generate(const particle& beam, const particle& target) {
 
   // generate a value for Q2 and y
@@ -239,7 +261,7 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
                std::to_string(event.Q2));
 
   // check Q2 boundaries for validity
-  if (Q2_range(beam, target, event.y).excludes(event.Q2)) {
+  if (physics::Q2_range(beam, target, event.y).excludes(event.Q2)) {
     LOG_JUNK("vphoton", "Values outside of valid Q2 range");
     return pd{0};
   }
@@ -270,10 +292,13 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   return event;
 }
  
+// =======================================================================================
 // calculate an upper limit for the flux for the requested kinematic limits
+//
 // the max is reached for Q2 = Q2max and y = ymin
 // ==> note: these values are obtained when using the functional form
 // differential in logQ2 and logy!
+// =======================================================================================
 double vphoton::calc_max_flux(const configuration& cf) const {
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
                       cf.get_vector3<TVector3>("beam/dir"),
@@ -282,81 +307,79 @@ double vphoton::calc_max_flux(const configuration& cf) const {
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
   const double Q2 = Q2_range_.max;
-#if 0
-  auto flux_y = [&](const double* yy, const double*) {
-    const double y = yy[0];
-    return flux(Q2, y, beam, target);
-  };
-  TF1 flux_tf1("flux_y", flux_y, y_range_.min, y_range_.max, 0, 1);
-  return flux_tf1.GetMaximum() * 1.001;
-#endif
   const double y = y_range_.min;
   return flux(Q2, y, beam, target);
 }
-// calculate max Q2 range
+
+// =======================================================================================
+// calculate max Q2 range, assuming the y-range is already set
+// =======================================================================================
 interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
+  // get beam and target info
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
                       cf.get_vector3<TVector3>("beam/dir"),
                       cf.get<double>("beam/energy")};
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
-  const double Q2min =
-      fmax(Q2_range(beam, target, y_range_.min).min, beam.mass * beam.mass);
-  // Q2 max is reached for the point where Q2_high1 equals Q2_high2
-  // which is (up to a precision of lepton mass squared):
-  // y = 2E/(M+2E)
+
+  // Cap the minimum Q2 at lepton mass squared
+  const double Q2min = fmax(physics::Q2_range(beam, target, y_range_.min).min,
+                            beam.mass * beam.mass);
+
+  // In general, the maximum Q2 range is determined through the kinematics of
+  // t-channel scattering (falling function of y), as well as the requirement
+  // that the final state contain at least te target mass (W2min = M2_target; a
+  // rising function of y).
+  //
+  // Q2 max is reached for the point where both values cross,  which is (up to a
+  // precision of lepton mass squared): y = 2E/(M+2E).
+  //
   // alternatively, if a y-cut is set below this point, the maximum is reached
   // at maximum y
+  //
+  // finally, we also allow for the user to manually set a Q2 range
   const double E = beam.mom * target.mom / target.mass;
+  // get Q2 range from kinematics
   const double Q2max =
-      Q2_range(beam, target,
-               fmin(2. * E / (target.mass + 2. * E), y_range_.max))
+      physics::Q2_range(beam, target,
+                        fmin(2. * E / (target.mass + 2. * E), y_range_.max))
           .max;
+  // check if there is an alternative user-defined range
   const auto opt_range_ = cf.get_optional_range<double>("photon/Q2_range");
   if (opt_range_) {
+    // only return a kinematically allowed range
     return {fmax(opt_range_->min, Q2min), fmin(opt_range_->max, Q2max)};
   }
   return {Q2min, Q2max};
 }
+
+// =======================================================================================
 // allow for the user to set a W2 range
+// =======================================================================================
 interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
+  // get beam and target info
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
                       cf.get_vector3<TVector3>("beam/dir"),
                       cf.get<double>("beam/energy")};
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
                         cf.get_vector3<TVector3>("target/dir"),
                         cf.get<double>("target/energy")};
+
   // at least target in final state, at most s in final state
   const double W2min = target.mass * target.mass;
   const double W2max = (beam.mom + target.mom).M2();
-  // check if the user requested a range
+
+  // check if the user requested a different range range
   const auto opt_range_ = cf.get_optional_range<double>("photon/W_range");
+
   if (opt_range_) {
+    // ensure the user-set range is kinematically allowed
     return {fmax(opt_range_->min * opt_range_->min, W2min),
             fmin(opt_range_->max * opt_range_->max, W2max)};
   }
   return {W2min, W2max};
 }
 
-#if 0 // TODO add to physics module
-// calculate the maximum Q2 range for a given beam, target and y
-interval<double> vphoton::Q2_range(const particle& beam, const particle& target,
-                                   const double y) const {
-  const double E = beam.mom * target.mom / target.mass;
-  const double E2 = E * E;
-  const double m2 = beam.mass * beam.mass;
-  // lower and upper bound from t-channel process on electron leg
-  const double comp1 = -2. * m2 + 2. * E2 * (1. - y);
-  const double comp2 = 2. * sqrt((E2 - m2) * (E2 * (1. - y) * (1. - y) - m2));
-  const double Q2_low = comp1 - comp2;
-  const double Q2_high1 = comp1 + comp2;
-  // alternative upper bound from requirement that final state has at least the
-  // invariant mass of the target mass (W2min = target.mass)
-  const double Q2_high2 = 2 * target.mass * E * y;
-  return {Q2_low, fmin(Q2_high1, Q2_high2)};
-}
-#endif
-
-} // gen
+} // beam
 } // pcsim

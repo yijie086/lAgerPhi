@@ -32,9 +32,9 @@ private:
 //
 // constant 4-vector beam
 // =============================================================================
-class primary : public generator<particle> {
+class primary : public generator<data> {
 public:
-  static factory<primary> factory;
+  static factory<data> factory;
 
   primary(const configuration& cf, const string_path& path,
        std::shared_ptr<TRandom> r)
@@ -46,7 +46,7 @@ public:
     LOG_INFO("beam::primary", "energy [GeV]: " + std::to_string(beam_.mom.E()));
   }
 
-  virtual particle generate() { return beam_; }
+  virtual data generate() { return {beam_}; }
 
 protected:
   const particle beam_;

@@ -32,6 +32,9 @@ class photon_data  : data {
                                   const double xs = 1.);
 
   photon_data() = default;
+  photon_data(const photon_data&) = default;
+  photon_data& operator=(const photon_data&) = default;
+
   photon_data(const double xs) : data{xs} {}
 
   photon_data(const particle::XYZTVector& p) : beam{{pdg_id::gamma, p}} {}
@@ -53,17 +56,6 @@ private:
   double x_{0.};  // Bjorken x
   double y_{0.};  // energy fraction of photon in target rest frame
   particle scat_; // scattered lepton
-};
-
-double W2; // invariant mass of photon-target system
-double Q2; // photon virtuality
-double nu; //
-double x;
-double y;
-particle scat;   // scattered lepton
-particle photon; // photon (virtual or real)
-photon_data() = default;
-photon_data(double xs, double ps) : generator_data(xs, ps) {}
 };
 
 // =============================================================================
