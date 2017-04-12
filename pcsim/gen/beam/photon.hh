@@ -22,14 +22,14 @@ class photon_data  : data {
   // generalized constructors:
   // make collinear real photon event with energy E
   static photon_data make_real(const particle& lepton, const particle& target,
-                               const double E, const double xs = 1.);
+                               const double E, const double xs);
 
   // generate virtual photon event with Q2 and y
-  // also needs access to a RNG to generate the azimuthal angle
+  // also needs an azimuthal angle in the CM frame
   static photon_data make_virtual(const particle& lepton,
                                   const particle& target, const double Q2,
-                                  const double y, std::shared_ptr<TRandom> rng,
-                                  const double xs = 1.);
+                                  const double y, const double xs,
+                                  const double phi);
 
   photon_data() = default;
   photon_data(const photon_data&) = default;

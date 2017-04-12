@@ -69,8 +69,8 @@ static photon_data photon_data::make_real(const particle& lepton,
   photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}, xs};
   photon.scat_ = lepton.p() - photon.beam_.p();
   photon.W2_ = (photon.beam_.p() + target.p()).M2();
-  photon.nu_ = (photon.p()).Dot(target.p()) / target.mass;
-  photon.y_ = photon.y_ * target.mass / (lepton.p()).Dot(target.p());
+  photon.nu_ = (photon.p()).Dot(target.p()) / target.mass();
+  photon.y_ = photon.y_ * target.mass() / (lepton.p()).Dot(target.p());
 
   return photon;
 }
@@ -81,18 +81,18 @@ static photon_data photon_data::make_real(const particle& lepton,
 static photon_data photon_data::make_virtual(const particle& lepton,
                                              const particle& target,
                                              const double Q2, const double y,
-                                             std::shared_ptr<TRandom> rng,
-                                             const double xs = 1.) {
+                                             const double xs,
+                                             const double phi) {
 
   // calculate scattered lepton
   // work in target rest frame
   particle::Boost boost{target.p().BoostToCM()}:
   beam = lepton.p().Boost(boost);
   // now work with z-axis along the lepton beam direction
-  const double E0 = beam.mom.E();
+  const double E0 = beam.p.E();
   const double E1 = E0 * (1. - y);
   const double theta1 = 2 * asin(sqrt(Q2 / (4. * E0 * E1)));
-  const double phi1 = rng->Uniform(0, TMath::TwoPi());
+  const double phi1 = phi;
   particle scat{lepton.type(),
                 {cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)},
                 E1};
@@ -107,9 +107,9 @@ static photon_data photon_data::make_virtual(const particle& lepton,
   // invariants
   vphoton.Q2_ = Q2;
   vphoton.y_ = y;
-  vphoton.nu_ = y * (target.p()).Dot(lepton.p()) / target.mass;
-  vphoton.W2_ = target.mass * target.mass + 2 * target.mass * vphoton.nu_ - Q2;
-  vphoton.x_ = Q2 / (2 * target.mass * vphoton.nu_);
+  vphoton.nu_ = y * (target.p()).Dot(lepton.p()) / target.mass();
+  vphoton.W2_ = target.mass2() + 2 * target.mass() * vphoton.nu_ - Q2;
+  vphoton.x_ = Q2 / (2 * target.mass() * vphoton.nu_);
 
   return vphoton;
 }
@@ -181,7 +181,7 @@ photon_data bremsstrahlung::generate(const beam::data& lepton,
   }
 
   photon_data pd = photon_data::make_real(lepton.beam(), target.beam(), E,
-                                          intensity(E, beam.mom.E()));
+                                          intensity(E, beam.p.E()));
 
   // that's all!
   return pd;
@@ -267,8 +267,9 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   }
 
   photon_data pd =
-      photon_data::make_virtual(lepton.beam, target.beam, Q2, y, rng(),
-                                flux(Q2, y, lepton.beam(), target.beam()));
+      photon_data::make_virtual(lepton.beam, target.beam, Q2, y,
+                                flux(Q2, y, lepton.beam(), target.beam()),
+                                rng()->Uniform(0, TMath::TwoPi()));
 
   LOG_JUNK("vphoton", "nu: " + std::to_string(pd.nu()) +
                           " W2: " + std::to_string(pd.W2()) +
@@ -324,8 +325,8 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
                         cf.get<double>("target/energy")};
 
   // Cap the minimum Q2 at lepton mass squared
-  const double Q2min = fmax(physics::Q2_range(beam, target, y_range_.min).min,
-                            beam.mass * beam.mass);
+  const double Q2min =
+      fmax(physics::Q2_range(beam, target, y_range_.min).min, beam.mass2());
 
   // In general, the maximum Q2 range is determined through the kinematics of
   // t-channel scattering (falling function of y), as well as the requirement
@@ -339,11 +340,11 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
   // at maximum y
   //
   // finally, we also allow for the user to manually set a Q2 range
-  const double E = beam.mom * target.mom / target.mass;
+  const double E = (beam.p()).Dot(target.p()) / target.mass();
   // get Q2 range from kinematics
   const double Q2max =
       physics::Q2_range(beam, target,
-                        fmin(2. * E / (target.mass + 2. * E), y_range_.max))
+                        fmin(2. * E / (target.mass() + 2. * E), y_range_.max))
           .max;
   // check if there is an alternative user-defined range
   const auto opt_range_ = cf.get_optional_range<double>("photon/Q2_range");
@@ -367,8 +368,8 @@ interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
                         cf.get<double>("target/energy")};
 
   // at least target in final state, at most s in final state
-  const double W2min = target.mass * target.mass;
-  const double W2max = (beam.mom + target.mom).M2();
+  const double W2min = target.mass2();
+  const double W2max = (beam.p() + target.p()).M2();
 
   // check if the user requested a different range range
   const auto opt_range_ = cf.get_optional_range<double>("photon/W_range");
