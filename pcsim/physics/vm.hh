@@ -3,7 +3,6 @@
 
 #include <TMath.h>
 #include <cmath>
-#include <pcsim/core/particle.hh>
 
 // =============================================================================
 // VM Physics routines
@@ -20,18 +19,24 @@ namespace physics {
 //      Pomeron Model.” PRD 67 (7), 2003. doi:10.1103/PhysRevD.67.074023.
 // eq. 31.
 //
-// J/psi parameters a and n 
-//  * a: 2.164
+// J/psi parameters c(or a) and n 
+//  * c: 2.164
 //  * n: 2.131
 // from eq. 18:
 //
 //      R. Fiore et al., "Exclusive Jpsi electroproduction in a dual model."
 //      PRD80:116001, 2009"
+//
+// Arguments:
+//  * Q2: -photon mass squared
+//  * Mv: VM mass
+//  * c: multiplicative parameter
+//  * n: power constant
 // =============================================================================
-inline double R_vm_martynov(const double Q2, const particle& vm,
-                            const double a, const double n) {
-  const double Mv2 = vm.mass * vm.mass;
-  return pow((a * Mv2 + Q2) / (a * Mv2), n) - 1.;
+inline double R_vm_martynov(const double Q2, const double Mv, const double c,
+                            const double n) {
+  const double Mv2 = Mv * Mv;
+  return pow((c * Mv2 + Q2) / (c * Mv2), n) - 1.;
 }
 
 // =============================================================================
@@ -51,10 +56,15 @@ inline double R_vm_martynov(const double Q2, const particle& vm,
 //
 //      M Tytgat, "Diffractive production of ρ0 and ω vector mesons at HERMES",
 //      DESY-Thesis 2001-018 (2001)
+//
+// Arguments:
+//  * Q2: -photon mass squared
+//  * Mv: VM mass
+//  * n: power constant (2 for VMD; 2.575 from HERMES fit)
 // =============================================================================
-inline double dipole_ff_vm_hermes(const double Q2, const particle& vm,
+inline double dipole_ff_vm_hermes(const double Q2, const double Mv,
                                   const double n) {
-  const double Mv2 = vm.mass * vm.mass;
+  const double Mv2 = Mv * Mv;
   return pow(Mv2 / (Mv2 + Q2), n);
 }
 
@@ -74,14 +84,21 @@ inline double dipole_ff_vm_hermes(const double Q2, const particle& vm,
 //  * c3g: 2.894e3 [GeV^-2]
 //  * b: 1.13 [GeV^-2]
 //
+// Arguments:
+//  * s: photon-target system invariant mass squared
+//  * t: mandelstam t
+//  * Mt: target mass
+//  * Mv: VM mass
+//  * b: b-parameter of target form-factor
+//  * c2g: 2-gluon constant
+//  * c3g: 3-gluon constant
+//
 // =============================================================================
 inline double dsigma_dt_vm_brodksy(const double s, const double t,
-                                   const particle& target, const particle& vm,
+                                   const double Mt, const double Mv,
                                    const double b, const double c2g,
                                    const double c3g = 0) {
-  const double Mt = target.mass;
   const double Mt2 = Mt * Mt;
-  const double Mv = vm.mass;
   const double Mv2 = Mv * Mv;
   const double x = (2. * Mt * Mv + Mv2) / (s - Mt2);
   // form factor
@@ -95,12 +112,10 @@ inline double dsigma_dt_vm_brodksy(const double s, const double t,
   return (A2g + A3g) * ff;
 }
 inline double dsigma_dexp_bt_brodksy(const double s, const double t,
-                                     const particle& target, const particle& vm,
+                                     const double Mt, const double Mv,
                                      const double b, const double c2g,
                                      const double c3g = 0) {
-  const double Mt = target.mass;
   const double Mt2 = Mt * Mt;
-  const double Mv = vm.mass;
   const double Mv2 = Mv * Mv;
   const double x = (2. * Mt * Mv + Mv2) / (s - Mt2);
   // form factor (absorbed by the jacobian for d(bt) -> d(exp_bt)
