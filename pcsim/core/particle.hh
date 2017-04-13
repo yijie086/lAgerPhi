@@ -70,6 +70,7 @@ public:
   int charge() const { return charge_; }
   double mass() const { return mass_; }
   double mass2() const { return mass_ * mass_; }
+  double width() const { return width_; }
   double lifetime() const { return lifetime_; }
   interval<int> parent() const { return parent_; }
   interval<int> daughter() const { return daughter_; }
@@ -96,6 +97,7 @@ public:
   // (algorithm taken from TVector3::RotateUz)
   void rotate_uz(const XYZVector& v);
   void rotate_uz(const XYZTVector& v);
+  void rotate_uz(const particle& pv);
 
   // add a daughter track
   void add_daughter(const int index);
@@ -112,9 +114,10 @@ private:
 
   pdg_id type_{pdg_id::UNKNOWN};
   TParticlePDG* pdg_{nullptr};
+  int charge_{0};
+  double width_{0};
   status_code status_{status_code::OTHER};
 
-  int charge_{0};
   // actual mass and lifetime for this particle, can deviate from pole values
   // for unstable particles!
   double mass_{0};
@@ -146,8 +149,9 @@ namespace pcsim {
 inline particle::particle(const pdg_id)
     : type_{id}
     , pdg_{pdg_particle(id)}
-    , charge_{(id != pdg_id::unknown) static_cast<int>(pdg->Charge() / 3) : 0} {
-}
+    , charge_{static_cast<int>(pdg_->Charge() / 3)}
+    , width_{pdg_->Width()}
+    , status_{width_ > 0 ? status_code::UNSTABLE : status_code::FINAL} {}
 // particle with a given momentum 3-vector
 inline particle::particle(const pdg_id id, const XYZVector& p3)
     : particle{id}
@@ -222,6 +226,9 @@ inline void particle::rotate_uz(const particle::XYZVector& v) {
 }
 inline void particle::rotate_uz(const particle::XYZTVector& v) {
   rotate_uz(v.Vect());
+}
+inline void particle::rotate_uz(const particle& pv) {
+  rotate_uz(pv.p().Vect());
 }
 inline void particle::boost(const particle::BetaVector& bv) {
   lorentzboost b{bv};
