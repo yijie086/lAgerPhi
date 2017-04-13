@@ -24,7 +24,8 @@ include(cmake/compiler.cmake)
 set (TARGETS "")
 
 add_subdirectory(pcsim/core)
-add_subdirectory(pcsim/gen)
+add_subdirectory(pcsim/gen/beam)
+add_subdirectory(pcsim/gen/process)
 add_subdirectory(pcsim/physics)
 add_subdirectory(program)
 

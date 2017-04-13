@@ -1,7 +1,7 @@
 ################################################################################
 ## CMAKE Settings
 ################################################################################
-set (SUBDIR "gen")
+set (SUBDIR "gen_process")
 set (LIBRARY "${PROJECT_NAME}_${SUBDIR}")
 set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 
