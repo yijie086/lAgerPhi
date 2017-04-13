@@ -26,13 +26,14 @@ inline interval<double> Q2_range(const particle& beam, const particle& target,
   const double Q2_low = comp1 - comp2;
   const double Q2_high1 = comp1 + comp2;
   // alternative upper bound from requirement that final state has at least the
-  // invariant mass of the target mass (W2min = target.mass^2, meaning that 2 M nu = Q2)
+  // invariant mass of the target mass (W2min = target.mass^2, meaning that 2 M
+  // nu = Q2)
   const double Q2_high2 = 2 * target.mass * E * y;
   return {Q2_low, fmin(Q2_high1, Q2_high2)};
 }
 
 // =======================================================================================
-// calculate the allowed t range 
+// calculate the allowed t range
 //
 // input:
 //   * W2 (=s)
@@ -41,7 +42,9 @@ inline interval<double> Q2_range(const particle& beam, const particle& target,
 //   * Mv (VM mass)
 //   * Mr (recoil mass)
 // =======================================================================================
-inline interval<double> t_range(const double W2, const double Q2, const double Mt, const double Mv, const double Mr) {
+inline interval<double> t_range(const double W2, const double Q2,
+                                const double Mt, const double Mv,
+                                const double Mr) {
   const double Mt2 = Mt * Mt;
   const double Mr2 = Mr * Mr;
   const double Mv2 = Mv * Mv;
@@ -60,9 +63,7 @@ inline interval<double> t_range(const double W2, const double Q2, const double M
   return {t_low, t_high};
 }
 
-
-}
-}
-
+} // namespace physics
+} // namespace pcsim
 
 #endif
