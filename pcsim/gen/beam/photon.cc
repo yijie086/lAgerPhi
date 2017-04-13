@@ -104,6 +104,9 @@ static photon_data photon_data::make_virtual(const particle& lepton,
   photon_data vphoton{lepton.p() - scat.p(), xs};
   vphoton.scat_ = scat;
 
+  // epsilon
+  vphoton.epsilon_ = physics::epsilon(Q2, y, lepton, target);
+
   // invariants
   vphoton.Q2_ = Q2;
   vphoton.y_ = y;

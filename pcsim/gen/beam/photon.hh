@@ -41,6 +41,7 @@ class photon_data  : data {
   photon_data(const particle::XYZTVector& p, const double xs)
       : beam{{pdg_id::gamma, p}, xs} {}
 
+  double epsilon() const { return epsilon_; }
   double W2() const { return W2_; }
   double Q2() const { return Q2_; }
   double nu() const { return nu_; }
@@ -50,12 +51,13 @@ class photon_data  : data {
   const particle& scat() const { return scat_; }
 
 private:
-  double W2_{0.}; // invariant mass of photon-target system
-  double Q2_{0.}; // photon virtuality
-  double nu_{0.}; // photon enery in target rest frame
-  double x_{0.};  // Bjorken x
-  double y_{0.};  // energy fraction of photon in target rest frame
-  particle scat_; // scattered lepton
+  double epsilon_{0.}; // gamma_L/gamma_T (xs stores just gamma_T)
+  double W2_{0.};      // invariant mass of photon-target system
+  double Q2_{0.};      // photon virtuality
+  double nu_{0.};      // photon enery in target rest frame
+  double x_{0.};       // Bjorken x
+  double y_{0.};       // energy fraction of photon in target rest frame
+  particle scat_;      // scattered lepton
 };
 
 // =============================================================================
