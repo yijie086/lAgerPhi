@@ -62,8 +62,7 @@ inline double R_vm_martynov(const double Q2, const double Mv, const double c,
 //  * Mv: VM mass
 //  * n: power constant (2 for VMD; 2.575 from HERMES fit)
 // =============================================================================
-inline double dipole_ff_vm_hermes(const double Q2, const double Mv,
-                                  const double n) {
+inline double dipole_ff_vm(const double Q2, const double Mv, const double n) {
   const double Mv2 = Mv * Mv;
   return pow(Mv2 / (Mv2 + Q2), n);
 }
@@ -111,10 +110,10 @@ inline double dsigma_dt_vm_brodksy(const double s, const double t,
   const double A3g = c3g * v / (Mv2 * Mv2);
   return (A2g + A3g) * ff;
 }
-inline double dsigma_dexp_bt_brodksy(const double s, const double t,
-                                     const double Mt, const double Mv,
-                                     const double b, const double c2g,
-                                     const double c3g = 0) {
+inline double dsigma_dexp_bt_vm_brodksy(const double s, const double Mt,
+                                        const double Mv, const double b,
+                                        const double c2g,
+                                        const double c3g = 0) {
   const double Mt2 = Mt * Mt;
   const double Mv2 = Mv * Mv;
   const double x = (2. * Mt * Mv + Mv2) / (s - Mt2);
