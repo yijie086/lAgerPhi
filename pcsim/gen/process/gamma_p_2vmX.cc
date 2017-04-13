@@ -1,4 +1,5 @@
 #include "gamma_p_2vmX.hh"
+#include <TMath.h>
 #include <pcsim/core/logger.hh>
 #include <pcsim/physics/photon.hh>
 #include <pcsim/physics/vm.hh>
@@ -14,8 +15,7 @@ factory<gamma_p_2vmX> gamma_p_2vmX::factory;
 // =============================================================================
 gamma_p_2vmX_data(const beam::photon_data& photon, const beam::data& target,
                   const double t, const particle& vm1, const particle& X1,
-                  const double xs, const double phi, const double R,
-                  const double epsilon)
+                  const double xs, const double phi, const double R)
     : generator_data{xs}
     , t_{t}
     , xv_{photon.x() + vm1.mass2() / (2 * target.beam().mass())}
@@ -81,7 +81,11 @@ gamma_p_2vmX_data(const beam::photon_data& photon, const beam::data& target,
   X_.rotate_uz(phot.p());
   // 3. TRF -> lab
   vm.boost(-boost_trf);
-  x_.boost(-boost_trf);
+  X_.boost(-boost_trf);
+
+  // update VM particle status
+  vm_.update_status(particle::status_code::UNSTABLE_SCHC);
+
   // all done!
 }
 
@@ -121,9 +125,9 @@ gamma_p_2vmX_brodsky::gamma_p_2vmX_brodsky(const configuration& cf,
            "R_vm n-parameter (power): " + std::to_string(R_vm_n_));
   LOG_INFO("gamma_p_2vmX_brodsky",
            "'Dipole' FF power: " + std::to_string(dipole_n_));
-  LOG_INFO("gamma_p_2vmX_brodsky", "VM: " + std::string(vm_.pdg->GetName()));
+  LOG_INFO("gamma_p_2vmX_brodsky", "VM: " + std::string(vm_.pdg()->GetName()));
   LOG_INFO("gamma_p_2vmX_brodsky",
-           "recoil: " + std::string(recoil_.pdg->GetName()));
+           "recoil: " + std::string(recoil_.pdg()->GetName()));
 }
 
 gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
@@ -155,13 +159,13 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
   // evaluate the cross section
   const double xs_R = R(photon.Q2());
   const double xs_dipole = dipole(photon.Q2());
-  const double xs_photo = dsigma_dexp_bt(Q2, target.mass());
+  const double xs_photo = dsigma_dexp_bt(photon.W2(), target.mass());
   const double xs = (1 + photon.epsilon() * xs_R) * xs_dipole * xs_photo;
 
   LOG_JUNK("gamma_p_2vmX_brodsky",
            "xsec: " + std::to_string(xs_photo) + " < " + std::to_string(max_));
   LOG_JUNK("gamma_p_2vmX_brodsky", "R: " + std::to_string(xs_R));
-  LOG_JUNK("gamma_p_2vmX_brodksy", "dipole: " + std::to_string(xs_dipole));
+  LOG_JUNK("gamma_p_2vmX_brodsky", "dipole: " + std::to_string(xs_dipole));
 
   // return a new VM event
   return {
@@ -171,7 +175,7 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
 
 
 // =============================================================================
-// gamma_p_2vmX_brodksy::calc_max_xsec(cf)
+// gamma_p_2vmX_brodsky::calc_max_xsec(cf)
 //
 // Utility function for the generator initialization
 //
@@ -206,8 +210,9 @@ gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
   return dsigma_dexp_bt(W2max, target.mass()) * 1.0001;
 }
 
+./program/pcsim-vm -c jpsi-bs.json -r 1 -o /tmp/debug -e10000
 // =============================================================================
-// gamma_p_2vmX_brodksy::calc_max_t_range(cf)
+// gamma_p_2vmX_brodsky::calc_max_t_range(cf)
 //
 // Utility function for the generator initialization
 //
@@ -239,31 +244,31 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
                  recoil_.mass());
 }
 // =============================================================================
-// gamma_p_2vmX_brodksy::exp_bt_range()
+// gamma_p_2vmX_brodsky::exp_bt_range()
 //
 // Utility function that calculates the exp(bt) range for the t-range
 // =============================================================================
-interval<double> gamma_p_2vmX_brodksy::exp_bt_range(const double W2,
+interval<double> gamma_p_2vmX_brodsky::exp_bt_range(const double W2,
                                                     const double Q2,
                                                     const double Mt) const {
   auto tlim = t_range(W2, Q2, Mt, vm_.mass(), recoil_.mass());
   return {exp(photo_b_ * tlim.min), exp(photo_b_ * tlim.max)};
 }
 // =============================================================================
-// gamma_p_2vmX_brodksy::dsigma_dexp_bt()
-// gamma_p_2vmX_brodksy::R()
-// gamma_p_2vmX_brodksy::dipole()
+// gamma_p_2vmX_brodsky::dsigma_dexp_bt()
+// gamma_p_2vmX_brodsky::R()
+// gamma_p_2vmX_brodsky::dipole()
 //
 // Utility functions to calculate the cross section components
 // =============================================================================
-gamma_p_2vmX_brodksy::dsigma_dexp_bt(const double W2, const double Mt) const {
+gamma_p_2vmX_brodsky::dsigma_dexp_bt(const double W2, const double Mt) const {
   return physics::dsigma_dexp_bt_vm_brodsky(W2, Mt, vm_.mass(), photo_b_,
                                             photo_c2g_, photo_c3g_);
 }
-gamma_p_2vmX_brodksy::R(const double Q2) const {
+gamma_p_2vmX_brodsky::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_.mass(), R_vm_c_, R_vm_n_);
 }
-gamma_p_2vmX_brodksy::dipole(const double Q2) const {
+gamma_p_2vmX_brodsky::dipole(const double Q2) const {
   return physics::dipole_ff_vm(Q2, vm_.mass(), dipole_n_);
 }
 
