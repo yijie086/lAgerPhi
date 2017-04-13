@@ -47,6 +47,9 @@ public:
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_4380_52m));
     db_->AddParticle("Pc_4380_52p", "P_{c} (4380, 5/2+)", 4.380, false, 0.205,
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_4380_52p));
+    // Unknown
+    db->AddParticle("Unknown", "Unknown", 0, false, 0, "Unknown",
+                    static_cast<int32_t>(pdg_id::unknown));
   }
   
   TParticlePDG* find(const pdg_id id) {
