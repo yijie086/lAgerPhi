@@ -64,7 +64,7 @@ private:
 // Base class for secondary photons from electron/positron beams on a nucleon
 // Note: lepton beam is refered to as "beam", proton beam as "target"
 // =============================================================================
-class photon : public generator<photon_data, particle, particle> {
+class photon : public generator<photon_data, beam::data, beam::data> {
 public:
   static factory<photon> factory;
 
