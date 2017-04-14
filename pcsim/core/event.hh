@@ -46,12 +46,21 @@ public:
   vector_type::iterator end() { return part_.end(); }
   vector_type::const_iterator end() const { return part_.end(); }
 
-  // add a misc particle
-  void add_particle(const particle& p) { part_.push_back(p); }
+  // add a misc particle. returns the index of the particle
+  int add_particle(const particle& p); {
+    part_.push_back(p);
+    return (part_.size() - 1);
+  }
+
+  // add a daughter particle with 1 or 2 parents
+  // returns the index of the daughter
+  int add_daughter(const particle& daughter, const int parent1,
+                   const int parent2 = -1);
 
   // add beam and target
-  void add_beam(const particle& p);
-  void add_target(const particle& p);
+  // returns the beam and target index
+  int add_beam(const particle& p);
+  int add_target(const particle& p);
 
   // beam and target info
   particle& beam();
@@ -80,15 +89,31 @@ private:
 // IMPLEMENTATION
 // =============================================================================
 namespace pcsim {
-inline void event::add_beam(const particle& p) {
-  part_.push_back(p);
-  beam_index_ = part.size() - 1;
+inline int event::add_beam(const particle& p) {
+  beam_index_ = add_particle(p);
   update_s();
+  return beam_index_;
 }
 inline void event::add_target(const particle& p) {
-  part_.push_back(p);
-  target_index_ = part.size() - 1;
+  target_index_ = add_particle(p);
   update_s();
+  return target_index_;
+}
+inline int event::add_particle(const particle& p);
+{
+  part_.push_back(p);
+  return (part_.size() - 1);
+}
+inline int event::add_daughter(const particle& daughter, const int parent1,
+                               const int parent2) {
+  daughter.add_parent(parent1);
+  daughter.add_parent(parent2);
+  int index = part_.push_back(child);
+  part_[parent1].add_daughter(index);
+  if (parent2 >= 0) {
+    part_[parent2].add_daughter(index);
+  }
+  return index;
 }
 inline particle& event::beam() {
   tassert(beam_index_ > 0, "trying to access beam data, but no beam "
