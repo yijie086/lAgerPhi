@@ -39,18 +39,30 @@ public:
   };
 
   // constructors
-  particle() = default;
-  particle(const particle& rhs) = default;
+  //
+  // default
+  particle(const particle&) = default;
+  particle& operator=(const particle&) = default;
   // particle with a given id
-  particle(const pdg_id id);
+  particle(const pdg_id id = pdg_id::UNKNOWN,
+           const status_code status = status_code::FINAL);
   // particle with a given momentum 3-vector
   particle(const pdg_id id, const XYZVector& p3);
+  particle(const pdg_id id, const XYZVector& p3,
+           const status_code status = status_code::FINAL);
+
   // particle in a given direction with a given energy
-  particle(const pdg_id id, const XYZVector& direction, const double E);
+  particle(const pdg_id id, const XYZVector& direction, const double E,
+           const status_code status = status_code::FINAL);
+
   // particle with a given 4-momentum (can be off-shell)
-  particle(const pdg_id id, const XYZTVector& p);
+  particle(const pdg_id id, const XYZTVector& p,
+           const status_code status = status_code::FINAL);
+
   // RNG constructors usefull in particular for unstable particles with a mass
   // and lifetime that needs to be generated
+  // status will be auto-set to UNSTABLE for unstable particles, and FINAL for
+  // stable particles
   particle(const pdg_id id, std::shared_ptr<TRandom> rng);
   particle(const pdg_id id, const XYZVector& p3, std::shared_ptr<TRandom> rng);
 
@@ -67,19 +79,32 @@ public:
   void update_status(const status_code ns) { status_ = ns; }
 
   // particle properties
+  //
+  // charge
   int charge() const { return charge_; }
+  // mass and mass squared, will be taken from 4-vector of RNG if requested
   double mass() const { return mass_; }
   double mass2() const { return mass_ * mass_; }
+  // pole mass (differs from mass for unstable particles
+  double pole_mass() const { return pdg_->Mass(); }
+  // pole mass - 3 * width for a reasonable estimate of the minimum mass
+  double min_mass() const { return pole_mass() - 3 * with(); }
+  // width for unstable particles
   double width() const { return width_; }
+  // actual generated lifetime for unstable particles
   double lifetime() const { return lifetime_; }
+  // parent or parents
   interval<int> parent() const { return parent_; }
+  // first and last+1 index of the daughters
   interval<int> daughter() const { return daughter_; }
+  // other parent-daughter accessors
   int daughter_begin() const { return daughter_.min; }
   int daughter_end() const { return daughter_.max; }
   int n_daughters() const { return daughter_.max - daughter_.min; }
   int parent_first() const { return parent_.min; }
   int parent_second() const { return parent_.max; }
   int n_parents() const { return parent_.max - parent_.min; }
+  // momentum and energy
   double momentum() const { return p_.Vect().Mag(); }
   double energy() const { return p_.E(); }
 
@@ -146,26 +171,27 @@ namespace pcsim {
 // CONSTRUCTORS
 //
 // particle with a given id
-inline particle::particle(const pdg_id)
+inline particle::particle(const pdg_id id, const status_code status)
     : type_{id}
     , pdg_{pdg_particle(id)}
     , charge_{static_cast<int>(pdg_->Charge() / 3)}
     , width_{pdg_->Width()}
-    , status_{width_ > 0 ? status_code::UNSTABLE : status_code::FINAL} {}
+    , status_{status}
+    , mass_{pdg->Mass()} {}
 // particle with a given momentum 3-vector
-inline particle::particle(const pdg_id id, const XYZVector& p3)
-    : particle{id}
-    , mass_{pdg->Mass()}
+inline particle::particle(const pdg_id id, const XYZVector& p3,
+                          const status_code status)
+    : particle{id, status}
     , p_{make_4vector(p3, sqrt(mass_ * mass_ + p_.Mag2()))} {}
 // particle in a given direction with a given energy
 inline particle::particle(const pdg_id id, const XYZVector& direction,
-                          const double E)
-    : particle{id}
-    , mass_{pdg->Mass()}
+                          const double E, const status_code status)
+    : particle{id, status}
     , p_{make_4vector(direction.Unit() * sqrt(E * E - mass_ * mass_), E)} {}
 // particle with a given 4-momentum (can be off-shell)
-inline particle::particle(const pdg_id id, const XYZTVector& p)
-    : particle{id}, mass_{p.M()}, p_{p} {}
+inline particle::particle(const pdg_id id, const XYZTVector& p,
+                          const status_code status)
+    : particle{id, status}, mass_{p.M()}, p_{p} {}
 // RNG constructors usefull in particular for unstable particles with a mass
 // and lifetime that needs to be generated
 inline particle::particle(const pdg_id id, std::shared_ptr<TRandom> rng)
@@ -240,12 +266,13 @@ inline void particle::boost(const particle::BetaVector& bv) {
 //
 inline void particle::set_mass_lifetime(std::shared_ptr<TRandom> rng) {
   if (pdg->Stable()) {
-    mass = pdg->Mass();
-    lifetime = 0;
-    else {
-      mass = rng->BreitWigner(pdg->Mass(), pdg->Width());
-      lifetime = rng->Exp(pdg->Lifetime());
-    }
+    mass_ = pdg->Mass();
+    lifetime_ = 0;
+    status_ = status_code::FINAL;
+  } else {
+    mass = rng->BreitWigner(pdg->Mass(), pdg->Width());
+    lifetime = rng->Exp(pdg->Lifetime());
+    status_ = status_code::UNSTABLE;
   }
 }
 

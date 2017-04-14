@@ -66,8 +66,11 @@ static photon_data photon_data::make_real(const particle& lepton,
                                           const double xs = 1.) {
   particle::XYZVector vec{lepton.p().Unit()};
   vec *= E;
-  photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}, xs};
-  photon.scat_ = lepton.p() - photon.beam_.p();
+  photon_data photon{
+      {vec.X(), vec.Y(), vec.Z(), E, particle::status_code::SECONDARY_BEAM},
+      xs};
+  photon.scat_ = {lepton.type(), lepton.p() - photon.beam_.p(),
+                  particle::status_code::SCAT};
   photon.W2_ = (photon.beam_.p() + target.p()).M2();
   photon.nu_ = (photon.p()).Dot(target.p()) / target.mass();
   photon.y_ = photon.y_ * target.mass() / (lepton.p()).Dot(target.p());
@@ -95,13 +98,15 @@ static photon_data photon_data::make_virtual(const particle& lepton,
   const double phi1 = phi;
   particle scat{lepton.type(),
                 {cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)},
-                E1};
+                E1,
+                particle::status_code::SCAT};
   // rotate to regular target rest frame, then boost to lab frame
   scat.rotate_uz(beam.p());
   scat.boost(-boost);
 
   // calculate the actual photon 4-momentum
-  photon_data vphoton{lepton.p() - scat.p(), xs};
+  photon_data vphoton{lepton.p() - scat.p(), xs,
+                      particle::status_code::SECONDARY_BEAM};
   vphoton.scat_ = scat;
 
   // epsilon
@@ -293,7 +298,7 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
   }
  
   // that's all
-  return event;
+  return pd;
 }
  
 // =======================================================================================
