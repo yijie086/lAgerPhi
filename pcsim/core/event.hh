@@ -47,10 +47,7 @@ public:
   vector_type::const_iterator end() const { return part_.end(); }
 
   // add a misc particle. returns the index of the particle
-  int add_particle(const particle& p); {
-    part_.push_back(p);
-    return (part_.size() - 1);
-  }
+  int add_particle(const particle& p);
 
   // add a daughter particle with 1 or 2 parents
   // returns the index of the daughter
