@@ -92,10 +92,13 @@ private:
   double R(const double Q2) const;
   double dipole(const double Q2) const;
 
+  // threshold squared for these particular particles (correctly handels the
+  // case of particles with non-zero width)
+  double threshold2(const particle& vm, const particle& recoil) const;
+
   // recoil and vm particle info
   const particle recoil_;
   const particle vm_;
-  const double threshold2_; // threshold squared
 
   // cross section settings
   const double photo_b_;   // target FF constant

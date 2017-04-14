@@ -98,8 +98,6 @@ gamma_p_2vmX_brodsky::gamma_p_2vmX_brodsky(const configuration& cf,
     : gamma_p_2vmX{r}
     , recoil_{static_cast<pdg_id>(cf.get<int>(path / "recoil_type"))}
     , vm_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
-    , threshold2_{recoil_.mass * recoil_.mass + vm_.mass * vm_.mass +
-                  2 * vm_.mass * recoil_.mass}
     , photo_b_{cf.get<double>(path / "photo_b")}
     , photo_c2g_{cf.get<double>(path / "photo_c2g")}
     , photo_c3g_{cf.get<double>(path / "photo_c3g")}
@@ -133,8 +131,12 @@ gamma_p_2vmX_brodsky::gamma_p_2vmX_brodsky(const configuration& cf,
 gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
                                                  const beam::data& target) {
 
+  // generate a mass in case of non-zero width, initialize the particles
+  particle vm = {vm.type(), rng()};
+  particle recoil = {recoil.type(), rng()};
+
   // check if enough energy available
-  if (photon.W2() < threshold2_) {
+  if (photon.W2() < threshold2(vm, recoil) {
     LOG_JUNK("gamma_p_2vmX_brodsky", "Not enough phase space available - W2: " +
                                          std::to_string(photon.W2()) + " < " +
                                          threshold2_);
@@ -148,8 +150,8 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
   LOG_JUNK("gamma_p_2vmX_brodsky", "t: " + std::to_string(t));
 
   // check if kinematically allowed
-  if (physics::t_range(photon.W2, photon.Q2, target.mass(), vm_.mass(),
-                       recoil_.mass())
+  if (physics::t_range(photon.W2, photon.Q2, target.mass(), vm.mass(),
+                       recoil.mass())
           .excludes(t)) {
     LOG_JUNK("gamma_p_2vmX_brodsky",
              "t outside of the allowed range for this W2")
@@ -169,7 +171,7 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
 
   // return a new VM event
   return {
-      photon, target, t, vm_, recoil_, xs, rng()->Uniform(0, TMath::TwoPi()),
+      photon, target, t, vm, recoil, xs, rng()->Uniform(0, TMath::TwoPi()),
       xs_R};
 }
 
@@ -240,8 +242,8 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
   const double M_nu = (photon.p()).Dot(target.p());
   const double Q2max = target.mass2() + 2 * M_nu - W2max;
   // return the corresponding t range
-  return t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(), vm_.mass(),
-                 recoil_.mass());
+  return t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
+                 vm_.min_mass(), recoil_.min_mass());
 }
 // =============================================================================
 // gamma_p_2vmX_brodsky::exp_bt_range()
@@ -271,6 +273,20 @@ gamma_p_2vmX_brodsky::R(const double Q2) const {
 gamma_p_2vmX_brodsky::dipole(const double Q2) const {
   return physics::dipole_ff_vm(Q2, vm_.mass(), dipole_n_);
 }
+// =============================================================================
+// gamma_p_2vmX_brodsky::threshold2()
+//
+// utility function returns the production threshold squared for the chosen
+// particles. Important to re-calculate in case of a particle with non-zero
+// widht.
+// =============================================================================
+double gamma_p_2vmX_brodsky::threshold2(const particle& vm,
+                                        const particle& recoil) const {
+
+  return {recoil.mass * recoil.mass + vm.mass * vm.mass +
+          2 * vm.mass * recoil.mass};
+}
+
 
 } // namespace process
 } // namespace pcsim
