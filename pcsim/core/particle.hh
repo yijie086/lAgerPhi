@@ -77,6 +77,10 @@ public:
   status_code status() const { return status_; }
   int status() const { return static_cast<int>(status_); }
   void update_status(const status_code ns) { status_ = ns; }
+  bool stable() const {
+    return (status != status_code::UNSTABLE &&
+            status != status_code::UNSTABLE_SCHC);
+  }
 
   // particle properties
   //
