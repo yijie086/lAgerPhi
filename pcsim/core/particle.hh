@@ -87,8 +87,6 @@ public:
   double mass2() const { return mass_ * mass_; }
   // pole mass (differs from mass for unstable particles
   double pole_mass() const { return pdg_->Mass(); }
-  // pole mass - 3 * width for a reasonable estimate of the minimum mass
-  double min_mass() const { return pole_mass() - 3 * with(); }
   // width for unstable particles
   double width() const { return width_; }
   // actual generated lifetime for unstable particles

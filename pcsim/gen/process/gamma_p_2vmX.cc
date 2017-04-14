@@ -242,8 +242,10 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
   const double M_nu = (photon.p()).Dot(target.p());
   const double Q2max = target.mass2() + 2 * M_nu - W2max;
   // return the corresponding t range
+  // in case of particles with non-zero width, we use M - 4 x sigma
   return t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
-                 vm_.min_mass(), recoil_.min_mass());
+                 vm_.pole_mass() - vm_.width() * 4.,
+                 recoil_.pole_mass() - recoil_.width * 4);
 }
 // =============================================================================
 // gamma_p_2vmX_brodsky::exp_bt_range()

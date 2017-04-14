@@ -76,6 +76,7 @@ public:
 
 private:
   double calc_max_xsec(const configuration& cf) const;
+  interval<double> calc_W2_range(const double n_sigma) const;
 
   // cross section component evaluation
   double sigma(const double W2) const;
@@ -83,8 +84,9 @@ private:
   double dipole(const double Q2) const;
 
   // recoil and  particle info
-  const particle vm_pole_;
-  const particle qpq_;
+  const particle vm_pole_;          // relevant VM pole
+  const particle qpq_;              // quarkonium pentaquark assumption
+  const interval<double> W2_range_; // mass squared range around the pole mass
 
   // cross section settings
   const double qpq_amplitude_; // peak cross section amplitude

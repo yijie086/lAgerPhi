@@ -27,7 +27,7 @@ gamma_p_1X_qpq::gamma_p_1X_qpq(const configuration& cf, const string_path& path,
     : gamma_p_1X{r}
     , vm_pole_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
     , qpq_{static_cast<pdg_id>(cf.get<int>(path / "qpq_type"))}
-    , qpq_mass_{qpq_.mass()}
+    , mass2_range_{calc_mass2_range(cf.get<double>(path / "n_sigma"))}
     , qpq_amplitude_{cf.get<double>(path / "qpq_amplitude")}
     , qpq_coupling_{cf.get<double>(path / "qpq_couping")}
     , R_vm_c_{cf.get<double>(path / "R_vm_c")}
@@ -50,6 +50,15 @@ gamma_p_1X_qpq::gamma_p_1X_qpq(const configuration& cf, const string_path& path,
 
 gamma_p_1X_data gamma_p_1X_qpq::generate(const beam::photon_data photon,
                                          const beam::data& target) {
+
+  // check if we are in the correct W2 range
+  if (W2_range_.excludes(photon.W2())) {
+    LOG_JUNK("gamma_p_1X_qpq",
+             "Event outside of W2 range - W2: " + std::to_string(photon.W2()) +
+                 " outside of [" + std::to_string(W2_range_.min) + ", " +
+                 std::to_string(W2_range_.max) + "]");
+    return {0.};
+  }
 
   // no generation step necessary, we just have to evaluate the cross section
   // and create the Q-Pq
@@ -101,6 +110,17 @@ gamma_p_1X_qpq::calc_max_xsec(const configuration& cf) const {
   auto func = [this](double* W2, double*) { return this->sigma(W2[0]); };
   TF1 f("qpq_xsec", func, W2min, W2max, 0.);
   return f.GetMaximum * 1.0000001;
+}
+
+// =============================================================================
+// gamma_p_1X_qpq::calc_mass2_range()
+//
+// Utility function to calculate the W2 range we allow for q-Pq production
+// =============================================================================
+interval<double> gamma_p_1X_qpq::calc_W2_range(const double n_sigma) const {
+  double min = qpq_.pole_mass() - n_sigma * qpq_.width();
+  double max = qpq_.pole_mass() - n_sigma * qpq_.width();
+  return {min * min, max * max};
 }
 
 // =============================================================================
