@@ -53,7 +53,9 @@ private:
 class gamma_p_2vmX
     : public generator<gamma_p_2vmX_data, beam::photon_data, beam::data> {
 public:
-  static factory<gamma_p_2vmX> factory;
+  static factory<gamma_p_2vmX, const configuration&, const string_path&,
+                 std::shared_ptr<TRandom>>
+      factory;
 
   gamma_p_2vmX(std::shared_ptr<TRandom> r) : generator{std::move(r)} {}
 };

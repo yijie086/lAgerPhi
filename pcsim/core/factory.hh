@@ -24,22 +24,26 @@ public:
 };
 
 // register a class with a (global) factory
-#define FACTORY_REGISTER(factory, class, name)                                 \
+#define FACTORY_REGISTER(gen, class, name)                                     \
   namespace {                                                                  \
-  struct proxy {                                                               \
-    proxy() { factory.add<class>(name); }                                      \
+  struct proxy_##class {                                                       \
+    proxy_##class() { gen::factory.add<class>(name); }                         \
   };                                                                           \
-  const proxy p;                                                               \
+  const proxy_##class p_##class;                                               \
   }
+
+#define FACTORY_CREATE(gen, conf, path, rng)                                   \
+  gen::factory.create(conf.get<std::string>(string_path{path} / "type"), conf, \
+                      path, rng)
 
 // a generic factory base class
 template <class T, class... Args> class factory {
 private:
   struct worker_base;
-  using worker_map_type = std::map<std::string, std::unique_ptr<worker_base>>;
+  using worker_map_type = std::map<std::string, std::shared_ptr<worker_base>>;
 
 public:
-  std::shared_ptr<T> create(const std::string& name, Args&&...) const {
+  std::shared_ptr<T> create(const std::string& name, Args... a) const {
     std::lock_guard<std::mutex> lock{mutex_};
     LOG_DEBUG("factory", "Constructing " + name);
     if (!workers_ || !workers_->count(name)) {
@@ -47,7 +51,7 @@ public:
                                ": no such name registered.");
       throw factory_key_error{"Failed to construct object."};
     }
-    return workers_->find(name)->second->create();
+    return workers_->find(name)->second->create(a...);
   }
 
   template <class U> void add(const std::string& name) {
@@ -60,7 +64,7 @@ public:
     if (!workers_) {
       workers_ = std::make_unique<worker_map_type>();
     }
-    workers_->insert(std::make_pair(name, std::make_unique<worker<U>>()));
+    workers_->insert(std::make_pair(name, std::make_shared<worker<U>>()));
   }
 
   void remove(const std::string& name) {
@@ -76,11 +80,11 @@ public:
 private:
   // factory worker
   struct worker_base {
-    virtual std::shared_ptr<T> create(Args&&...) const = 0;
+    virtual std::shared_ptr<T> create(Args...) const = 0;
   };
   template <class U> struct worker : worker_base {
-    virtual std::shared_ptr<T> create(Args&&... data) const {
-      return std::make_shared<U>(std::forward<Args>(data)...);
+    virtual std::shared_ptr<T> create(Args... a) const {
+      return std::make_shared<U>(std::forward<Args>(a)...);
     }
   };
 

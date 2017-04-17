@@ -8,7 +8,10 @@
 namespace pcsim {
 namespace process {
 
-factory<gamma_p_2vmX> gamma_p_2vmX::factory;
+factory<gamma_p_2vmX, const configuration&, const string_path&,
+        std::shared_ptr<TRandom>>
+    gamma_p_2vmX::factory;
+FACTORY_REGISTER(gamma_p_2vmX, gamma_p_2vmX_brodsky, "gamma_p_2vmX_brodsky");
 
 // =============================================================================
 // Constructor for gamma_p_2vmX data, calculates the final state four-vectors in

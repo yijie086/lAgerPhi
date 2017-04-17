@@ -68,7 +68,9 @@ private:
 // =============================================================================
 class photon : public generator<photon_data, beam::data, beam::data> {
 public:
-  static factory<photon> factory;
+  static factory<photon, const configuration&, const string_path&,
+                 std::shared_ptr<TRandom>>
+      factory;
 
   photon(std::shared_ptr<TRandom> r) : generator{std::move(r)} {}
 

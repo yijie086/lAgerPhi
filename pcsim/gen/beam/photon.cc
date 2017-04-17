@@ -51,10 +51,12 @@ inline double bremsstrahlung_intensity_010_param(const double E0,
 namespace pcsim {
 namespace beam {
 
-// factory registration TODO fix
-factory<photon> photon::factory;
-//FACTORY_REGISTER(photon::factory, bremsstrahlung, "bremsstrahlung");
-//FACTORY_REGISTER(photon::factory, vphoton, "vphoton");
+// factory registration 
+factory<photon, const configuration&, const string_path&,
+        std::shared_ptr<TRandom>>
+    photon::factory;
+FACTORY_REGISTER(photon, bremsstrahlung, "bremsstrahlung");
+FACTORY_REGISTER(photon, vphoton, "vphoton");
 
 // =======================================================================================
 // Create a new real photon

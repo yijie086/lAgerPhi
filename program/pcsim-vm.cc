@@ -157,14 +157,10 @@ public:
   vm_generator(const configuration& cf, const string_path& path,
                std::shared_ptr<TRandom> r)
       : parent_type{cf, path, r}
-      , electron_gen{std::make_unique<beam::primary>(conf(), "beam", r)}
-      , proton_gen{std::make_unique<beam::primary>(conf(), "beam", r)}
-      , photon_gen{conf().get<std::string>("photon/type") == "vphoton"
-                       ? (beam::photon*)new beam::vphoton(conf(), "photon", r)
-                       : (beam::photon*)new beam::bremsstrahlung(conf(),
-                                                                 "photon", r)}
-      , vm_gen{std::make_unique<process::gamma_p_2vmX_brodsky>(
-            conf(), "gamma_p_2vmX", r)}
+      , electron_gen{FACTORY_CREATE(beam::primary, conf(), "lepton", r)}
+      , proton_gen{FACTORY_CREATE(beam::primary, conf(), "proton", r)}
+      , photon_gen{FACTORY_CREATE(beam::photon, conf(), "photon", r)}
+      , vm_gen{FACTORY_CREATE(process::gamma_p_2vmX, conf(), "gamma_p_2vmX", r)}
       , decay_gen{std::make_unique<physics::decay_handler>(r)} {
     add(*photon_gen);
     add(*vm_gen);
@@ -194,11 +190,11 @@ protected:
   }
 
 private:
-  std::unique_ptr<beam::primary> electron_gen;
-  std::unique_ptr<beam::primary> proton_gen;
-  std::unique_ptr<beam::photon> photon_gen;
-  std::unique_ptr<process::gamma_p_2vmX> vm_gen;
-  std::unique_ptr<physics::decay_handler> decay_gen;
+  std::shared_ptr<beam::primary> electron_gen;
+  std::shared_ptr<beam::primary> proton_gen;
+  std::shared_ptr<beam::photon> photon_gen;
+  std::shared_ptr<process::gamma_p_2vmX> vm_gen;
+  std::shared_ptr<physics::decay_handler> decay_gen;
 };
 
 int run_mc(const configuration& cf, const std::string& output) {

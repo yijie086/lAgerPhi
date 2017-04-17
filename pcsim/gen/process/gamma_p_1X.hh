@@ -44,7 +44,9 @@ private:
 class gamma_p_1X
     : public generator<gamma_p_1X_data, beam::photon_data, beam::data> {
 public:
-  static factory<gamma_p_1X> factory;
+  static factory<gamma_p_1X, const configuration&, const string_path&,
+                 std::shared_ptr<TRandom>>
+      factory;
 
   gamma_p_1X(std::shared_ptr<TRandom> r) : generator{std::move(r)} {}
 };

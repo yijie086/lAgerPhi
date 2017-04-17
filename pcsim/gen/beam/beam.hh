@@ -34,7 +34,9 @@ private:
 // =============================================================================
 class primary : public generator<data> {
 public:
-  static factory<primary> factory;
+  static factory<primary, const configuration&, const string_path&,
+                 std::shared_ptr<TRandom>>
+      factory;
 
   primary(const configuration& cf, const string_path& path,
           std::shared_ptr<TRandom> r)
