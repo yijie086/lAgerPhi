@@ -34,7 +34,7 @@ private:
 // =============================================================================
 class primary : public generator<data> {
 public:
-  static factory<data> factory;
+  static factory<primary> factory;
 
   primary(const configuration& cf, const string_path& path,
           std::shared_ptr<TRandom> r)
@@ -42,11 +42,14 @@ public:
       , beam_{static_cast<pdg_id>(cf.get<int>(path / "type")),
               cf.get_vector3<particle::XYZVector>(path / "dir"),
               cf.get<double>(path / "energy"), particle::status_code::BEAM} {
-    LOG_INFO("beam::primary", "type: " + std::string(beam_.pdg->GetName()));
-    LOG_INFO("beam::primary", "energy [GeV]: " + std::to_string(beam_.mom.E()));
+    LOG_INFO("beam::primary", "type: " + std::string(beam_.pdg()->GetName()));
+    LOG_INFO("beam::primary",
+             "energy [GeV]: " + std::to_string(beam_.energy()));
   }
 
   virtual data generate() { return {beam_}; }
+  virtual double max_cross_section() const { return 1.; }
+  virtual double phase_space() const { return 1.; }
 
 protected:
   const particle beam_;

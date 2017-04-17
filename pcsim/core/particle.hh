@@ -19,11 +19,11 @@ namespace pcsim {
 // =============================================================================
 class particle {
 public:
-  using ROOT::Math::XYZTVector::BetaVector;
-  using ROOT::Math::XYZTVector;
-  using ROOT::Math::Boost;
-  using ROOT::Math::XYZVector;
-  using ROOT::Math::Polar3DVector;
+  using BetaVector = ROOT::Math::XYZTVector::BetaVector;
+  using XYZTVector = ROOT::Math::XYZTVector;
+  using Boost = ROOT::Math::Boost;
+  using XYZVector = ROOT::Math::XYZVector;
+  using Polar3DVector = ROOT::Math::Polar3DVector;
 
   // particle status
   enum class status_code : int {
@@ -44,7 +44,7 @@ public:
   particle(const particle&) = default;
   particle& operator=(const particle&) = default;
   // particle with a given id
-  particle(const pdg_id id = pdg_id::UNKNOWN,
+  particle(const pdg_id id = pdg_id::unknown,
            const status_code status = status_code::FINAL);
   // particle with a given momentum 3-vector
   particle(const pdg_id id, const XYZVector& p3);
@@ -67,19 +67,21 @@ public:
   particle(const pdg_id id, const XYZVector& p3, std::shared_ptr<TRandom> rng);
 
   // particle ID code
-  pdg_id type() const { return type_; }
-  int type() const { return static_cast<int>(type_); }
+  template <class Integer = pdg_id> Integer type() const {
+    return static_cast<Integer>(type_);
+  }
 
   // full PDG info from the TDatabasePDG
-  TParticlePDG* pdg() { return pdg_; }
+  TParticlePDG* pdg() const { return pdg_; }
 
   // particle status
-  status_code status() const { return status_; }
-  int status() const { return static_cast<int>(status_); }
+  template <class Integer = status_code> Integer status() const {
+    return static_cast<Integer>(status_);
+  }
   void update_status(const status_code ns) { status_ = ns; }
   bool stable() const {
-    return (status != status_code::UNSTABLE &&
-            status != status_code::UNSTABLE_SCHC);
+    return (status_ != status_code::UNSTABLE &&
+            status_ != status_code::UNSTABLE_SCHC);
   }
 
   // particle properties
@@ -107,7 +109,7 @@ public:
   int parent_second() const { return parent_.max; }
   int n_parents() const { return parent_.max - parent_.min; }
   // momentum and energy
-  double momentum() const { return p_.Vect().Mag(); }
+  double momentum() const { return sqrt(p_.Vect().Mag2()); }
   double energy() const { return p_.E(); }
 
   // get a reference to the momentum/vertex 4-vector
@@ -118,7 +120,7 @@ public:
 
   // transformations etc.
   void boost(const BetaVector& bv);
-  void boost(const Boost& b) { p = b * p; }
+  void boost(const Boost& b) { p_ = b * p_; }
   // rotate from a coordate system where v moved along the z-axis, to the
   // coordate system of v
   // (algorithm taken from TVector3::RotateUz)
@@ -136,10 +138,10 @@ public:
 private:
   void set_mass_lifetime(std::shared_ptr<TRandom> rng);
   XYZTVector make_4vector(const XYZVector v, const double t) {
-    return {v.X(), v.Y(), v.Z(), v.t()};
+    return {v.X(), v.Y(), v.Z(), t};
   }
 
-  pdg_id type_{pdg_id::UNKNOWN};
+  pdg_id type_{pdg_id::unknown};
   TParticlePDG* pdg_{nullptr};
   int charge_{0};
   double width_{0};
@@ -179,21 +181,26 @@ inline particle::particle(const pdg_id id, const status_code status)
     , charge_{static_cast<int>(pdg_->Charge() / 3)}
     , width_{pdg_->Width()}
     , status_{status}
-    , mass_{pdg->Mass()} {}
+    , mass_{pdg_->Mass()} {}
 // particle with a given momentum 3-vector
 inline particle::particle(const pdg_id id, const XYZVector& p3,
                           const status_code status)
-    : particle{id, status}
-    , p_{make_4vector(p3, sqrt(mass_ * mass_ + p_.Mag2()))} {}
+    : particle{id, status} {
+  p_ = make_4vector(p3, sqrt(mass_ * mass_ + p3.Mag2()));
+}
 // particle in a given direction with a given energy
 inline particle::particle(const pdg_id id, const XYZVector& direction,
                           const double E, const status_code status)
-    : particle{id, status}
-    , p_{make_4vector(direction.Unit() * sqrt(E * E - mass_ * mass_), E)} {}
+    : particle{id, status} {
+  p_ = make_4vector(direction.Unit() * sqrt(E * E - mass_ * mass_), E);
+}
 // particle with a given 4-momentum (can be off-shell)
 inline particle::particle(const pdg_id id, const XYZTVector& p,
                           const status_code status)
-    : particle{id, status}, mass_{p.M()}, p_{p} {}
+    : particle{id, status}{
+  mass_ = p.M();
+  p_ = p;
+}
 // RNG constructors usefull in particular for unstable particles with a mass
 // and lifetime that needs to be generated
 inline particle::particle(const pdg_id id, std::shared_ptr<TRandom> rng)
@@ -204,7 +211,7 @@ inline particle::particle(const pdg_id id, const XYZVector& p3,
                           std::shared_ptr<TRandom> rng)
     : particle{id} {
   set_mass_lifetime(std::move(rng));
-  p_.SetXYZT(p.X(), p.Y(), p.Z(), sqrt(mass_ * mass_ + p.Mag2()));
+  p_.SetXYZT(p3.X(), p3.Y(), p3.Z(), sqrt(mass_ * mass_ + p3.Mag2()));
 }
 //
 // parent/daughter modifiers
@@ -225,7 +232,7 @@ inline void particle::add_parent(const int index) {
   } else {
     tassert(false, "A particle can have only have up to 2 parents"
                    "(tried to add additional parent to particle '" +
-                       std::string(pdg->Name()) + "')");
+                       std::string(pdg_->GetName()) + "')");
   }
 }
 //
@@ -249,7 +256,7 @@ inline void particle::rotate_uz(const particle::XYZVector& v) {
           (u2 * u3 * px + u1 * py + u2 * up * pz) / up,
           (u3 * u3 * px - px + u3 * up * pz) / up, p_.T()};
   } else if (u3 < 0) { // phi = 0, theta = pi
-    p_ = {-p.X(), p.Y(), -p.Z(), p.T()};
+    p_ = {-p_.X(), p_.Y(), -p_.Z(), p_.T()};
   }
 }
 inline void particle::rotate_uz(const particle::XYZTVector& v) {
@@ -259,7 +266,7 @@ inline void particle::rotate_uz(const particle& pv) {
   rotate_uz(pv.p().Vect());
 }
 inline void particle::boost(const particle::BetaVector& bv) {
-  lorentzboost b{bv};
+  Boost b{bv};
   boost(b);
 }
 
@@ -267,13 +274,13 @@ inline void particle::boost(const particle::BetaVector& bv) {
 // private utility functions
 //
 inline void particle::set_mass_lifetime(std::shared_ptr<TRandom> rng) {
-  if (pdg->Stable()) {
-    mass_ = pdg->Mass();
+  if (pdg_->Stable()) {
+    mass_ = pdg_->Mass();
     lifetime_ = 0;
     status_ = status_code::FINAL;
   } else {
-    mass = rng->BreitWigner(pdg->Mass(), pdg->Width());
-    lifetime = rng->Exp(pdg->Lifetime());
+    mass_ = rng->BreitWigner(pdg_->Mass(), pdg_->Width());
+    lifetime_ = rng->Exp(pdg_->Lifetime());
     status_ = status_code::UNSTABLE;
   }
 }

@@ -28,7 +28,9 @@ public:
       : generator<void>{std::move(rng)} {}
   // do nothing
   virtual void generate() {}
-  void process(event& e, const double epsilon_R);
+  virtual double max_cross_section() const {return 1.;}
+  virtual double phase_space() const { return 1.; }
+  void process(event& e);
 };
 
 //(event& e, std::shared_ptr<TRandom> rng);
@@ -42,7 +44,7 @@ public:
 //
 // Note: the angles are assumed to be in the helicity frame of 'part'
 void decay_2body(const particle& part, const double theta_1, const double phi_1,
-                 std::pair<particle, particle>& xx)
+                 std::pair<particle, particle>& xx);
 
 } // physics
 } // pcsim

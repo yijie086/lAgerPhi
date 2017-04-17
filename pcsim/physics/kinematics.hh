@@ -17,7 +17,7 @@ namespace physics {
 // =======================================================================================
 inline interval<double> Q2_range(const particle& beam, const particle& target,
                                  const double y) {
-  const double E = (beam.p).Dot(target.p) / target.mass;
+  const double E = (beam.p()).Dot(target.p()) / target.mass();
   const double E2 = E * E;
   const double m2 = beam.mass2();
   // lower and upper bound from t-channel process on electron leg
@@ -28,7 +28,7 @@ inline interval<double> Q2_range(const particle& beam, const particle& target,
   // alternative upper bound from requirement that final state has at least the
   // invariant mass of the target mass (W2min = target.mass^2, meaning that 2 M
   // nu = Q2)
-  const double Q2_high2 = 2 * target.mass * E * y;
+  const double Q2_high2 = 2 * target.mass() * E * y;
   return {Q2_low, fmin(Q2_high1, Q2_high2)};
 }
 

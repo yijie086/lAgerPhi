@@ -93,7 +93,7 @@ inline double dipole_ff_vm(const double Q2, const double Mv, const double n) {
 //  * c3g: 3-gluon constant
 //
 // =============================================================================
-inline double dsigma_dt_vm_brodksy(const double s, const double t,
+inline double dsigma_dt_vm_brodsky(const double s, const double t,
                                    const double Mt, const double Mv,
                                    const double b, const double c2g,
                                    const double c3g = 0) {
@@ -110,7 +110,7 @@ inline double dsigma_dt_vm_brodksy(const double s, const double t,
   const double A3g = c3g * v / (Mv2 * Mv2);
   return (A2g + A3g) * ff;
 }
-inline double dsigma_dexp_bt_vm_brodksy(const double s, const double Mt,
+inline double dsigma_dexp_bt_vm_brodsky(const double s, const double Mt,
                                         const double Mv, const double b,
                                         const double c2g,
                                         const double c3g = 0) {

@@ -19,6 +19,8 @@ event_out::event_out(std::shared_ptr<TFile> f, const std::string& name)
 void event_out::push(const event& e) {
   evgen_ = e.evgen();
   cross_section_ = static_cast<float>(e.cross_section());
+  epsilon_ = static_cast<float>(e.epsilon());
+  R_ = static_cast<float>(e.R());
   weight_ = static_cast<float>(e.weight());
   process_ = e.process();
   s_ = static_cast<float>(e.s());
@@ -39,7 +41,7 @@ void event_out::push(const event& e) {
   // that's all
 }
 void event_out::clear() {
-  n_part = 0;
+  n_part_ = 0;
   type_.clear();
   status_.clear();
   mass_.clear();
@@ -53,10 +55,10 @@ void event_out::clear() {
 }
 void event_out::add(const particle& part) {
   n_part_ += 1;
-  type_.push_back(part.type());
+  type_.push_back(static_cast<int32_t>(part.type()));
   status_.push_back(static_cast<int16_t>(part.status()));
   mass_.push_back(static_cast<float>(part.mass()));
-  charge_.push_back(static_cast<int6_t>(part.charge()));
+  charge_.push_back(static_cast<int8_t>(part.charge()));
   p_.push_back(part.p());
   vertex_.push_back(part.vertex());
   parent_first_.push_back(part.parent_first());
@@ -68,6 +70,8 @@ void event_out::create_branches() {
   tree_->Branch("index", &index_);
   tree_->Branch("evgen", &evgen_);
   tree_->Branch("cross_section", &cross_section_);
+  tree_->Branch("epsilon", &epsilon_);
+  tree_->Branch("R", &R_);
   tree_->Branch("weight", &weight_);
   tree_->Branch("process", &process_);
   tree_->Branch("s", &s_);

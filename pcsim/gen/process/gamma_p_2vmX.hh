@@ -33,8 +33,8 @@ public:
   double xv() const { return xv_; }
   double Q2plusMv2() const { return Q2plusMv2_; }
   double R() const { return R_; }
-  const particle& vm() { return vm_; }
-  const particle& X() { return X_; };
+  const particle& vm() const { return vm_; }
+  const particle& X() const { return X_; };
 
 private:
   double t_;
@@ -59,7 +59,7 @@ public:
 };
 
 // =============================================================================
-// process::gamma_p_2vmX_brodksy
+// process::gamma_p_2vmX_brodsky
 //
 // gamma + p -> VM + X process
 //
@@ -69,9 +69,9 @@ public:
 //  * Dipole FF for sigma_gamma -> sigma_t:
 //        dipole_ff_vm_hermes(...)
 //  * t-channel cross section:
-//        dsigma_dexp_bt_brodksy(...)
+//        dsigma_dexp_bt_brodsky(...)
 // =============================================================================
-class gamma_p_2vmX_brodksy : public gamma_p_2vmX {
+class gamma_p_2vmX_brodsky : public gamma_p_2vmX {
 public:
   gamma_p_2vmX_brodsky(const configuration& cf, const string_path& path,
                        std::shared_ptr<TRandom> r);

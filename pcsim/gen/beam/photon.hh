@@ -8,7 +8,7 @@
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
 #include <pcsim/gen/beam/beam.hh>
-#include <pcsim/physics/flux.hh>
+#include <pcsim/physics/photon.hh>
 
 namespace pcsim {
 namespace beam {
@@ -18,7 +18,8 @@ namespace beam {
 //
 // secondary photon beam
 // =============================================================================
-class photon_data  : data {
+class photon_data : public data {
+public:
   // generalized constructors:
   // make collinear real photon event with energy E
   static photon_data make_real(const particle& lepton, const particle& target,
@@ -37,9 +38,10 @@ class photon_data  : data {
 
   photon_data(const double xs) : data{xs} {}
 
-  photon_data(const particle::XYZTVector& p) : beam{{pdg_id::gamma, p}} {}
+  photon_data(const particle::XYZTVector& p)
+      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}} {}
   photon_data(const particle::XYZTVector& p, const double xs)
-      : beam{{pdg_id::gamma, p}, xs} {}
+      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}, xs} {}
 
   double epsilon() const { return epsilon_; }
   double W2() const { return W2_; }
@@ -118,7 +120,7 @@ public:
 protected:
   double flux(const double Q2, const double y, const particle& beam,
               const particle& target) const {
-    return physics::flux::gamma_t_log(Q2, y, beam, target);
+    return physics::gamma_t_log(Q2, y, beam, target);
   }
 
 private:

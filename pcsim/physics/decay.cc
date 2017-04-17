@@ -3,9 +3,9 @@
 #include <pcsim/core/pdg.hh>
 
 namespace pcsim {
-namespace decay {
+namespace physics {
 
-void decay_handler::process(event& e, const double epsilon_R) {
+void decay_handler::process(event& e) {
   for (int i = 0; i < e.size(); ++i) {
     // we won't decay stable particles
     if (e[i].stable()) {
@@ -17,6 +17,7 @@ void decay_handler::process(event& e, const double epsilon_R) {
       e.update_weight(e[i].pdg()->DecayChannel(0)->BranchingRatio());
       std::pair<particle, particle> decay_products{{pdg_id::e_plus},
                                                    {pdg_id::e_minus}};
+      const double epsilon_R = e.epsilon() * e.R();
       const double r04 = epsilon_R / (1 + epsilon_R);
       const double phi = rng()->Uniform(0., TMath::TwoPi());
       const double ctheta =
@@ -32,20 +33,20 @@ void decay_handler::process(event& e, const double epsilon_R) {
       e[i].update_status(particle::status_code::DECAYED_SCHC);
     }
     // Pc decay according to wang et al.
-    else if (e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
-             e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
+    else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
+             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
       std::pair<particle, particle> decay_products{
           {pdg_id::J_psi, particle::status_code::UNSTABLE_SCHC}, {pdg_id::p}};
       const double phi = rng()->Uniform(0., TMath::TwoPi());
       double ctheta = -1;
-      if (e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
-          e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4)) {
+      if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
+          e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4)) {
         // result from a pol6 fit to a digitized version of figure 6c from
         // PRD92-034022(2015)
         ctheta = rand_f({-1, 1},
@@ -60,8 +61,8 @@ void decay_handler::process(event& e, const double epsilon_R) {
                                  0.0931712 * x6;
                         },
                         0.63);
-      } else if (e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
-                 e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3)) {
+      } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
+                 e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3)) {
         // result from a pol7 fit to a digitized version of figure 5c from
         // PRD92-034022(2015)
         ctheta = rand_f({-1, 1},
@@ -77,14 +78,14 @@ void decay_handler::process(event& e, const double epsilon_R) {
                                  2.67151 * x6 + 6.06378 * x7;
                         },
                         44.06);
-      } else if (e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
-                 e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2)) {
+      } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
+                 e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2)) {
         // result from a expo fit to a digitized version of figure 5b from
         // PRD92-034022(2015)
         ctheta = rand_f({-1, 1}, [](const double x) { return exp(-5.944 - x); },
                         0.00713);
-      } else if (e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
-                 e[i].type() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
+      } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
+                 e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
         // result from a pol2 fit to a digitized version of figure 6b from
         // PRD92-034022(2015)
         ctheta = rand_f({-1, 1},
@@ -121,20 +122,19 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
   const double P_2 = sqrt(E_2 * E_2 - M2_2);
 
   // create the 4-vectors in the part helicity frame
-  TVector3 mom;
-  mom.SetMagThetaPhi(P_1, theta_1, phi_1);
-  xx.first.p() = {mom, E_1};
+  const particle::Polar3DVector p3_1{P_1, theta_1, phi_1};
+  xx.first.p() = {p3_1.X(), p3_1.Y(), p3_1.Z(), E_1};
   // decay particle 1 and two are back-to-back in the CM frame
-  mom.SetMagThetaPhi(P_2, theta_1, phi_1);
-  xx.second.p() = {-mom, E_2};
+  const particle::Polar3DVector p3_2{P_2, theta_1 + TMath::Pi(), phi_1};
+  xx.second.p() = {p3_2.X(), p3_2.Y(), p3_2.Z(), E_2};
 
   // boost back to the rotated version of the original frame pointing in the
   // direction of part
-  const particle::Boost b{
-      -(particle::XYZTVector{0, 0, part.p().Vect().Mag(), part.p().E()}
+  const particle::Boost b_from_cm{
+      -(particle::XYZTVector{0, 0, sqrt(part.p().Vect().Mag2()), part.p().E()}
             .BoostToCM())};
-  xx.first.boost(b);
-  xx.first.boost(b);
+  xx.first.boost(b_from_cm);
+  xx.first.boost(b_from_cm);
 
   // rotate to the original frame
   xx.first.rotate_uz(part.p().Vect());
@@ -143,5 +143,5 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
   // that's all
 }
 
-} // decay
+} // physics
 } // pcsim

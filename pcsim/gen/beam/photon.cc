@@ -9,10 +9,10 @@
 // local utility functions
 // =======================================================================================
 namespace {
-const pcsim::translation_map<pcsim::gen::bremsstrahlung::model>
-    bs_model_translator{{"flat", pcsim::gen::bremsstrahlung::model::FLAT},
-                        {"param", pcsim::gen::bremsstrahlung::model::PARAM},
-                        {"approx", pcsim::gen::bremsstrahlung::model::APPROX}};
+const pcsim::translation_map<pcsim::beam::bremsstrahlung::model>
+    bs_model_translator{{"flat", pcsim::beam::bremsstrahlung::model::FLAT},
+                        {"param", pcsim::beam::bremsstrahlung::model::PARAM},
+                        {"approx", pcsim::beam::bremsstrahlung::model::APPROX}};
 // Bremsstrahlung spectrum for a 1%, 5% and 10% r.l. radiator interpolated
 // between the  resultes of the exact calculation by Tsai and Whitis
 // (SLAC-PUB-184 1966  (Table I))
@@ -56,23 +56,19 @@ factory<photon> photon::factory;
 //FACTORY_REGISTER(photon::factory, bremsstrahlung, "bremsstrahlung");
 //FACTORY_REGISTER(photon::factory, vphoton, "vphoton");
 
-
 // =======================================================================================
 // Create a new real photon
 // =======================================================================================
-static photon_data photon_data::make_real(const particle& lepton,
-                                          const particle& target,
-                                          const double E,
-                                          const double xs = 1.) {
-  particle::XYZVector vec{lepton.p().Unit()};
+photon_data photon_data::make_real(const particle& lepton,
+                                   const particle& target, const double E,
+                                   const double xs = 1.) {
+  particle::XYZVector vec{lepton.p().Vect().Unit()};
   vec *= E;
-  photon_data photon{
-      {vec.X(), vec.Y(), vec.Z(), E, particle::status_code::SECONDARY_BEAM},
-      xs};
-  photon.scat_ = {lepton.type(), lepton.p() - photon.beam_.p(),
+  photon_data photon{{vec.X(), vec.Y(), vec.Z(), E}, xs};
+  photon.scat_ = {lepton.type(), lepton.p() - photon.beam().p(),
                   particle::status_code::SCAT};
-  photon.W2_ = (photon.beam_.p() + target.p()).M2();
-  photon.nu_ = (photon.p()).Dot(target.p()) / target.mass();
+  photon.W2_ = (photon.beam().p() + target.p()).M2();
+  photon.nu_ = (photon.beam().p()).Dot(target.p()) / target.mass();
   photon.y_ = photon.y_ * target.mass() / (lepton.p()).Dot(target.p());
 
   return photon;
@@ -81,18 +77,18 @@ static photon_data photon_data::make_real(const particle& lepton,
 // =======================================================================================
 // Create a new virtual photon
 // =======================================================================================
-static photon_data photon_data::make_virtual(const particle& lepton,
-                                             const particle& target,
-                                             const double Q2, const double y,
-                                             const double xs,
-                                             const double phi) {
+photon_data photon_data::make_virtual(const particle& lepton,
+                                      const particle& target, const double Q2,
+                                      const double y, const double xs,
+                                      const double phi) {
 
   // calculate scattered lepton
   // work in target rest frame
-  particle::Boost boost{target.p().BoostToCM()}:
-  beam = lepton.p().Boost(boost);
+  particle::Boost boost{target.p().BoostToCM()};
+  particle beam = lepton;
+  beam.boost(boost);
   // now work with z-axis along the lepton beam direction
-  const double E0 = beam.p.E();
+  const double E0 = beam.energy();
   const double E1 = E0 * (1. - y);
   const double theta1 = 2 * asin(sqrt(Q2 / (4. * E0 * E1)));
   const double phi1 = phi;
@@ -102,11 +98,10 @@ static photon_data photon_data::make_virtual(const particle& lepton,
                 particle::status_code::SCAT};
   // rotate to regular target rest frame, then boost to lab frame
   scat.rotate_uz(beam.p());
-  scat.boost(-boost);
+  scat.boost(boost.Inverse());
 
   // calculate the actual photon 4-momentum
-  photon_data vphoton{lepton.p() - scat.p(), xs,
-                      particle::status_code::SECONDARY_BEAM};
+  photon_data vphoton{lepton.p() - scat.p(), xs};
   vphoton.scat_ = scat;
 
   // epsilon
@@ -127,7 +122,7 @@ static photon_data photon_data::make_virtual(const particle& lepton,
 // =======================================================================================
 bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
                                std::shared_ptr<TRandom> r)
-    : photon{cf}
+    : photon{std::move(r)}
     , model_{cf.get<bremsstrahlung::model>(path / "model", bs_model_translator)}
     , rl_{(model_ != model::FLAT) ? cf.get<double>(path / "rl") : -1}
     , E_beam_{cf.get<double>("beam/energy")}
@@ -159,7 +154,7 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
       LOG_ERROR(
           "bremsstrahlung",
           "Use 'approx' instead of 'param' to use an arbitrary radiation length.");
-      throw conf().value_error("rl");
+      throw cf.value_error("rl");
     }
   } else { // APPROX
     LOG_INFO("bremsstrahlung", "Using approximation of the exact BS spectrum");
@@ -172,9 +167,9 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
 // =======================================================================================
 photon_data bremsstrahlung::generate(const beam::data& lepton,
                                      const beam::data& target) {
-  tassert(lepton.beam().E() > E_range_.min,
+  tassert(lepton.beam().energy() > E_range_.min,
           "Beam energy below bremsstrahlung generation window");
-  tassert(lepton.beam().E() <= E_beam_,
+  tassert(lepton.beam().energy() <= E_beam_,
           "Beam energy higher than maximum electron beam energy.");
   // generate a value for E
   const double E = rng()->Uniform(E_range_.min, E_range_.max);
@@ -182,14 +177,14 @@ photon_data bremsstrahlung::generate(const beam::data& lepton,
 
   // check if this value is in the allowed range
   const interval<double> Elim{E_range_.min,
-                              fmin(lepton.beam().E(), E_range_.max)};
+                              fmin(lepton.beam().energy(), E_range_.max)};
   if (Elim.excludes(E)) {
     LOG_JUNK("bremsstrahlung", "Value outside the valid E range");
     return photon_data{0.};
   }
 
   photon_data pd = photon_data::make_real(lepton.beam(), target.beam(), E,
-                                          intensity(E, beam.p.E()));
+                                          intensity(E, lepton.beam().energy()));
 
   // that's all!
   return pd;
@@ -212,7 +207,7 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
       return 0.; // can never happen
     }
   } else { // APPROX
-    return physics::flux::bremsstrahlung_approx(rl_, E_beam, E);
+    return physics::bremsstrahlung_approx(rl_, E_beam, E);
   }
 }
 
@@ -221,7 +216,7 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
 // =======================================================================================
 vphoton::vphoton(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r)
-    : photon{cf}
+    : photon{std::move(r)}
     , y_range_{cf.get_range<double>(path / "y_range")}
     , logy_range_{std::log(y_range_.min), std::log(y_range_.max)}
     , Q2_range_{calc_max_Q2_range(cf)}
@@ -235,7 +230,7 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
   LOG_INFO("vphoton",
            "y range [GeV^2]: [" + std::to_string(y_range_.min) + ", " +
                std::to_string(y_range_.max) + "]");
-  if (conf().get_optional_range<double>("W_range")) {
+  if (cf.get_optional_range<double>("W_range")) {
     LOG_INFO("vphoton",
              "W range (optional) [GeV}: [" +
                  std::to_string(sqrt(W2_range_.min)) + ", " +
@@ -258,24 +253,24 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
 // =======================================================================================
 // generate a new virtual photon
 // =======================================================================================
-photon_data vphoton::generate(const particle& beam, const particle& target) {
+photon_data vphoton::generate(const beam::data& lepton,
+                              const beam::data& target) {
 
   // generate a value for Q2 and y
   const double y = exp(rng()->Uniform(logy_range_.min, logy_range_.max));
   const double Q2 = exp(rng()->Uniform(logQ2_range_.min, logQ2_range_.max));
 
   LOG_JUNK("vphoton",
-           "Generated y: " + std::to_string(event.y) + " Q2: " +
-               std::to_string(event.Q2));
+           "Generated y: " + std::to_string(y) + " Q2: " + std::to_string(Q2));
 
   // check Q2 boundaries for validity
-  if (physics::Q2_range(beam, target, event.y).excludes(event.Q2)) {
+  if (physics::Q2_range(lepton.beam(), target.beam(), y).excludes(Q2)) {
     LOG_JUNK("vphoton", "Values outside of valid Q2 range");
-    return pd{0};
+    return {0.};
   }
 
   photon_data pd =
-      photon_data::make_virtual(lepton.beam, target.beam, Q2, y,
+      photon_data::make_virtual(lepton.beam(), target.beam(), Q2, y,
                                 flux(Q2, y, lepton.beam(), target.beam()),
                                 rng()->Uniform(0, TMath::TwoPi()));
 
@@ -284,12 +279,13 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
                           " x: " + std::to_string(pd.x()));
 
   // check if the invariants are in the range we want
-  if (W2_range_.excludes(event.W2())) {
+  if (W2_range_.excludes(pd.W2())) {
     LOG_JUNK("vphoton", "Values outside of valid W2 range");
-    return event;
+    pd.update_cross_section(0);
+    return pd;
   }
 
-  LOG_JUNK("vphoton", "xsec: " + std::to_string(pd.cross_section) + "( < " +
+  LOG_JUNK("vphoton", "xsec: " + std::to_string(pd.cross_section()) + "( < " +
                           std::to_string(max_) + ")");
 
   // bail if our cross section is not positive
@@ -310,10 +306,10 @@ photon_data vphoton::generate(const particle& beam, const particle& target) {
 // =======================================================================================
 double vphoton::calc_max_flux(const configuration& cf) const {
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
-                      cf.get_vector3<TVector3>("beam/dir"),
+                      cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<TVector3>("target/dir"),
+                        cf.get_vector3<particle::XYZVector>("target/dir"),
                         cf.get<double>("target/energy")};
   const double Q2 = Q2_range_.max;
   const double y = y_range_.min;
@@ -326,10 +322,10 @@ double vphoton::calc_max_flux(const configuration& cf) const {
 interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
   // get beam and target info
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
-                      cf.get_vector3<TVector3>("beam/dir"),
+                      cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<TVector3>("target/dir"),
+                        cf.get_vector3<particle::XYZVector>("target/dir"),
                         cf.get<double>("target/energy")};
 
   // Cap the minimum Q2 at lepton mass squared
@@ -369,10 +365,10 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
 interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
   // get beam and target info
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
-                      cf.get_vector3<TVector3>("beam/dir"),
+                      cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
   const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<TVector3>("target/dir"),
+                        cf.get_vector3<particle::XYZVector>("target/dir"),
                         cf.get<double>("target/energy")};
 
   // at least target in final state, at most s in final state

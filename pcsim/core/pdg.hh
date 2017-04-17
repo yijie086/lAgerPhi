@@ -1,10 +1,11 @@
 #ifndef PCSIM_CORE_PDG_LOADED
 #define PCSIM_CORE_PDG_LOADED
 
+#include <TDecayChannel.h>
+#include <TMath.h>
+#include <TParticlePDG.h>
 #include <cstdint>
 #include <memory>
-
-#include <TParticlePDG.h>
 
 namespace pcsim {
 
@@ -92,7 +93,7 @@ enum class pdg_id : int32_t {
   K_star_plus = 323,
   K_star_minus = -323,
   phi = 333,
-  J_Psi = 443,
+  J_psi = 443,
   upsilon = 553,
   // baryons
   n = 2112,

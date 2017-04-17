@@ -27,6 +27,8 @@ public:
   // add a new event to the event buffer, and flush the buffer to the tree
   void push(const event& e);
 
+  TTree* tree() { return tree_; }
+
 private:
   // clear particle portion of the event buffer
   void clear();
@@ -44,6 +46,8 @@ private:
   int32_t index_{0};
   int32_t evgen_;
   float cross_section_;
+  float epsilon_;
+  float R_;
   float weight_;
   int32_t process_;
   float s_;
@@ -56,8 +60,8 @@ private:
   std::vector<int16_t> status_;
   std::vector<int8_t> charge_;
   std::vector<float> mass_;
-  std::vector<XYZTVector> p_;
-  std::vector<XYZTVector> vertex_;
+  std::vector<particle::XYZTVector> p_;
+  std::vector<particle::XYZTVector> vertex_;
   std::vector<int16_t> parent_first_;
   std::vector<int16_t> parent_second_;
   std::vector<int16_t> daughter_begin_;

@@ -95,15 +95,15 @@ public:
     event_type event;
     double test;
     do {
-      ntrials_ += 1;
-      event.part.clear();
+      n_trials_ += 1;
+      event = {};
       generate_event(event);
       tassert(event.cross_section() <= max_cross_section_,
               "Invalid cross section maximum");
       // accept or reject
       test = this->rng()->Uniform(0, max_cross_section_);
     } while (test > event.cross_section());
-    nevents_ += 1;
+    n_events_ += 1;
     // event builder step
     build_event(event);
     // that's all
@@ -116,7 +116,7 @@ public:
   double cross_section() const {
     return phase_space_ * max_cross_section_ * n_events_ / n_trials_;
   }
-  double nevents() const { return nevents_; }
+  double n_events() const { return n_events_; }
 
   // get the maximum cross section and total phase space volume
   virtual double max_cross_section() const { return max_cross_section_; }
@@ -132,12 +132,12 @@ protected:
   // This stores the relevant phase_space and max_cross_section variables with
   // the event generator
   template <class Data, class... Input>
-  void add(const generator<Data, Input>& gen) {
+  void add(const generator<Data, Input...>& gen) {
     max_cross_section_ *= gen.max_cross_section();
     phase_space_ *= gen.phase_space();
   }
   void update_max_cross_section(double max) { max_cross_section_ *= max; }
-  void update_phase_space(const double ps) { phase_space *= ps; }
+  void update_phase_space(const double ps) { phase_space_ *= ps; }
 
 private:
   double phase_space_{1.};       // phase space

@@ -1,6 +1,7 @@
 #include "gamma_p_2vmX.hh"
 #include <TMath.h>
 #include <pcsim/core/logger.hh>
+#include <pcsim/physics/kinematics.hh>
 #include <pcsim/physics/photon.hh>
 #include <pcsim/physics/vm.hh>
 
@@ -13,9 +14,11 @@ factory<gamma_p_2vmX> gamma_p_2vmX::factory;
 // Constructor for gamma_p_2vmX data, calculates the final state four-vectors in
 // the lab-frame
 // =============================================================================
-gamma_p_2vmX_data(const beam::photon_data& photon, const beam::data& target,
-                  const double t, const particle& vm1, const particle& X1,
-                  const double xs, const double phi, const double R)
+gamma_p_2vmX_data::gamma_p_2vmX_data(const beam::photon_data& photon,
+                                     const beam::data& target, const double t,
+                                     const particle& vm1, const particle& X1,
+                                     const double xs, const double phi,
+                                     const double R)
     : generator_data{xs}
     , t_{t}
     , xv_{photon.x() + vm1.mass2() / (2 * target.beam().mass())}
@@ -57,31 +60,31 @@ gamma_p_2vmX_data(const beam::photon_data& photon, const beam::data& target,
   const particle::Polar3DVector p3_v{Pv_cm, theta_cm, phi_cm};
   vm_.p() = {p3_v.X(), p3_v.Y(), p3_v.Z(), Ev_cm};
   const particle::Polar3DVector p3_r{Pr_cm, theta_cm + TMath::Pi(), phi_cm};
-  X_.p() = { p3_r.X(), p3_r.Y(), p3_r.Z(), er_cm;
+  X_.p() = {p3_r.X(), p3_r.Y(), p3_r.Z(), Er_cm};
 
   // calculate some necessary boost and rotation vectors
   particle targ = target.beam();
   particle phot = photon.beam();
   // lab frame to target rest frame (trf)
-  particle::Boost boost_trf{targ.BoostToCM()};
-  targ.boost(boost_trf);
-  phot.boost(boost_trf);
+  particle::Boost boost_to_trf{targ.p().BoostToCM()};
+  targ.boost(boost_to_trf);
+  phot.boost(boost_to_trf);
   // describe photon in a target rest frame where the photon moves along the
   // z-axis
   particle::XYZTVector p_phot_z{0, 0, phot.momentum(), phot.energy()};
   // boost to CM frame from this rotated trf
-  particle::boost boost_cm{(targ.p() + p_phot_z).BoostToCM()};
+  particle::Boost boost_from_cm{-((targ.p() + p_phot_z).BoostToCM())};
 
   // go to lab frame
   // 1. CM -> rotated TRF
-  vm_.boost(-boost_cm);
-  X_.boost(-boost_cm);
+  vm_.boost(boost_from_cm);
+  X_.boost(boost_from_cm);
   // 2. rotated TRF -> TRF
   vm_.rotate_uz(phot.p());
   X_.rotate_uz(phot.p());
   // 3. TRF -> lab
-  vm.boost(-boost_trf);
-  X_.boost(-boost_trf);
+  vm_.boost(boost_to_trf.Inverse());
+  X_.boost(boost_to_trf.Inverse());
 
   // update VM particle status
   vm_.update_status(particle::status_code::UNSTABLE_SCHC);
@@ -128,18 +131,20 @@ gamma_p_2vmX_brodsky::gamma_p_2vmX_brodsky(const configuration& cf,
            "recoil: " + std::string(recoil_.pdg()->GetName()));
 }
 
-gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
-                                                 const beam::data& target) {
+gamma_p_2vmX_data
+gamma_p_2vmX_brodsky::generate(const beam::photon_data& photon,
+                               const beam::data& target) {
 
-  // generate a mass in case of non-zero width, initialize the particles
-  particle vm = {vm.type(), rng()};
-  particle recoil = {recoil.type(), rng()};
+  // generate a mass() in case of non-zero width, initialize the particles
+  particle vm = {vm_.type(), rng()};
+  particle recoil = {recoil_.type(), rng()};
 
   // check if enough energy available
-  if (photon.W2() < threshold2(vm, recoil) {
-    LOG_JUNK("gamma_p_2vmX_brodsky", "Not enough phase space available - W2: " +
-                                         std::to_string(photon.W2()) + " < " +
-                                         threshold2_);
+  if (photon.W2() < threshold2(vm, recoil)) {
+    LOG_JUNK("gamma_p_2vmX_brodsky",
+             "Not enough phase space available - W2: " +
+                 std::to_string(photon.W2()) + " < " +
+                 std::to_string(threshold2(vm, recoil)));
     return {0.};
   }
 
@@ -150,8 +155,8 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
   LOG_JUNK("gamma_p_2vmX_brodsky", "t: " + std::to_string(t));
 
   // check if kinematically allowed
-  if (physics::t_range(photon.W2, photon.Q2, target.mass(), vm.mass(),
-                       recoil.mass())
+  if (physics::t_range(photon.W2(), photon.Q2(), target.beam().mass(),
+                       vm.mass(), recoil.mass())
           .excludes(t)) {
     LOG_JUNK("gamma_p_2vmX_brodsky",
              "t outside of the allowed range for this W2")
@@ -161,7 +166,7 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
   // evaluate the cross section
   const double xs_R = R(photon.Q2());
   const double xs_dipole = dipole(photon.Q2());
-  const double xs_photo = dsigma_dexp_bt(photon.W2(), target.mass());
+  const double xs_photo = dsigma_dexp_bt(photon.W2(), target.beam().mass());
   const double xs = (1 + photon.epsilon() * xs_R) * xs_dipole * xs_photo;
 
   LOG_JUNK("gamma_p_2vmX_brodsky",
@@ -194,7 +199,7 @@ gamma_p_2vmX_data gamma_p_2vmX_brodsky::generate(const beam::photon_data photon,
 //  * note that we can be certain about these statements, as the program will
 //    exit with an error if the cross section maximum were ever violated
 // =============================================================================
-gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
+double gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the lepton
   // beam energy
   const particle photon{pdg_id::gamma,
@@ -205,14 +210,13 @@ gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
                         cf.get<double>("target/energy")};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
-  // get the maximum W 
-  const double W2max = opt_range ? fmin(opt_range_->max * opt_range_->max,
-                                        (photon.mom + target.mom).M2())
-                                 : (photon.mom + target.mom).M2();
+  // get the maximum W
+  const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
+                                          (photon.p() + target.p()).M2())
+                                   : (photon.p() + target.p()).M2();
   return dsigma_dexp_bt(W2max, target.mass()) * 1.0001;
 }
 
-./program/pcsim-vm -c jpsi-bs.json -r 1 -o /tmp/debug -e10000
 // =============================================================================
 // gamma_p_2vmX_brodsky::calc_max_t_range(cf)
 //
@@ -223,6 +227,7 @@ gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
 //    user-defined maximum value of W max) 
 //  * maximum Q2 for the given W (or zero for real photons)
 // =============================================================================
+interval<double>
 gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the lepton
   // beam energy
@@ -235,17 +240,17 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)
-  const double W2max = opt_range ? fmin(opt_range_->max * opt_range_->max,
-                                        (photon.mom + target.mom).M2())
-                                 : (photon.mom + target.mom).M2();
+  const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
+                                          (photon.p() + target.p()).M2())
+                                   : (photon.p() + target.p()).M2();
   // some shortcuts
   const double M_nu = (photon.p()).Dot(target.p());
   const double Q2max = target.mass2() + 2 * M_nu - W2max;
   // return the corresponding t range
   // in case of particles with non-zero width, we use M - 4 x sigma
-  return t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
-                 vm_.pole_mass() - vm_.width() * 4.,
-                 recoil_.pole_mass() - recoil_.width * 4);
+  return physics::t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
+                          vm_.pole_mass() - vm_.width() * 4.,
+                          recoil_.pole_mass() - recoil_.width() * 4);
 }
 // =============================================================================
 // gamma_p_2vmX_brodsky::exp_bt_range()
@@ -255,7 +260,7 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
 interval<double> gamma_p_2vmX_brodsky::exp_bt_range(const double W2,
                                                     const double Q2,
                                                     const double Mt) const {
-  auto tlim = t_range(W2, Q2, Mt, vm_.mass(), recoil_.mass());
+  auto tlim = physics::t_range(W2, Q2, Mt, vm_.mass(), recoil_.mass());
   return {exp(photo_b_ * tlim.min), exp(photo_b_ * tlim.max)};
 }
 // =============================================================================
@@ -265,14 +270,14 @@ interval<double> gamma_p_2vmX_brodsky::exp_bt_range(const double W2,
 //
 // Utility functions to calculate the cross section components
 // =============================================================================
-gamma_p_2vmX_brodsky::dsigma_dexp_bt(const double W2, const double Mt) const {
+double gamma_p_2vmX_brodsky::dsigma_dexp_bt(const double W2, const double Mt) const {
   return physics::dsigma_dexp_bt_vm_brodsky(W2, Mt, vm_.mass(), photo_b_,
                                             photo_c2g_, photo_c3g_);
 }
-gamma_p_2vmX_brodsky::R(const double Q2) const {
+double gamma_p_2vmX_brodsky::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_.mass(), R_vm_c_, R_vm_n_);
 }
-gamma_p_2vmX_brodsky::dipole(const double Q2) const {
+double gamma_p_2vmX_brodsky::dipole(const double Q2) const {
   return physics::dipole_ff_vm(Q2, vm_.mass(), dipole_n_);
 }
 // =============================================================================
@@ -285,8 +290,7 @@ gamma_p_2vmX_brodsky::dipole(const double Q2) const {
 double gamma_p_2vmX_brodsky::threshold2(const particle& vm,
                                         const particle& recoil) const {
 
-  return {recoil.mass * recoil.mass + vm.mass * vm.mass +
-          2 * vm.mass * recoil.mass};
+  return recoil.mass2() + vm.mass2() + 2 * vm.mass() * recoil.mass();
 }
 
 
