@@ -120,9 +120,9 @@ gamma_p_2vmX_brodsky::gamma_p_2vmX_brodsky(const configuration& cf,
   LOG_INFO("gamma_p_2vmX_brodsky",
            "b parameter [1/GeV^2]: " + std::to_string(photo_b_));
   LOG_INFO("gamma_p_2vmX_brodsky",
-           "2-gluon parameter [1/GeV^2]" + std::to_string(photo_c2g_));
+           "2-gluon parameter [1/GeV^2]: " + std::to_string(photo_c2g_));
   LOG_INFO("gamma_p_2vmX_brodsky",
-           "3-gluon parameter [1/GeV^2]" + std::to_string(photo_c3g_));
+           "3-gluon parameter [1/GeV^2]: " + std::to_string(photo_c3g_));
   LOG_INFO("gamma_p_2vmX_brodsky",
            "R_vm c-parameter: " + std::to_string(R_vm_c_));
   LOG_INFO("gamma_p_2vmX_brodsky",
@@ -152,8 +152,9 @@ gamma_p_2vmX_brodsky::generate(const beam::photon_data& photon,
   }
 
   // generate a phase space point
-  const double t = std::log(
-      rng()->Uniform(max_exp_bt_range_.min, max_exp_bt_range_.max) / photo_b_);
+  const double t =
+      std::log(rng()->Uniform(max_exp_bt_range_.min, max_exp_bt_range_.max)) /
+      photo_b_;
 
   LOG_JUNK("gamma_p_2vmX_brodsky", "t: " + std::to_string(t));
 
@@ -208,9 +209,10 @@ double gamma_p_2vmX_brodsky::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/dir"),
                         cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target.type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
@@ -237,9 +239,10 @@ gamma_p_2vmX_brodsky::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/dir"),
                         cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target.type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)

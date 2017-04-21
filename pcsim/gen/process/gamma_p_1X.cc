@@ -99,9 +99,10 @@ double gamma_p_1X_qpq::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/dir"),
                         cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target.type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W

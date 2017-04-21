@@ -41,7 +41,7 @@ public:
   primary(const configuration& cf, const string_path& path,
           std::shared_ptr<TRandom> r)
       : generator{std::move(r)}
-      , beam_{static_cast<pdg_id>(cf.get<int>(path / "type")),
+      , beam_{static_cast<pdg_id>(cf.get<int>(path / "particle_type")),
               cf.get_vector3<particle::XYZVector>(path / "dir"),
               cf.get<double>(path / "energy"), particle::status_code::BEAM} {
     LOG_INFO("beam::primary", "type: " + std::string(beam_.pdg()->GetName()));

@@ -58,7 +58,7 @@ private:
   int16_t n_part_ {0};
   std::vector<int32_t> type_;
   std::vector<int16_t> status_;
-  std::vector<int8_t> charge_;
+  std::vector<int16_t> charge_;
   std::vector<float> mass_;
   std::vector<particle::XYZTVector> p_;
   std::vector<particle::XYZTVector> vertex_;

@@ -33,8 +33,7 @@ public:
   }
 
 #define FACTORY_CREATE(gen, conf, path, rng)                                   \
-  gen::factory.create(conf.get<std::string>(string_path{path} / "type"), conf, \
-                      path, rng)
+  gen::factory.create(conf.get<std::string>(path "/type"), conf, path, rng)
 
 // a generic factory base class
 template <class T, class... Args> class factory {
@@ -84,7 +83,7 @@ private:
   };
   template <class U> struct worker : worker_base {
     virtual std::shared_ptr<T> create(Args... a) const {
-      return std::make_shared<U>(std::forward<Args>(a)...);
+      return std::make_shared<U>(a...);
     }
   };
 

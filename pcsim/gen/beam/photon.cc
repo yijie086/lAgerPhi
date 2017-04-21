@@ -302,18 +302,19 @@ photon_data vphoton::generate(const beam::data& lepton,
 // =======================================================================================
 // calculate an upper limit for the flux for the requested kinematic limits
 //
-// the max is reached for Q2 = Q2max and y = ymin
+// the max is reached for Q2 = Q2min and y = ymin
 // ==> note: these values are obtained when using the functional form
 // differential in logQ2 and logy!
 // =======================================================================================
 double vphoton::calc_max_flux(const configuration& cf) const {
-  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
+  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/particle_type")),
                       cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
-  const double Q2 = Q2_range_.max;
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
+  const double Q2 = Q2_range_.min;
   const double y = y_range_.min;
   return flux(Q2, y, beam, target);
 }
@@ -323,12 +324,13 @@ double vphoton::calc_max_flux(const configuration& cf) const {
 // =======================================================================================
 interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
   // get beam and target info
-  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
+  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/particle_type")),
                       cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
 
   // Cap the minimum Q2 at lepton mass squared
   const double Q2min =
@@ -366,12 +368,13 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
 // =======================================================================================
 interval<double> vphoton::calc_max_W2_range(const configuration& cf) const {
   // get beam and target info
-  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/type")),
+  const particle beam{static_cast<pdg_id>(cf.get<int>("beam/particle_type")),
                       cf.get_vector3<particle::XYZVector>("beam/dir"),
                       cf.get<double>("beam/energy")};
-  const particle target{static_cast<pdg_id>(cf.get<int>("target/type")),
-                        cf.get_vector3<particle::XYZVector>("target/dir"),
-                        cf.get<double>("target/energy")};
+  const particle target{
+      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
+      cf.get_vector3<particle::XYZVector>("target/dir"),
+      cf.get<double>("target/energy")};
 
   // at least target in final state, at most s in final state
   const double W2min = target.mass2();
