@@ -4,9 +4,9 @@
 #include <Math/LorentzRotation.h>
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
-
 #include <TRandom.h>
 #include <memory>
+#include <pcsim/core/assert.hh>
 #include <pcsim/core/interval.hh>
 #include <pcsim/core/pdg.hh>
 
@@ -82,6 +82,10 @@ public:
   bool stable() const {
     return (status_ != status_code::UNSTABLE &&
             status_ != status_code::UNSTABLE_SCHC);
+  }
+  // final state particles (labeled FINAL or SCAT)
+  bool final_state() const {
+    return (status_ == status_code::FINAL || status_ == status_code::SCAT);
   }
 
   // particle properties
@@ -159,6 +163,63 @@ private:
   // daughter indices are encoded from [begin, end) where begin is the
   // first index and end one past the last index. (-1, -1) if none
   interval<int> daughter_{-1, -1};
+};
+// =============================================================================
+// DETECTED PARTICLE
+//
+// small utility class for detected particles
+// =============================================================================
+class detected_particle {
+public:
+  using XYZTVector = particle::XYZTVector;
+
+  // constructors
+  //
+  // default
+  detected_particle(const detected_particle&) = default;
+  detected_particle& operator=(const detected_particle&) = default;
+  // from a particle with a given index
+  detected_particle(particle& part, int index, const XYZTVector& momentum,
+                    const int status = 0)
+      : generated_index_{index}
+      , status_{status}
+      , generated_{&part}
+      , p_{momentum} {}
+  detected_particle(particle& part, int index, const int status = 0)
+      : generated_index_{index}
+      , status_{status}
+      , generated_{&part}
+      , p_{part.p()} {}
+
+  // particle index
+  int generated_index() const { return generated_index_; }
+
+  // particle status
+  int status() const {return status_;}
+  void update_status(const int ns) { status_ = ns; }
+
+  // original generated particle
+  particle& generated() {
+    tassert(
+        generated_,
+        "Associated generated particle to this detected particle is a nullptr");
+    return *generated_;
+  }
+  const particle& generated() const {
+    tassert(
+        generated_,
+        "Associated generated particle to this detected particle is a nullptr");
+    return *generated_;
+  }
+
+  // detected 4-momentum
+  const XYZTVector& p() const { return p_; }
+
+private:
+  int generated_index_{0};
+  int status_{0};
+  particle* generated_{nullptr};
+  XYZTVector p_;
 };
 
 } // namespace pcsim

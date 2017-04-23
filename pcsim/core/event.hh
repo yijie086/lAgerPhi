@@ -13,11 +13,11 @@ namespace pcsim {
 //
 // base event record that carries a list of all particles
 // derive form this class for more specialized event records
+//
+// TODO: remove epsilon and R info, move to a gamma_p_event sub-class
 // =============================================================================
 class event : public generator_data {
 public:
-  using vector_type = std::vector<particle>;
-
   event() = default;
   explicit event(const size_t evgen, const double xs = 1., const double w = 1.,
                  const double R = 0., const double epsilon = 0.)
@@ -27,6 +27,9 @@ public:
       , R_{R}
       , epsilon_{epsilon} {}
 
+  // ===========================================================================
+  // EVENT INFO
+  //
   // access evgen and weight info, cross section is available through the
   // generator_data base class
   size_t evgen() const { return evgen_; }
@@ -34,6 +37,7 @@ public:
   double R() const { return R_; }
   double epsilon() const { return epsilon_; }
   int process() const { return process_; }
+  double s() const { return s_; }
 
   // update weight and cross section
   void update_evgen(const size_t evgen) { evgen_ = evgen; }
@@ -42,20 +46,25 @@ public:
   void update_epsilon(const double epsilon) { epsilon_ = epsilon; }
   void update_process(const int proc) { process_ = proc; }
 
+  // ===========================================================================
+  // PARICLE INFO
+  //
   // access particle info
   particle& operator[](const int index) { return part_[index]; }
   const particle& operator[](const int index) const { return part_[index]; }
-  vector_type& part() { return part_; }
-  const vector_type& part() const { return part_; }
+  std::vector<particle>& part() { return part_; }
+  const std::vector<particle>& part() const { return part_; }
+  particle& part(const int index) { return part_[index]; }
+  const particle& part(const int index) const { return part_[index]; }
 
   // event size
   size_t size() const { return part_.size(); }
 
   // particle iterators
-  vector_type::iterator begin() { return part_.begin(); }
-  vector_type::const_iterator begin() const { return part_.begin(); }
-  vector_type::iterator end() { return part_.end(); }
-  vector_type::const_iterator end() const { return part_.end(); }
+  std::vector<particle>::iterator begin() { return part_.begin(); }
+  std::vector<particle>::const_iterator begin() const { return part_.begin(); }
+  std::vector<particle>::iterator end() { return part_.end(); }
+  std::vector<particle>::const_iterator end() const { return part_.end(); }
 
   // add a misc particle. returns the index of the particle
   int add_particle(const particle& p);
@@ -77,8 +86,23 @@ public:
   const particle& target() const;
   int beam_index() const { return beam_index_; }
   int target_index() const { return target_index_; }
-  double s() const { return s_; }
 
+  // ===========================================================================
+  // DETECTOR INFO
+  //
+  // access detector info
+  std::vector<detected_particle>& detected() { return detected_; }
+  const std::vector<detected_particle>& detected() const { return detected_; }
+  detected_particle& detected(const int index) { return detected_[index]; }
+  const detected_particle& detected(const int index) const {
+    return detected_[index];
+  }
+
+  int add_detected(const detected_particle dp) {
+    detected_.push_back(dp);
+    return detected_.size() - 1;
+  }
+  
 private:
   void update_s();
 
@@ -91,7 +115,8 @@ private:
 
   int beam_index_{-1};
   int target_index_{-1};
-  vector_type part_;
+  std::vector<particle> part_;
+  std::vector<detected_particle> detected_;
 };
 } // namespace pcsim
 

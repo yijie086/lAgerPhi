@@ -25,6 +25,7 @@ set (TARGETS "")
 
 add_subdirectory(pcsim/core)
 add_subdirectory(pcsim/gen/beam)
+add_subdirectory(pcsim/gen/decay)
 add_subdirectory(pcsim/gen/process)
 add_subdirectory(pcsim/physics)
 add_subdirectory(program)

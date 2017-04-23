@@ -12,6 +12,7 @@
 #include <pcsim/core/progress_meter.hh>
 #include <pcsim/gen/beam/beam.hh>
 #include <pcsim/gen/beam/photon.hh>
+#include <pcsim/gen/decay/gamma_p_event.hh>
 #include <pcsim/gen/process/gamma_p_1X.hh>
 #include <pcsim/gen/process/gamma_p_2vmX.hh>
 #include <pcsim/physics/decay.hh>
@@ -26,6 +27,7 @@ std::string to_string_exp(double d) {
 }
 
 // TODO add proper support/constructor for Pc decay
+// TODO move hard scattering info to a gamma_p_event super-class
 class vm_event : public event {
 public:
 
@@ -161,7 +163,7 @@ public:
       , proton_gen{FACTORY_CREATE(beam::primary, conf(), "target", r)}
       , photon_gen{FACTORY_CREATE(beam::photon, conf(), "photon", r)}
       , vm_gen{FACTORY_CREATE(process::gamma_p_2vmX, conf(), "gamma_p_2vmX", r)}
-      , decay_gen{std::make_unique<physics::decay_handler>(r)} {
+      , decay_gen{std::make_unique<decay::gamma_p_event>(r)} {
     add(*photon_gen);
     add(*vm_gen);
     }
@@ -187,7 +189,7 @@ public:
     }
 
     virtual void build_event(event_type & e) const {
-      decay_gen->process(e);
+      decay_gen->decay(e);
       e.update_evgen(n_events());
     }
 
@@ -196,7 +198,7 @@ public:
     std::shared_ptr<beam::primary> proton_gen;
     std::shared_ptr<beam::photon> photon_gen;
     std::shared_ptr<process::gamma_p_2vmX> vm_gen;
-    std::shared_ptr<physics::decay_handler> decay_gen;
+    std::shared_ptr<decay::gamma_p_event> decay_gen;
 };
 
 int run_mc(const configuration& cf, const std::string& output) {

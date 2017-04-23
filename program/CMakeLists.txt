@@ -11,7 +11,7 @@ function (BUILD_PROGRAM EXE)
   ## compile and link
   add_executable(${PROG} ${SOURCES})
   target_link_libraries(${PROG}
-    pcsim_core pcsim_physics pcsim_gen_process pcsim_gen_beam
+    pcsim_core pcsim_physics pcsim_gen_process pcsim_gen_beam pcsim_gen_decay
   ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
   set_target_properties(${PROG} PROPERTIES VERSION ${PCSIM_VERSION})
   ## install instructions
