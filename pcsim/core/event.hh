@@ -142,8 +142,7 @@ inline int event::add_daughter(particle daughter, const int parent1,
                                const int parent2) {
   daughter.add_parent(parent1);
   daughter.add_parent(parent2);
-  part_.push_back(daughter);
-  int index = part_.size() - 1;
+  int index = add_particle(daughter);
   part_[parent1].add_daughter(index);
   if (parent2 >= 0) {
     part_[parent2].add_daughter(index);

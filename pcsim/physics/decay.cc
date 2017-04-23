@@ -34,7 +34,7 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
       -(particle::XYZTVector{0, 0, sqrt(part.p().Vect().Mag2()), part.p().E()}
             .BoostToCM())};
   xx.first.boost(b_from_cm);
-  xx.first.boost(b_from_cm);
+  xx.second.boost(b_from_cm);
 
   // rotate to the original frame
   xx.first.rotate_uz(part.p().Vect());

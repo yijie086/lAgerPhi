@@ -113,7 +113,9 @@ public:
   int parent_second() const { return parent_.max; }
   int n_parents() const { return parent_.max - parent_.min; }
   // momentum and energy
-  double momentum() const { return sqrt(p_.Vect().Mag2()); }
+  double momentum() const {
+    return sqrt(p_.X() * p_.X() + p_.Y() * p_.Y() + p_.Z() * p_.Z());
+  }
   double energy() const { return p_.E(); }
 
   // get a reference to the momentum/vertex 4-vector
