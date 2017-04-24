@@ -196,7 +196,9 @@ public:
     virtual void build_event(event_type & e) const {
       decay_gen->decay(e);
       e.update_evgen(n_events());
-      detector_->detect(e);
+      if (detector_) {
+        detector_->detect(e);
+      }
     }
 
   private:
