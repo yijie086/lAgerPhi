@@ -3,6 +3,7 @@
 #include <memory>
 #include <pcsim/core/assert.hh>
 #include <pcsim/core/configuration.hh>
+#include <pcsim/core/detector.hh>
 #include <pcsim/core/event.hh>
 #include <pcsim/core/event_out.hh>
 #include <pcsim/core/exception.hh>
@@ -15,7 +16,8 @@
 #include <pcsim/gen/decay/gamma_p_event.hh>
 #include <pcsim/gen/process/gamma_p_1X.hh>
 #include <pcsim/gen/process/gamma_p_2vmX.hh>
-#include <pcsim/physics/decay.hh>
+
+#include <pcsim/gen/detector/jleic.hh>
 
 using namespace pcsim;
 
@@ -40,7 +42,7 @@ public:
 
   int add_photon(const beam::photon_data& photon) {
     photon_index_ = add_daughter(photon.beam(), beam_index());
-    scat_index_ = add_daughter(photon.beam(), beam_index());
+    scat_index_ = add_daughter(photon.scat(), beam_index());
 
     W_ = sqrt(photon.W2());
     Q2_ = photon.Q2();
@@ -163,7 +165,10 @@ public:
       , proton_gen{FACTORY_CREATE(beam::primary, conf(), "target", r)}
       , photon_gen{FACTORY_CREATE(beam::photon, conf(), "photon", r)}
       , vm_gen{FACTORY_CREATE(process::gamma_p_2vmX, conf(), "gamma_p_2vmX", r)}
-      , decay_gen{std::make_unique<decay::gamma_p_event>(r)} {
+      , decay_gen{std::make_unique<decay::gamma_p_event>(r)}
+      , detector_{(cf.get<std::string>("detector/type") == "jleic")
+                      ? new detect::jleic(cf, "detector", r)
+                      : nullptr} {
     add(*photon_gen);
     add(*vm_gen);
     }
@@ -191,6 +196,7 @@ public:
     virtual void build_event(event_type & e) const {
       decay_gen->decay(e);
       e.update_evgen(n_events());
+      detector_->detect(e);
     }
 
   private:
@@ -199,6 +205,7 @@ public:
     std::shared_ptr<beam::photon> photon_gen;
     std::shared_ptr<process::gamma_p_2vmX> vm_gen;
     std::shared_ptr<decay::gamma_p_event> decay_gen;
+    std::shared_ptr<detect::detector> detector_;
 };
 
 int run_mc(const configuration& cf, const std::string& output) {

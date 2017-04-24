@@ -34,6 +34,8 @@ private:
   void clear();
   // add a particle to the event buffer
   void add(const particle& part);
+  // add a detected particle to the buffer
+  void add_detected(const detected_particle& dp);
 
   void create_branches();
 
@@ -66,5 +68,11 @@ private:
   std::vector<int16_t> parent_second_;
   std::vector<int16_t> daughter_begin_;
   std::vector<int16_t> daughter_end_;
+  // detected particle data
+  int16_t rc_n_part_ {0};
+  std::vector<particle::XYZTVector> rc_p_;
+  std::vector<int32_t> rc_type_;
+  std::vector<int16_t> rc_parent_;
+  std::vector<int16_t> rc_status_;
 };
 } // namespace pcsim

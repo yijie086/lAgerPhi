@@ -181,32 +181,16 @@ public:
   detected_particle(const detected_particle&) = default;
   detected_particle& operator=(const detected_particle&) = default;
   // from a particle with a given index
-  detected_particle(particle& part, int index, const XYZTVector& momentum,
+  detected_particle(const particle& part, const XYZTVector& momentum,
                     const int status = 0)
-      : generated_index_{index}
-      , status_{status}
-      , generated_{&part}
-      , p_{momentum} {}
-  detected_particle(particle& part, int index, const int status = 0)
-      : generated_index_{index}
-      , status_{status}
-      , generated_{&part}
-      , p_{part.p()} {}
-
-  // particle index
-  int generated_index() const { return generated_index_; }
+      : status_{status}, generated_{&part}, p_{momentum} {}
+  detected_particle(const particle& part, const int status = 0)
+      : status_{status}, generated_{&part}, p_{part.p()} {}
 
   // particle status
   int status() const {return status_;}
   void update_status(const int ns) { status_ = ns; }
 
-  // original generated particle
-  particle& generated() {
-    tassert(
-        generated_,
-        "Associated generated particle to this detected particle is a nullptr");
-    return *generated_;
-  }
   const particle& generated() const {
     tassert(
         generated_,
@@ -218,9 +202,8 @@ public:
   const XYZTVector& p() const { return p_; }
 
 private:
-  int generated_index_{0};
   int status_{0};
-  particle* generated_{nullptr};
+  const particle* generated_{nullptr};
   XYZTVector p_;
 };
 
