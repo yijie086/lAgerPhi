@@ -135,8 +135,10 @@ inline int event::add_target(const particle& p) {
   return target_index_;
 }
 inline int event::add_particle(const particle& p) {
+  const int index = part_.size();
   part_.push_back(p);
-  return (part_.size() - 1);
+  part_[index].update_index(index);
+  return index;
 }
 inline int event::add_daughter(particle daughter, const int parent1,
                                const int parent2) {

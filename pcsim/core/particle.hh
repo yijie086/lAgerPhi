@@ -71,6 +71,10 @@ public:
     return static_cast<Integer>(type_);
   }
 
+  // particle index, -1 if not a part of a structured event
+  int index() const { return index_; }
+  void update_index(const int i) { index_ = i; };
+
   // full PDG info from the TDatabasePDG
   TParticlePDG* pdg() const { return pdg_; }
 
@@ -147,6 +151,7 @@ private:
     return {v.X(), v.Y(), v.Z(), t};
   }
 
+  int index_{-1};
   pdg_id type_{pdg_id::unknown};
   TParticlePDG* pdg_{nullptr};
   int charge_{0};

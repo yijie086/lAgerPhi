@@ -45,6 +45,7 @@ void event_out::push(const event& e) {
 }
 void event_out::clear() {
   n_part_ = 0;
+  part_index_.clear();
   type_.clear();
   status_.clear();
   mass_.clear();
@@ -59,11 +60,12 @@ void event_out::clear() {
   rc_n_part_ = 0;
   rc_p_.clear();
   rc_type_.clear();
-  rc_parent_.clear();
+  rc_index_.clear();
   rc_status_.clear();
 }
 void event_out::add(const particle& part) {
   n_part_ += 1;
+  part_index_.push_back(static_cast<int32_t>(part.index()));
   type_.push_back(static_cast<int32_t>(part.type()));
   status_.push_back(static_cast<int16_t>(part.status()));
   mass_.push_back(static_cast<float>(part.mass()));
@@ -80,7 +82,7 @@ void event_out::add_detected(const detected_particle& dp) {
   rc_n_part_ += 1;
   rc_p_.push_back(dp.p());
   rc_type_.push_back(dp.generated().type<int32_t>());
-  rc_parent_.push_back(static_cast<int16_t>(dp.generated().parent_first()));
+  rc_index_.push_back(static_cast<int16_t>(dp.generated().index()));
   rc_status_.push_back(static_cast<int16_t>(dp.status()));
 }
 
@@ -96,6 +98,7 @@ void event_out::create_branches() {
   tree_->Branch("beam_index", &beam_index_);
   tree_->Branch("target_index", &target_index_);
   tree_->Branch("n_part", &n_part_);
+  tree_->Branch("part_index", &part_index_);
   tree_->Branch("type", &type_);
   tree_->Branch("status", &status_);
   tree_->Branch("mass", &mass_);
@@ -107,10 +110,10 @@ void event_out::create_branches() {
   tree_->Branch("daughter_begin", &daughter_begin_);
   tree_->Branch("daughter_end", &daughter_end_);
   tree_->Branch("rc_n_part", &rc_n_part_);
-  tree_->Branch("rc_status", &rc_status_);
   tree_->Branch("rc_p", &rc_p_);
   tree_->Branch("rc_type", &rc_type_);
-  tree_->Branch("rc_parent", &rc_parent_);
+  tree_->Branch("rc_index", &rc_index_);
+  tree_->Branch("rc_status", &rc_status_);
 }
 
 } // namespace pcsim

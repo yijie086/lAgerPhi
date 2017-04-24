@@ -58,6 +58,7 @@ private:
 
   // particle data
   int16_t n_part_ {0};
+  std::vector<int32_t> part_index_;
   std::vector<int32_t> type_;
   std::vector<int16_t> status_;
   std::vector<int16_t> charge_;
@@ -72,7 +73,7 @@ private:
   int16_t rc_n_part_ {0};
   std::vector<particle::XYZTVector> rc_p_;
   std::vector<int32_t> rc_type_;
-  std::vector<int16_t> rc_parent_;
+  std::vector<int16_t> rc_index_;
   std::vector<int16_t> rc_status_;
 };
 } // namespace pcsim
