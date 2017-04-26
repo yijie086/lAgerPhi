@@ -1,4 +1,4 @@
-#include "gamma_p_1X.hh"
+#include "gaussian_1X.hh"
 #include <TF1.h>
 #include <TMath.h>
 #include <pcsim/core/logger.hh>
@@ -6,32 +6,17 @@
 #include <pcsim/physics/vm.hh>
 
 namespace pcsim {
-namespace process {
-
-factory<gamma_p_1X, const configuration&, const string_path&,
-        std::shared_ptr<TRandom>>
-    gamma_p_1X::factory;
-FACTORY_REGISTER(gamma_p_1X, gamma_p_1X_qpq, "gamma_p_1X_qpq");
+namespace lp_gamma {
 
 // =============================================================================
-// Constructor for gamma_p_1X data, calculates the final state four-vector in
-// the lab-frame
+// Constructor for lp_gamma::gaussian_qpq
 // =============================================================================
-gamma_p_1X_data::gamma_p_1X_data(const beam::photon_data& photon,
-                                 const beam::data& target, const particle& X1,
-                                 const double xs, const double R)
-    : generator_data{xs}
-    , R_{R}
-    , X_{X1.type(), (photon.beam().p() + target.beam().p())} {}
-
-// =============================================================================
-// Constructor for process::gamma_p_1X_qpq
-// =============================================================================
-gamma_p_1X_qpq::gamma_p_1X_qpq(const configuration& cf, const string_path& path,
-                               std::shared_ptr<TRandom> r)
-    : gamma_p_1X{r}
+gaussian_qpq::gaussian_qpq(const configuration& cf, const string_path& path,
+                           std::shared_ptr<TRandom> r)
+    : generator{r}
     , vm_pole_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
-    , qpq_{static_cast<pdg_id>(cf.get<int>(path / "qpq_type"))}
+    , qpq_{static_cast<pdg_id>(cf.get<int>(path / "qpq_type")),
+           particle::status_code::UNSTABLE}
     , W2_range_{calc_W2_range(cf.get<double>(path / "n_sigma"))}
     , qpq_amplitude_{cf.get<double>(path / "qpq_amplitude")}
     , qpq_coupling_{cf.get<double>(path / "qpq_couping")}
@@ -39,27 +24,25 @@ gamma_p_1X_qpq::gamma_p_1X_qpq(const configuration& cf, const string_path& path,
     , R_vm_n_{cf.get<double>(path / "R_vm_n")}
     , dipole_n_{cf.get<double>(path / "dipole_n")}
     , max_{calc_max_xsec(cf)} {
-  LOG_INFO("gamma_p_1X_qpq", "amplitude: " + std::to_string(qpq_amplitude_));
-  LOG_INFO("gamma_p_1X_qpq", "coupling: " + std::to_string(qpq_coupling_));
-  LOG_INFO("gamma_p_1X_qpq",
-           "R_vm c-parameter: " + std::to_string(R_vm_c_));
-  LOG_INFO("gamma_p_1X_qpq",
+  LOG_INFO("gaussian_qpq", "amplitude: " + std::to_string(qpq_amplitude_));
+  LOG_INFO("gaussian_qpq", "coupling: " + std::to_string(qpq_coupling_));
+  LOG_INFO("gaussian_qpq", "R_vm c-parameter: " + std::to_string(R_vm_c_));
+  LOG_INFO("gaussian_qpq",
            "R_vm n-parameter (power): " + std::to_string(R_vm_n_));
-  LOG_INFO("gamma_p_1X_qpq",
-           "'Dipole' FF power: " + std::to_string(dipole_n_));
-  LOG_INFO("gamma_p_1X_qpq",
+  LOG_INFO("gaussian_qpq", "'Dipole' FF power: " + std::to_string(dipole_n_));
+  LOG_INFO("gaussian_qpq",
            "Q-Pentaquark: " + std::string(qpq_.pdg()->GetName()));
-  LOG_INFO("gamma_p_1X_qpq",
+  LOG_INFO("gaussian_qpq",
            "VM Pole: " + std::string(vm_pole_.pdg()->GetName()));
 }
 
-gamma_p_1X_data gamma_p_1X_qpq::generate(const beam::photon_data& photon,
-                                         const beam::data& target) {
+lp_gamma_event gaussian_qpq::generate(const lp_gamma_data& initial) {
+  const auto& gamma = initial.photon();
 
   // check if we are in the correct W2 range
-  if (W2_range_.excludes(photon.W2())) {
-    LOG_JUNK("gamma_p_1X_qpq",
-             "Event outside of W2 range - W2: " + std::to_string(photon.W2()) +
+  if (W2_range_.excludes(gamma.W2())) {
+    LOG_JUNK("gaussian_qpq",
+             "Event outside of W2 range - W2: " + std::to_string(gamma.W2()) +
                  " outside of [" + std::to_string(W2_range_.min) + ", " +
                  std::to_string(W2_range_.max) + "]");
     return {0.};
@@ -69,23 +52,26 @@ gamma_p_1X_data gamma_p_1X_qpq::generate(const beam::photon_data& photon,
   // and create the Q-Pq
 
   // evaluate the cross section
-  const double xs_R = R(photon.Q2());
-  const double xs_dipole = dipole(photon.Q2());
-  const double xs_photo = sigma(photon.W2());
-  const double xs = (1 + photon.epsilon() * xs_R) * xs_dipole * xs_photo;
+  const double xs_R = R(gamma.Q2());
+  const double xs_dipole = dipole(gamma.Q2());
+  const double xs_photo = sigma(gamma.W2());
+  const double xs = (1 + gamma.epsilon() * xs_R) * xs_dipole * xs_photo;
 
-  LOG_JUNK("gamma_p_1X_qpq",
+  LOG_JUNK("gaussian_qpq",
            "xsec: " + std::to_string(xs_photo) + " < " + std::to_string(max_));
-  LOG_JUNK("gamma_p_1X_qpq", "R: " + std::to_string(xs_R));
-  LOG_JUNK("gamma_p_1X_qpq", "dipole: " + std::to_string(xs_dipole));
+  LOG_JUNK("gaussian_qpq", "R: " + std::to_string(xs_R));
+  LOG_JUNK("gaussian_qpq", "dipole: " + std::to_string(xs_dipole));
 
-  // return a new 1X event
-  return {photon, target, qpq_, xs, xs_R};
+  // create our new event
+  lp_gamma_event e{initial, xs, 1., xs_R};
+  e.add_daughter({qpq_.type(), e.photon().p() + e.target().p(), qpq_.status()},
+                 e.photon_index(), e.target_index());
+
+  return e;
 }
 
-
 // =============================================================================
-// gamma_p_1X_qpq::calc_max_xsec(cf)
+// gaussian_qpq::calc_max_xsec(cf)
 //
 // Utility function for the generator initialization
 //
@@ -93,7 +79,7 @@ gamma_p_1X_data gamma_p_1X_qpq::generate(const beam::photon_data& photon,
 //
 // Scan for cross section maximum between the W2 limits
 // =============================================================================
-double gamma_p_1X_qpq::calc_max_xsec(const configuration& cf) const {
+double gaussian_qpq::calc_max_xsec(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the lepton
   // beam energy
   const particle photon{pdg_id::gamma,
@@ -119,33 +105,33 @@ double gamma_p_1X_qpq::calc_max_xsec(const configuration& cf) const {
 }
 
 // =============================================================================
-// gamma_p_1X_qpq::calc_mass2_range()
+// gaussian_qpq::calc_mass2_range()
 //
 // Utility function to calculate the W2 range we allow for q-Pq production
 // =============================================================================
-interval<double> gamma_p_1X_qpq::calc_W2_range(const double n_sigma) const {
+interval<double> gaussian_qpq::calc_W2_range(const double n_sigma) const {
   double min = qpq_.pole_mass() - n_sigma * qpq_.width();
   double max = qpq_.pole_mass() - n_sigma * qpq_.width();
   return {min * min, max * max};
 }
 
 // =============================================================================
-// gamma_p_1X_qpq::sigma()
-// gamma_p_1X_qpq::R()
-// gamma_p_1X_qpq::dipole()
+// gaussian_qpq::sigma()
+// gaussian_qpq::R()
+// gaussian_qpq::dipole()
 //
 // Utility functions to calculate the cross section components
 // =============================================================================
-double gamma_p_1X_qpq::sigma(const double W2) const {
+double gaussian_qpq::sigma(const double W2) const {
   return qpq_coupling_ * qpq_coupling_ * qpq_amplitude_ *
          TMath::Gaus(sqrt(W2), qpq_.mass(), qpq_.width());
 }
-double gamma_p_1X_qpq::R(const double Q2) const {
+double gaussian_qpq::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_pole_.mass(), R_vm_c_, R_vm_n_);
 }
-double gamma_p_1X_qpq::dipole(const double Q2) const {
+double gaussian_qpq::dipole(const double Q2) const {
   return physics::dipole_ff_vm(Q2, vm_pole_.mass(), dipole_n_);
 }
 
-} // namespace process
+} // namespace lp_gamma
 } // namespace pcsim
