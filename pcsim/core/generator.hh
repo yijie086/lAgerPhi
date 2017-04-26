@@ -113,7 +113,7 @@ public:
 
   process_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 
-  virtual void process(event_type& event) = 0;
+  virtual void process(event_type&) = 0;
 
 private:
   virtual void generate() {}
