@@ -31,7 +31,7 @@ public:
   };                                                                           \
   const proxy_##class p_##class;                                               \
   }
-
+// construct a generator instance
 #define FACTORY_CREATE(gen, conf, path, rng)                                   \
   gen::factory.create(conf.get<std::string>(path "/type"), conf, path, rng)
 
