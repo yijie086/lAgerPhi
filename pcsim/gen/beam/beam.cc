@@ -1,12 +1,26 @@
 #include "beam.hh"
+#include <TRandom.h>
+#include <memory>
+#include <pcsim/core/configuration.hh>
+#include <pcsim/core/photon_gen.hh>
+#include <pcsim/core/primary_gen.hh>
 
 namespace pcsim {
 namespace beam {
 
-factory<primary, const configuration&, const string_path&,
+// initialize the factories
+factory<primary_generator, const configuration&, const string_path&,
         std::shared_ptr<TRandom>>
-    primary::factory;
-FACTORY_REGISTER(primary, primary, "primary");
+    primary_generator::factory;
+factory<photon_generator, const configuration&, const string_path&,
+        std::shared_ptr<TRandom>>
+    photon_generator::factory;
 
-} // gen
-} // pcsim
+// register our generators
+FACTORY_REGISTER(primary_generator, primary_gen, "primary");
+
+FACTORY_REGISTER(photon_generator, bremsstrahlung, "bremsstrahlung");
+FACTORY_REGISTER(photon_generator, vphoton, "vphoton");
+
+} // namespace beam
+} // namespace pcsim

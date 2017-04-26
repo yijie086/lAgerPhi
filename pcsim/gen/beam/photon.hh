@@ -1,47 +1,42 @@
-#ifndef PCSIM_BEAM_PHOTON_LOADED
-#define PCSIM_BEAM_PHOTON_LOADED
+#ifndef PCSIM_GEN_BEAM_PHOTON_LOADED
+#define PCSIM_GEN_BEAM_PHOTON_LOADED
 
-#include <TRandom.h>
-#include <cmath>
-#include <memory>
-#include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam/beam.hh>
-#include <pcsim/physics/photon.hh>
+#include <pcsim/gen/beam/primary.hh>
 
 namespace pcsim {
 namespace beam {
 
 // =============================================================================
-// beam::photon_data
+// beam::photon
 //
 // secondary photon beam
 // =============================================================================
-class photon_data : public data {
+class photon : public primary {
 public:
   // generalized constructors:
   // make collinear real photon event with energy E
-  static photon_data make_real(const particle& lepton, const particle& target,
-                               const double E, const double xs);
+  static photon make_real(const particle& lepton, const particle& target,
+                          const double E, const double xs);
 
   // generate virtual photon event with Q2 and y
   // also needs an azimuthal angle in the CM frame
-  static photon_data make_virtual(const particle& lepton,
-                                  const particle& target, const double Q2,
-                                  const double y, const double xs,
-                                  const double phi);
+  static photon make_virtual(const particle& lepton, const particle& target,
+                             const double Q2, const double y, const double xs,
+                             const double phi);
 
-  photon_data() = default;
-  photon_data(const photon_data&) = default;
-  photon_data& operator=(const photon_data&) = default;
+  photon() = default;
+  photon(const photon&) = default;
+  photon& operator=(const photon&) = default;
 
-  photon_data(const double xs) : data{xs} {}
+  photon(const double xs) : data{xs} {}
 
-  photon_data(const particle::XYZTVector& p)
-      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}} {}
-  photon_data(const particle::XYZTVector& p, const double xs)
-      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}, xs} {}
+  photon(const particle::XYZTVector& p)
+      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_GEN_BEAM}} {}
+  photon(const particle::XYZTVector& p, const double xs)
+      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_GEN_BEAM},
+             xs} {}
 
   double epsilon() const { return epsilon_; }
   double W2() const { return W2_; }
@@ -62,89 +57,7 @@ private:
   particle scat_;      // scattered lepton
 };
 
-// =============================================================================
-// Base class for secondary photons from electron/positron beams on a nucleon
-// Note: lepton beam is refered to as "beam", proton beam as "target"
-// =============================================================================
-class photon : public generator<photon_data, beam::data, beam::data> {
-public:
-  static factory<photon, const configuration&, const string_path&,
-                 std::shared_ptr<TRandom>>
-      factory;
-
-  photon(std::shared_ptr<TRandom> r) : generator{std::move(r)} {}
-
-  virtual photon_data generate(const beam::data& beam,
-                               const beam::data& target) = 0;
-
-private:
-  ; // nothing here
-};
-
-// Bremsstrahlung photons
-class bremsstrahlung : public photon {
-public:
-  enum class model { FLAT, PARAM, APPROX };
-
-  bremsstrahlung(const configuration& cf, const string_path& path,
-                 std::shared_ptr<TRandom> r);
-
-  virtual photon_data generate(const beam::data& beam,
-                               const beam::data& target);
-  virtual double max_cross_section() const { return max_; }
-  virtual double phase_space() const { return E_range_.width(); }
-
-protected:
-  double intensity(const double E, const double beam) const;
-
-private:
-  const model model_; // bremsstrahlung model
-  const double rl_;   // number of radiation lenghts (when using approx model,
-                      // set to zero otherwise)
-  const double E_beam_;            // (maximum) electron beam energy
-  const interval<double> E_range_; // photon energy range
-  const double max_;               // the maximum intensity.
-};
-
-// virtual photons
-class vphoton : public photon {
-public:
-  vphoton(const configuration& cf, const string_path& path,
-          std::shared_ptr<TRandom> r);
-
-  virtual photon_data generate(const beam::data& beam,
-                               const beam::data& target);
-  virtual double max_cross_section() const { return max_; }
-  virtual double phase_space() const {
-    return logy_range_.width() * logQ2_range_.width();
-  }
-
-protected:
-  double flux(const double Q2, const double y, const particle& beam,
-              const particle& target) const {
-    return physics::gamma_t_log(Q2, y, beam, target);
-  }
-
-private:
-  double calc_max_flux(const configuration& cf) const;
-  interval<double> calc_max_Q2_range(const configuration& cf) const;
-  interval<double> calc_max_W2_range(const configuration& cf) const;
-
-  // primary kinematic boundaries
-  const interval<double> y_range_;
-  const interval<double> Q2_range_;
-  // derived kinematic boundaries
-  const interval<double> logy_range_;
-  const interval<double> logQ2_range_;
-  // additional cuts
-  const interval<double> W2_range_;
-
-  // maximum flux
-  const double max_;
-};
-
-
-}
-}
+} // namespace beam
+} // namespace pcsim
 
 #endif

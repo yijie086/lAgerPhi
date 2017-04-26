@@ -1,61 +1,39 @@
-#ifndef PCSIM_BEAM_BEAM_LOADED
-#define PCSIM_BEAM_BEAM_LOADED
+#ifndef PCSIM_GEN_BEAM_BEAM_LOADED
+#define PCSIM_GEN_BEAM_BEAM_LOADED
 
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
-#include <pcsim/core/particle.hh>
+#include <pcsim/gen/beam/photon.hh>
+#include <pcsim/gen/beam/primary.hh>
+
+// =============================================================================
+// main include file for beam generators
+// =============================================================================
 
 namespace pcsim {
 namespace beam {
 
 // =============================================================================
-// beam::data
-//
-// generic beam data
+// parent template for beam generators
 // =============================================================================
-class data : public generator_data {
+template <class Data, class... Input>
+class beam_generator : public generator<Data, Input...> {
 public:
-  data() = default;
-  data(const particle& part) : beam_{part} {}
-  data(const particle& part, const double xs)
-      : generator_data{xs}, beam_{part} {}
-  data(const double xs) : generator_data{xs} {}
+  using event_type = Event;
+  using base_type = generator<Data, Input...>;
 
-  const particle& beam() const { return beam_; }
-
-private:
-  particle beam_;
-};
-
-// =============================================================================
-// beam::primary
-//
-// constant 4-vector beam
-// =============================================================================
-class primary : public generator<data> {
-public:
-  static factory<primary, const configuration&, const string_path&,
+  static factory<beam_generator, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
       factory;
 
-  primary(const configuration& cf, const string_path& path,
-          std::shared_ptr<TRandom> r)
-      : generator{std::move(r)}
-      , beam_{static_cast<pdg_id>(cf.get<int>(path / "particle_type")),
-              cf.get_vector3<particle::XYZVector>(path / "dir"),
-              cf.get<double>(path / "energy"), particle::status_code::BEAM} {
-    LOG_INFO("beam::primary", "type: " + std::string(beam_.pdg()->GetName()));
-    LOG_INFO("beam::primary",
-             "energy [GeV]: " + std::to_string(beam_.energy()));
-  }
-
-  virtual data generate() { return {beam_}; }
-  virtual double max_cross_section() const { return 1.; }
-  virtual double phase_space() const { return 1.; }
-
-protected:
-  const particle beam_;
+  beam_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 };
+
+// =============================================================================
+// beam generator types
+// =============================================================================
+using primary_generator = beam_gen<primary>;
+using photon_generator = beam_gen<photon, primary, primary>;
 
 } // namespace beam
 } // namespace pcsim
