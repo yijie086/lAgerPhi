@@ -2,8 +2,8 @@
 #include <TRandom.h>
 #include <memory>
 #include <pcsim/core/configuration.hh>
-#include <pcsim/core/photon_gen.hh>
-#include <pcsim/core/primary_gen.hh>
+#include <pcsim/gen/beam/photon_gen.hh>
+#include <pcsim/gen/beam/primary_gen.hh>
 
 namespace pcsim {
 namespace beam {
