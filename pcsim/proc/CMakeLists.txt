@@ -1,15 +1,20 @@
 ################################################################################
 ## CMAKE Settings
 ################################################################################
-set (SUBDIR "gen_detector")
+set (SUBDIR "proc")
 set (LIBRARY "${PROJECT_NAME}_${SUBDIR}")
 set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 
 ################################################################################
 ## Sources and install headers
 ################################################################################
-file (GLOB SOURCES "*.cc")
-file (GLOB HEADERS "*.hh")
+file (GLOB SOURCES "decay/*.cc" "detector/*.cc")
+file (GLOB HEADERS_DECAY "decay/*.hh")
+file (GLOB HEADERS_DETECTORS "detectors/*.hh")
+file (GLOB HEADERS_JLEIC "detectors/eic-fastmc/acceptance.hh" 
+                         "detectors/eic-fastmc/resolution.hh")
+
+set (HEADERS ${HEADERS_DECAY} ${HEADERS_DETECTORS} ${HEADERS_JLEIC)
 
 ################################################################################
 ## Include directories
@@ -21,7 +26,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ## Add definitions
 ## TODO: more robust installable data dir
 ################################################################################
-add_definitions(-DEIC_ACCEPTANCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/eic-fastmc/acceptance_files/\" -DJLEIC_IMPL)
+add_definitions(-DEIC_ACCEPTANCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/detectors/eic-fastmc/acceptance_files/\" -DJLEIC_IMPL)
 
 ################################################################################
 ## External Libraries
@@ -49,5 +54,17 @@ install(TARGETS ${LIBRARY}
   EXPORT ${PROJECT_NAME}-targets
   RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
   LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}" COMPONENT dev)
+  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
+
+install(FILES 
+  ${HEADERS_DECAY} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/decay" 
+  COMPONENT dev)
+install(FILES 
+  ${HEADERS_DETECTOR} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/detector" 
+  COMPONENT dev)
+install(FILES 
+  ${HEADERS_JLEIC} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/detector/eic-fastmc" 
+  COMPONENT dev)
