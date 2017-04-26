@@ -1,5 +1,4 @@
-#include "event_out.hh"
-#include <pcsim/core/assert.hh>
+#include "event.hh"
 #include <pcsim/core/logger.hh>
 
 // =============================================================================
@@ -19,8 +18,7 @@ event_out::event_out(std::shared_ptr<TFile> f, const std::string& name)
 void event_out::push(const event& e) {
   evgen_ = e.evgen();
   cross_section_ = static_cast<float>(e.cross_section());
-  epsilon_ = static_cast<float>(e.epsilon());
-  R_ = static_cast<float>(e.R());
+  total_cross_section_ = static_cast<float>(e.total_cross_section());
   weight_ = static_cast<float>(e.weight());
   process_ = e.process();
   s_ = static_cast<float>(e.s());
@@ -90,8 +88,7 @@ void event_out::create_branches() {
   tree_->Branch("index", &index_);
   tree_->Branch("evgen", &evgen_);
   tree_->Branch("cross_section", &cross_section_);
-  tree_->Branch("epsilon", &epsilon_);
-  tree_->Branch("R", &R_);
+  tree_->Branch("total_cross_section", &total_cross_section_);
   tree_->Branch("weight", &weight_);
   tree_->Branch("process", &process_);
   tree_->Branch("s", &s_);
