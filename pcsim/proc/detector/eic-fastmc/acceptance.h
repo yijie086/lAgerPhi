@@ -8,7 +8,6 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TMath.h"
-#include "TRandom.h"
 #include "TString.h"
 #include "TTree.h"
 #include <TStyle.h>
@@ -20,8 +19,7 @@ using namespace std;
 class acceptance {
 public:
   acceptance()
-      : acceptance("det1", "v1", "ebeam_5GeV", "ibeam_100GeV",
-                        "solenoidon") {}
+      : acceptance("det1", "v1", "ebeam_5GeV", "ibeam_100GeV", "solenoidon") {}
   acceptance(const char detector[], const char version[], const char ebeam[],
              const char ibeam[], const char solenoid[], bool debug = false);
   int get_acceptance(const int pid, const double* kin, int* region, double* acc,
@@ -49,6 +47,7 @@ protected:
 };
 
 #ifdef JLEIC_IMPL
+
 #ifndef EIC_ACCEPTANCE_PATH
 #error EIC_ACCEPTANCE_PATH NOT DEFINED
 #endif

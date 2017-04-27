@@ -13,7 +13,7 @@ public:
   using base_type = detector;
 
   jleic(const configuration&, const string_path&, std::shared_ptr<TRandom> r)
-      : base_type{r} {}
+      : base_type{r}, resolution_{r} {}
 
   virtual void process(event& e) const;
 

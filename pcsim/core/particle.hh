@@ -121,6 +121,8 @@ public:
     return sqrt(p_.X() * p_.X() + p_.Y() * p_.Y() + p_.Z() * p_.Z());
   }
   double energy() const { return p_.E(); }
+  // name
+  std::string name() const { return pdg_->GetName(); }
 
   // get a reference to the momentum/vertex 4-vector
   XYZTVector& p() { return p_; };
@@ -289,7 +291,7 @@ inline void particle::add_parent(const int index) {
   } else {
     tassert(false, "A particle can have only have up to 2 parents"
                    "(tried to add additional parent to particle '" +
-                       std::string(pdg_->GetName()) + "')");
+                       name() + "')");
   }
 }
 //

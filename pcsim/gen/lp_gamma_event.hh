@@ -93,17 +93,18 @@ public:
   // ===========================================================================
   // DETECTED PARTICLE INFO
   //
-  int add_detected(const detected_particle& dp);
+  // set the relevant detected particle index
+  void update_detected_index(const int index);
 
   // get photon, scat, leading and recoil info
-  particle& detected_photon();
-  const particle& detected_photon() const;
-  particle& detected_scat();
-  const particle& detected_scat() const;
-  particle& detected_leading();
-  const particle& detected_leading() const;
-  particle& detected_recoil();
-  const particle& detected_recoil() const;
+  detected_particle& detected_photon();
+  const detected_particle& detected_photon() const;
+  detected_particle& detected_scat();
+  const detected_particle& detected_scat() const;
+  detected_particle& detected_leading();
+  const detected_particle& detected_leading() const;
+  detected_particle& detected_recoil();
+  const detected_particle& detected_recoil() const;
 
   int detected_photon_index() const { return rc_photon_index_; }
   int detected_scat_index() const { return rc_scat_index_; }
@@ -303,73 +304,79 @@ inline const particle& lp_gamma_event::recoil() const {
   return part(recoil_index());
 }
 // detected particle, also set the relevant detected index
-inline int lp_gamma_event::add_detected(const detected_particle& dp) {
-  const int index = event::add_detected(dp);
+inline void lp_gamma_event::update_detected_index(const int index) {
+  const auto& dp = detected(index);
   if (dp.generated().index() == scat_index()) {
+    LOG_JUNK2("lp_gamma_event", "Found reconstructed scattered lepton");
     rc_scat_index_ = index;
     // also reconstruct the photon
     // status set to -1 for purely reconstucted particle
     if (beam_index() >= 0 && photon_index() >= 0) {
+      LOG_JUNK2("lp_gamma_event", "Adding reconstructed photon data");
       rc_photon_index_ =
           add_detected({photon(), beam().p() - detected_scat().p(), -1});
+    } else {
+      LOG_JUNK2("lp_gamma_event", "Unable to add reconstructed photon data");
     }
   } else if (dp.generated().index() == photon_index()) {
+    LOG_JUNK2("lp_gamma_event", "Found reconstructed scattered photon");
     rc_photon_index_ = index;
   } else if (dp.generated().index() == leading_index()) {
+    LOG_JUNK2("lp_gamma_event", "Found reconstructed leading particle");
     rc_leading_index_ = index;
   } else if (dp.generated().index() == recoil_index()) {
+    LOG_JUNK2("lp_gamma_event", "Found reconstructed recoil particle");
     rc_recoil_index_ = index;
   }
-  return index;
 }
 
-inline particle& lp_gamma_event::detected_photon() {
+inline detected_particle& lp_gamma_event::detected_photon() {
   tassert(detected_photon_index() >= 0,
           "trying to access detected_photon data, but no detected_photon "
           "data present in the event");
-  return part(detected_photon_index());
+  return detected(detected_photon_index());
 }
-inline const particle& lp_gamma_event::detected_photon() const {
+inline const detected_particle& lp_gamma_event::detected_photon() const {
   tassert(detected_photon_index() >= 0,
           "trying to access detected_photon data, but no detected_photon "
           "data present in the event");
-  return part(detected_photon_index());
+  return detected(detected_photon_index());
 }
-inline particle& lp_gamma_event::detected_scat() {
+inline detected_particle& lp_gamma_event::detected_scat() {
   tassert(detected_scat_index() >= 0,
           "trying to access detected_scat data, but no detected_scat "
           "data present in the event");
-  return part(detected_scat_index());
+  return detected(detected_scat_index());
 }
-inline const particle& lp_gamma_event::detected_scat() const {
+inline const detected_particle& lp_gamma_event::detected_scat() const {
   tassert(detected_scat_index() >= 0,
           "trying to access detected_scat data, but no detected_scat "
           "data present in the event");
-  return part(detected_scat_index());
+  return detected(detected_scat_index());
 }
-inline particle& lp_gamma_event::detected_leading() {
+inline detected_particle& lp_gamma_event::detected_leading() {
   tassert(detected_leading_index() >= 0,
           "trying to access detected_leading data, but no detected_leading "
           "data present in the event");
-  return part(detected_leading_index());
+  return detected(detected_leading_index());
 }
-inline const particle& lp_gamma_event::detected_leading() const {
+inline const detected_particle& lp_gamma_event::detected_leading() const {
   tassert(detected_leading_index() >= 0,
           "trying to access detected_leading data, but no detected_leading "
           "data present in the event");
-  return part(detected_leading_index());
+  return detected(detected_leading_index());
 }
-inline particle& lp_gamma_event::detected_recoil() {
+inline detected_particle& lp_gamma_event::detected_recoil() {
   tassert(detected_recoil_index() >= 0,
           "trying to access detected_recoil data, but no detected_recoil "
           "data present in the event");
-  return part(detected_recoil_index());
+  return detected(detected_recoil_index());
 }
-inline const particle& lp_gamma_event::detected_recoil() const {
+inline const detected_particle& lp_gamma_event::detected_recoil() const {
   tassert(detected_recoil_index() >= 0,
           "trying to access detected_recoil data, but no detected_recoil "
           "data present in the event");
-  return part(detected_recoil_index());
+  return detected(detected_recoil_index());
 }
 
 // leading produced particle kinematics
@@ -404,7 +411,7 @@ inline double lp_gamma_event::detected_Q2() const {
   if (detected_photon_index() < 0) {
     return 0.;
   }
-  return detected_photon().p().M2();
+  return -detected_photon().p().M2();
 }
 inline double lp_gamma_event::detected_nu() const {
   if (detected_photon_index() < 0 || target_index() < 0) {
@@ -432,11 +439,11 @@ inline double lp_gamma_event::detected_t() const {
   return (detected_leading().p() - detected_photon().p()).M2();
 }
 inline double lp_gamma_event::detected_xv() const {
-  if (detected_leading_index() < 0 || detected_photon_index() < 0 ||
+  if (leading_index() < 0 || detected_photon_index() < 0 ||
       target_index() < 0) {
     return 0.;
   }
-  return (detected_Q2() + detected_leading().mass2()) /
+  return (detected_Q2() + leading().mass2()) /
          (2 * target().mass() * detected_nu());
 }
 inline double lp_gamma_event::detected_Q2plusM2() const {

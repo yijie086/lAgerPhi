@@ -70,7 +70,7 @@ void lp_gamma_out::create_branches() {
   tree()->Branch("rc_y", &rc_y_);
   tree()->Branch("rc_t", &rc_t_);
   tree()->Branch("rc_xv", &rc_xv_);
-  tree()->Branch("Q2plusM2", &rc_Q2plusM2_);
+  tree()->Branch("rc_Q2plusM2", &rc_Q2plusM2_);
   tree()->Branch("rc_photon_index", &rc_photon_index_);
   tree()->Branch("rc_scat_index", &rc_scat_index_);
   tree()->Branch("rc_leading_index", &rc_leading_index_);
