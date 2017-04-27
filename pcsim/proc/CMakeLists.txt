@@ -14,7 +14,7 @@ file (GLOB HEADERS_DETECTORS "detectors/*.hh")
 file (GLOB HEADERS_JLEIC "detectors/eic-fastmc/acceptance.hh" 
                          "detectors/eic-fastmc/resolution.hh")
 
-set (HEADERS ${HEADERS_DECAY} ${HEADERS_DETECTORS} ${HEADERS_JLEIC)
+set (HEADERS ${HEADERS_DECAY} ${HEADERS_DETECTORS} ${HEADERS_JLEIC})
 
 ################################################################################
 ## Include directories
@@ -44,8 +44,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(${LIBRARY} ${SOURCES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
-  SOVERSION ${PCSIM_SOVERSION}
-  PUBLIC_HEADER "${HEADERS}")
+  SOVERSION ${PCSIM_SOVERSION})
 
 ################################################################################
 ## Export and Install

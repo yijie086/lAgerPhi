@@ -35,8 +35,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(${LIBRARY} ${SOURCES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
-  SOVERSION ${PCSIM_SOVERSION}
-  PUBLIC_HEADER "${HEADERS}")
+  SOVERSION ${PCSIM_SOVERSION})
 
 ################################################################################
 ## Export and Install
