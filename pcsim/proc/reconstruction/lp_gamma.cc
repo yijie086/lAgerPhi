@@ -15,33 +15,33 @@ void lp_gamma::process(lp_gamma_event& e) const {
     if (e.detected_leading_index() < 0 && e.leading_index() >= 0) {
       if (e.detected(i).generated().parent_first() == e.leading_index() &&
           e.detected(i).generated().n_parents() == 1) {
-        LOG_JUNK2("lp_gamma", "Found decay particle from leading particle, "
-                              "scanning for the matching particles (particle
-                  type
-                  : " + e.leading().name() + ")
-        ");
-            if (e.leading().n_daughters != 2) {
+        LOG_JUNK2("lp_gamma",
+                  "Found decay particle from leading particle, "
+                  "scanning for the matching particles (particle type : " +
+                      e.leading().name() + ") ");
+        if (e.leading().n_daughters() != 2) {
           LOG_WARNING("lp_gamma",
                       "Only 2-body reconstruction implemented, but this "
                       "leading particle has " +
                           std::to_string(e.leading().n_daughters()) +
                           " daughters");
         } else {
-        // locate the other decay product
-        for (int j = i + 1; j < e.detected().size(); ++j) {
-          if (e.detected(j).generated().parent_first() == e.leading_index()) {
-            LOG_JUNK2("lp_gamma", "Found matching decay particle, performing "
-                                  "2-body reconstruction");
-            // we found both!
-            e.add_detected(
-                {e.leading(), e.detected(i).p() + e.detected(j).p(), -1});
+          // locate the other decay product
+          for (int j = i + 1; j < e.detected().size(); ++j) {
+            if (e.detected(j).generated().parent_first() == e.leading_index()) {
+              LOG_JUNK2("lp_gamma", "Found matching decay particle, performing "
+                                    "2-body reconstruction");
+              // we found both!
+              e.add_detected(
+                  {e.leading(), e.detected(i).p() + e.detected(j).p(), -1});
+            }
           }
         }
       }
     }
+    // that's all
   }
-  // that's all
 }
 
 } // namespace reconstruction
-} // namespace pcsim
+} // namespace reconstruction

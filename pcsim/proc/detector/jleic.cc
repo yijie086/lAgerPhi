@@ -8,7 +8,8 @@ void jleic::process(event& e) const {
   for (auto& part : e) {
     if (part.final_state()) {
       LOG_JUNK2("jleic", "Checking acceptance for final state particle " +
-                             part.name() + " (status: " + part.status() + ")");
+                             part.name() + " (status: " +
+                             std::to_string(part.status<int>()) + ")");
       const double kin[4] = {part.momentum(),
                              part.p().theta() * TMath::RadToDeg(),
                              part.p().phi() * TMath::RadToDeg(), part.energy()};
