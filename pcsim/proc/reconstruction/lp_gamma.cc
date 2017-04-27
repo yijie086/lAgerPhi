@@ -20,11 +20,11 @@ void lp_gamma::process(lp_gamma_event& e) const {
                   "scanning for the matching particles (particle type : " +
                       e.leading().name() + ") ");
         if (e.leading().n_daughters() != 2) {
-          LOG_WARNING("lp_gamma",
-                      "Only 2-body reconstruction implemented, but this "
-                      "leading particle has " +
-                          std::to_string(e.leading().n_daughters()) +
-                          " daughters");
+          LOG_DEBUG("lp_gamma",
+                    "Only 2-body reconstruction implemented, but this "
+                    "leading particle has " +
+                        std::to_string(e.leading().n_daughters()) +
+                        " daughters");
         } else {
           // locate the other decay product
           for (int j = i + 1; j < e.detected().size(); ++j) {
