@@ -115,7 +115,7 @@ public:
   int n_daughters() const { return daughter_.max - daughter_.min; }
   int parent_first() const { return parent_.min; }
   int parent_second() const { return parent_.max; }
-  int n_parents() const { return parent_.max - parent_.min; }
+  int n_parents() const;
   // momentum and energy
   double momentum() const {
     return sqrt(p_.X() * p_.X() + p_.Y() * p_.Y() + p_.Z() * p_.Z());
@@ -292,6 +292,16 @@ inline void particle::add_parent(const int index) {
     tassert(false, "A particle can have only have up to 2 parents"
                    "(tried to add additional parent to particle '" +
                        name() + "')");
+  }
+}
+
+inline int particle::n_parents() const { 
+  if (parent_.min < 0) {
+    return 0;
+  } else if (parent_.max < 0) {
+    return 1;
+  } else {
+    return 2;
   }
 }
 //
