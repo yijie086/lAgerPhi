@@ -1,5 +1,5 @@
-#ifndef PCSIM_GEN_BEAM_BEAM_LOADED
-#define PCSIM_GEN_BEAM_BEAM_LOADED
+#ifndef PCSIM_GEN_BEAM_GENERATOR_LOADED
+#define PCSIM_GEN_BEAM_GENERATOR_LOADED
 
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
@@ -17,10 +17,10 @@ namespace beam {
 // parent template for beam generators
 // =============================================================================
 template <class Data, class... Input>
-class beam_generator : public generator<Data, Input...> {
+class generator : public pcsim::generator<Data, Input...> {
 public:
   using event_type = Event;
-  using base_type = generator<Data, Input...>;
+  using base_type = pcsim::generator<Data, Input...>;
 
   static factory<beam_generator, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
@@ -32,8 +32,8 @@ public:
 // =============================================================================
 // beam generator types
 // =============================================================================
-using primary_generator = beam_gen<primary>;
-using photon_generator = beam_gen<photon, primary, primary>;
+using primary_generator = generator<primary>;
+using photon_generator = generator<photon, primary, primary>;
 
 } // namespace beam
 } // namespace pcsim

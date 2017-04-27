@@ -1,4 +1,4 @@
-#include "beam.hh"
+#include "generator.hh"
 #include <TRandom.h>
 #include <memory>
 #include <pcsim/core/configuration.hh>
@@ -17,7 +17,7 @@ factory<photon_generator, const configuration&, const string_path&,
     photon_generator::factory;
 
 // register our generators
-FACTORY_REGISTER(primary_generator, primary_gen, "primary");
+FACTORY_REGISTER(primary_generator, beam, "beam");
 
 FACTORY_REGISTER(photon_generator, bremsstrahlung, "bremsstrahlung");
 FACTORY_REGISTER(photon_generator, vphoton, "vphoton");

@@ -11,15 +11,15 @@ namespace pcsim {
 namespace beam {
 
 // =============================================================================
-// beam::primary_gen
+// beam::beam
 //
 // constant 4-vector beam
 // =============================================================================
-class primary_gen : public primary_generator {
+class beam : public generator {
 public:
   primary_gen(const configuration& cf, const string_path& path,
               std::shared_ptr<TRandom> r)
-      : primary_generator{std::move(r)}
+      : generator{std::move(r)}
       , beam_{static_cast<pdg_id>(cf.get<int>(path / "particle_type")),
               cf.get_vector3<particle::XYZVector>(path / "dir"),
               cf.get<double>(path / "energy"), particle::status_code::BEAM} {
