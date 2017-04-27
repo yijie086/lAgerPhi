@@ -31,9 +31,12 @@ public:
   };                                                                           \
   const proxy_##class p_##class;                                               \
   }
+#define FACTORY_REGISTER2(gen, class, name) gen::factory.add<class>(name)
+
 // construct a generator instance
 #define FACTORY_CREATE(gen, conf, path, rng)                                   \
-  gen::factory.create(conf.get<std::string>(path "/type"), conf, path, rng)
+  gen::factory.create(conf.get<std::string>(string_path(path) / "type"), conf, \
+                      path, rng)
 
 // a generic factory base class
 template <class T, class... Args> class factory {
@@ -45,6 +48,9 @@ public:
   std::shared_ptr<T> create(const std::string& name, Args... a) const {
     std::lock_guard<std::mutex> lock{mutex_};
     LOG_DEBUG("factory", "Constructing " + name);
+    if (!workers_) {
+      LOG_DEBUG("factory", "Worker pointer is a null pointer. This should never happen.");
+    }
     if (!workers_ || !workers_->count(name)) {
       LOG_ERROR("factory", "Cannot construct object " + name +
                                ": no such name registered.");
@@ -60,6 +66,7 @@ public:
     // first needed
     // A bit of a hack, but necessecary
     std::lock_guard<std::mutex> lock{mutex_};
+    LOG_DEBUG("factory", "Registered class: " + name);
     if (!workers_) {
       workers_ = std::make_unique<worker_map_type>();
     }

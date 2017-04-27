@@ -3,7 +3,7 @@
 namespace pcsim {
 namespace detector {
 
-void process(lp_gamma_event& e) {
+void null::process(event& e) const {
   ; // do nothing
 }
 

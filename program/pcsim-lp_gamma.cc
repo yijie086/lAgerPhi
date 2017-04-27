@@ -8,6 +8,15 @@
 #include <pcsim/gen/lp_gamma_event.hh>
 #include <pcsim/gen/lp_gamma_generator.hh>
 
+// TODO fix this
+#include <pcsim/gen/beam/photon_gen.hh>
+#include <pcsim/gen/beam/primary_gen.hh>
+#include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
+#include <pcsim/gen/lp_gamma/gaussian_1X.hh>
+#include <pcsim/proc/detector/jleic.hh>
+#include <pcsim/proc/detector/null.hh>
+// TODO
+
 using namespace pcsim;
 
 // util function
@@ -19,12 +28,27 @@ std::string to_string_exp(double d) {
 }
 
 int run_mc(const configuration& cf, const std::string& output) {
+
+  // TODO fix this
+  FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::brodsky_2vmX,
+                    "brodsky_2vmX");
+  FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::gaussian_qpq,
+                    "gaussian_1qpq");
+  FACTORY_REGISTER2(beam::primary_generator, beam::beam, "primary");
+
+  FACTORY_REGISTER2(beam::photon_generator, beam::bremsstrahlung,
+                    "bremsstrahlung");
+  FACTORY_REGISTER2(beam::photon_generator, beam::vphoton, "vphoton");
+  FACTORY_REGISTER2(detector::detector, detector::jleic, "jleic");
+  FACTORY_REGISTER2(detector::detector, detector::null, "4pi");
+  // TODO
+
   LOG_INFO("pcsim-lp_gamma", "Initializing PCSIM for lp-gamma processes");
 
   // get RNG
   LOG_INFO("pcsim-lp_gamma",
-            "Initializing the RNG with seed " + cf.get<std::string>("run"));
-  std::shared_ptr<TRandom> r {std::make_shared<TRandom3>()};
+           "Initializing the RNG with seed " + cf.get<std::string>("run"));
+  std::shared_ptr<TRandom> r{std::make_shared<TRandom3>()};
   r->SetSeed(cf.get<int>("run"));
 
   // make output file and buffer

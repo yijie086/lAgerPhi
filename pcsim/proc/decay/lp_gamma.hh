@@ -1,9 +1,9 @@
 #ifndef PCSIM_PROC_DECAY_LP_GAMMA_LOADED
 #define PCSIM_PROC_DECAY_LP_GAMMA_LOADED
 
-#include <pcsim/decay/decay.hh>
 #include <pcsim/gen/lp_gamma_event.hh>
 #include <pcsim/physics/decay.hh>
+#include <pcsim/proc/decay/decay.hh>
 
 namespace pcsim {
 namespace decay {
@@ -23,11 +23,12 @@ namespace decay {
 class lp_gamma : public decay<lp_gamma_event> {
 public:
   using base_type = decay<lp_gamma_event>;
-  lp_gamma(std::shared_ptr<TRandom rng>) : base_type{std::move(rng)} {}
-  virtual void process(lp_gamma_event& e);
+  lp_gamma(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
+  virtual void process(lp_gamma_event& e) const;
+
 private:
-  void quarkonium_schc(lp_gamma_event& e, const int index);
-  void pentaquark_wang(lp_gamma_event& e, const int index);
+  void quarkonium_schc(lp_gamma_event& e, const int index) const;
+  void pentaquark_wang(lp_gamma_event& e, const int index) const;
 };
 
 } // namespace decay

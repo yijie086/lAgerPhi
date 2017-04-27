@@ -14,7 +14,7 @@ namespace pcsim {
 // =============================================================================
 class lp_gamma_data : public generator_data {
 public:
-  lp_gamma_data(const int xs = 0) : generator_data{xs} {}
+  lp_gamma_data(const double xs = 0) : generator_data{xs} {}
   lp_gamma_data(const beam::primary& l, const beam::primary& p,
                 const beam::photon& gamma);
   lp_gamma_data(const lp_gamma_data&) = default;
@@ -24,8 +24,8 @@ public:
   const beam::primary& lepton() const { return lepton_; }
   beam::primary& target() { return target_; }
   const beam::primary& target() const { return target_; }
-  beam::primary& photon() { return photon_; }
-  const beam::primary& photon() const { return photon_; }
+  beam::photon& photon() { return photon_; }
+  const beam::photon& photon() const { return photon_; }
 
 private:
   beam::primary lepton_;
@@ -50,6 +50,7 @@ public:
   double W() const {return W_;}
   double W2() const { return W_ * W_; }
   double Q2() const { return Q2_; }
+  double nu() const { return nu_; }
   double x() const { return x_; }
   double y() const { return y_; }
   double epsilon() const { return epsilon_; }
@@ -57,8 +58,8 @@ public:
   double epsilon_R() const { return epsilon_ * R_; }
 
   // modifiers
-  void update_R(const double R) {R_ = R}
-  void update_epsilon(const double epsilon) { epsilon_ = epsilon }
+  void update_R(const double R) { R_ = R; }
+  void update_epsilon(const double epsilon) { epsilon_ = epsilon; }
 
   // ===========================================================================
   // PARTICLE INFO
@@ -84,6 +85,11 @@ public:
   particle& recoil();
   const particle& recoil() const;
 
+  int photon_index() const { return photon_index_; }
+  int scat_index() const { return scat_index_; }
+  int leading_index() const { return leading_index_; }
+  int recoil_index() const { return recoil_index_; }
+
   // ===========================================================================
   // leading produced particle kinematics
   //
@@ -104,7 +110,7 @@ private:
   double epsilon_{0.};
   double R_{0.};
   int photon_index_{-1};
-  int scat_index{-1};
+  int scat_index_{-1};
 
   // leading and recoil produced particle info
   int leading_index_{-1};
@@ -167,6 +173,7 @@ inline lp_gamma_event::lp_gamma_event(const lp_gamma_data& initial,
     : event{xs, w}, R_{R}, epsilon_{initial.photon().epsilon()} {
   add_beam(initial.lepton().beam());
   add_target(initial.target().beam());
+  // thes step also applies the photon cross section!
   add_photon(initial.photon());
 }
 
@@ -176,10 +183,10 @@ inline int lp_gamma_event::add_photon(const beam::photon& gamma) {
   scat_index_ = add_daughter(gamma.scat(), beam_index());
 
   W_ = sqrt(gamma.W2());
-  Q2 = gamma.Q2();
-  nu = gamma.nu();
-  x = gamma.x();
-  y = gamma.y();
+  Q2_ = gamma.Q2();
+  nu_ = gamma.nu();
+  x_ = gamma.x();
+  y_ = gamma.y();
 
   update_cross_section(gamma.cross_section());
 
@@ -191,7 +198,7 @@ inline int lp_gamma_event::add_leading(const particle& part, const int parent1,
   return leading_index();
 }
 inline int lp_gamma_event::add_leading(const particle& part) {
-  return add_leading(part, photon.index(), target.index());
+  return add_leading(part, photon_index(), target_index());
 }
 inline int lp_gamma_event::add_recoil(const particle& part, const int parent1,
                                       const int parent2) {
@@ -199,7 +206,7 @@ inline int lp_gamma_event::add_recoil(const particle& part, const int parent1,
   return recoil_index();
 }
 inline int lp_gamma_event::add_recoil(const particle& part) {
-  return add_recoil(part, photon.index(), target.index());
+  return add_recoil(part, photon_index(), target_index());
 }
 
 // get photon, scat, leading and recoil info
@@ -208,7 +215,7 @@ inline particle& lp_gamma_event::photon() {
                               "data present in the event");
   return part(photon_index_);
 }
-inline const lp_gamma_event::particle& photon() const {
+inline const particle& lp_gamma_event::photon() const {
   tassert(photon_index_ >= 0, "trying to access photon data, but no photon "
                               "data present in the event");
   return part(photon_index_);
@@ -249,10 +256,10 @@ inline double lp_gamma_event::t() const {
   if (leading_index_ < 0 || photon_index_ < 0) {
     return 0.;
   }
-  return (leading().p() + photon().p()).M2();
+  return (leading().p() - photon().p()).M2();
 }
 inline double lp_gamma_event::xv() const {
-  if (leading_index_ < 0 || photon_index_ < 0 || target_index_ < 0) {
+  if (leading_index() < 0 || photon_index() < 0 || target_index() < 0) {
     return 0.;
   }
   return (Q2() + leading().mass2()) / (2 * target().mass() * nu());

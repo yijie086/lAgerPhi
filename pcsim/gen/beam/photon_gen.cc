@@ -150,7 +150,7 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
 // =======================================================================================
 vphoton::vphoton(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r)
-    : photon{std::move(r)}
+    : photon_generator{std::move(r)}
     , y_range_{cf.get_range<double>(path / "y_range")}
     , logy_range_{std::log(y_range_.min), std::log(y_range_.max)}
     , Q2_range_{calc_max_Q2_range(cf)}

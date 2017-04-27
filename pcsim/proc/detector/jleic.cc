@@ -1,9 +1,10 @@
+#define JLEIC_IMPL
 #include "jleic.hh"
 
 namespace pcsim {
 namespace detector {
 
-void jleic::process(event& e) {
+void jleic::process(event& e) const {
   for (auto& part : e) {
     if (part.final_state()) {
       const double kin[4] = {part.momentum(),

@@ -17,8 +17,8 @@ public:
   primary() = default;
   primary(const particle& part) : beam_{part} {}
   primary(const particle& part, const double xs)
-      : generator_primary{xs}, beam_{part} {}
-  primary(const double xs) : generator_primary{xs} {}
+      : generator_data{xs}, beam_{part} {}
+  primary(const double xs) : generator_data{xs} {}
 
   const particle& beam() const { return beam_; }
 

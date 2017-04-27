@@ -45,10 +45,10 @@ void lp_gamma_out::create_branches() {
   tree()->Branch("t", &t_);
   tree()->Branch("xv", &xv_);
   tree()->Branch("Q2plusM2", &Q2plusM2_);
-  tree()->Branch("photon", &photon_index_);
-  tree()->Branch("scat", &scat_index_);
-  tree()->Branch("leading", &leading_index_);
-  tree()->Branch("recoil", &recoil_index_);
+  tree()->Branch("photon_index", &photon_index_);
+  tree()->Branch("scat_index", &scat_index_);
+  tree()->Branch("leading_index", &leading_index_);
+  tree()->Branch("recoil_index", &recoil_index_);
 }
 
 } // namespace pcsim

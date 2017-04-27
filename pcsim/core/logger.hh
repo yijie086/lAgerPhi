@@ -109,13 +109,20 @@ public:
   void operator()(const log_level mlevel, const std::string& mtitle,
                   const std::string& mtext) {
     lock_type lock{mutex_};
-    if (mlevel > level_)
+    if (mlevel > level_) {
       return;
+    }
     time_t rt;
     time(&rt);
-    (*sink_) << "[" << rt << ", " << mtitle << ", "
-             << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
-             << std::endl;
+
+    std::ostream* sink =
+        (mlevel == log_level::ERROR || mlevel == log_level::CRITICAL)
+            ? &std::cerr
+            : sink_;
+
+    (*sink) << "[" << rt << ", " << mtitle << ", "
+            << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
+            << std::endl;
   }
 
 private:

@@ -4,7 +4,7 @@
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam/beam.hh>
+#include <pcsim/gen/beam/generator.hh>
 #include <pcsim/gen/beam/primary.hh>
 
 namespace pcsim {
@@ -15,11 +15,11 @@ namespace beam {
 //
 // constant 4-vector beam
 // =============================================================================
-class beam : public generator {
+class beam : public primary_generator {
 public:
-  primary_gen(const configuration& cf, const string_path& path,
-              std::shared_ptr<TRandom> r)
-      : generator{std::move(r)}
+  beam(const configuration& cf, const string_path& path,
+       std::shared_ptr<TRandom> r)
+      : primary_generator{std::move(r)}
       , beam_{static_cast<pdg_id>(cf.get<int>(path / "particle_type")),
               cf.get_vector3<particle::XYZVector>(path / "dir"),
               cf.get<double>(path / "energy"), particle::status_code::BEAM} {

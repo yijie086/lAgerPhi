@@ -15,7 +15,9 @@ namespace lp_gamma {
 // =============================================================================
 // lp_gamma generator type
 // =============================================================================
-using generator = process_generator<lp_gamma_event, lp_gamma_data>;
+using generator = pcsim::process_generator<lp_gamma_event, lp_gamma_data>;
 
 } // namespace beam
 } // namespace pcsim
+
+#endif

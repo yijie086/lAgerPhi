@@ -6,7 +6,7 @@
 namespace pcsim {
 namespace decay {
 
-void lp_gamma::process(event& e) {
+void lp_gamma::process(lp_gamma_event& e) const {
   for (int i = 0; i < e.size(); ++i) {
     // we won't decay stable particles
     if (e[i].stable()) {
@@ -32,7 +32,7 @@ void lp_gamma::process(event& e) {
   // that's all
 }
 
-void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) {
+void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
   e.update_weight(e[i].pdg()->DecayChannel(0)->BranchingRatio());
   std::pair<particle, particle> decay_products{{pdg_id::e_plus},
                                                {pdg_id::e_minus}};
@@ -51,7 +51,7 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) {
   e.add_daughter(decay_products.second, i);
   e[i].update_status(particle::status_code::DECAYED_SCHC);
 }
-void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) {
+void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
   std::pair<particle, particle> decay_products{
       {pdg_id::J_psi, particle::status_code::UNSTABLE_SCHC}, {pdg_id::p}};
   const double phi = rng()->Uniform(0., TMath::TwoPi());

@@ -6,7 +6,7 @@
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam/beam.hh>
+#include <pcsim/gen/beam/generator.hh>
 #include <pcsim/gen/beam/photon.hh>
 #include <pcsim/gen/beam/primary.hh>
 #include <pcsim/physics/photon.hh>

@@ -26,7 +26,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ## Add definitions
 ## TODO: more robust installable data dir
 ################################################################################
-add_definitions(-DEIC_ACCEPTANCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/detectors/eic-fastmc/acceptance_files/\" -DJLEIC_IMPL)
+add_definitions(-DEIC_ACCEPTANCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/detectors/eic-fastmc/acceptance_files/\")
 
 ################################################################################
 ## External Libraries

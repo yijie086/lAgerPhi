@@ -19,15 +19,20 @@ namespace beam {
 template <class Data, class... Input>
 class generator : public pcsim::generator<Data, Input...> {
 public:
-  using event_type = Event;
+  using data_type = Data;
   using base_type = pcsim::generator<Data, Input...>;
 
-  static factory<beam_generator, const configuration&, const string_path&,
+  static factory<generator, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
       factory;
 
-  beam_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
+  generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 };
+
+template <class Data, class... Input>
+factory<generator<Data, Input...>, const configuration&, const string_path&,
+        std::shared_ptr<TRandom>>
+    generator<Data, Input...>::factory;
 
 // =============================================================================
 // beam generator types

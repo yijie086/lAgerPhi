@@ -6,7 +6,7 @@
 namespace pcsim {
 namespace decay {
 
-template <class Event> using detector = event_processor<Event>;
+template <class Event> using decay = event_processor<Event>;
 }
 } // namespace pcsim
 

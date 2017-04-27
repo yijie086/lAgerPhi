@@ -1,7 +1,7 @@
 #ifndef PCSIM_PROC_DETECTOR_JLEIC_LOADED
 #define PCSIM_PROC_DETECTOR_JLEIC_LOADED
 
-#include <pcsim/detector/detector.hh>
+#include <pcsim/proc/detector/detector.hh>
 #include <pcsim/proc/detector/eic-fastmc/acceptance.h>
 #include <pcsim/proc/detector/eic-fastmc/resolution.h>
 
@@ -15,11 +15,11 @@ public:
   jleic(const configuration&, const string_path&, std::shared_ptr<TRandom> r)
       : base_type{r} {}
 
-  virtual void process(event& e);
+  virtual void process(event& e) const;
 
 private:
-  jleic_impl::acceptance acceptance_;
-  jleic_impl::resolution resolution_;
+  mutable jleic_impl::acceptance acceptance_;
+  mutable jleic_impl::resolution resolution_;
 };
 
 } // namespace detector

@@ -1,5 +1,5 @@
-#ifndef PCSIM_GEN_LP_GAMMA_GENERATOR_LOADED
-#define PCSIM_GEN_LP_GAMMA_GENERATOR_LOADED
+#ifndef PCSIM_GEN_LP_GAMMA_GENERATOR2_LOADED
+#define PCSIM_GEN_LP_GAMMA_GENERATOR2_LOADED
 
 #include <memory>
 #include <pcsim/core/generator.hh>

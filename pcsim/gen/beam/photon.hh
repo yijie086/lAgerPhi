@@ -30,13 +30,13 @@ public:
   photon(const photon&) = default;
   photon& operator=(const photon&) = default;
 
-  photon(const double xs) : data{xs} {}
+  photon(const double xs) : primary{xs} {}
 
   photon(const particle::XYZTVector& p)
-      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_GEN_BEAM}} {}
+      : primary{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}} {}
   photon(const particle::XYZTVector& p, const double xs)
-      : data{{pdg_id::gamma, p, particle::status_code::SECONDARY_GEN_BEAM},
-             xs} {}
+      : primary{{pdg_id::gamma, p, particle::status_code::SECONDARY_BEAM}, xs} {
+  }
 
   double epsilon() const { return epsilon_; }
   double W2() const { return W2_; }

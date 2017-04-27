@@ -3,8 +3,7 @@
 
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam/beam.hh>
-#include <pcsim/gen/lp_gamma/lp_gamma.hh>
+#include <pcsim/gen/lp_gamma/generator.hh>
 #include <pcsim/gen/lp_gamma_event.hh>
 
 namespace pcsim {
@@ -26,8 +25,9 @@ namespace lp_gamma {
 //  * photo-production cross section:
 //        simple gaussian
 // =============================================================================
-class gaussian_qpq : public generator {
+class gaussian_qpq : public lp_gamma::generator {
 public:
+  using base_type = lp_gamma::generator;
   gaussian_qpq(const configuration& cf, const string_path& path,
                std::shared_ptr<TRandom> r);
   virtual lp_gamma_event generate(const lp_gamma_data&);

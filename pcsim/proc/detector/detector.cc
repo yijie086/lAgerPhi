@@ -11,10 +11,8 @@ factory<detector, const configuration&, const string_path&,
     detector::factory;
 
 // register our generators
-FACTORY_REGISTER(detector, jleic, "jleic");
-FACTORY_REGISTER(detector, null, "4pi");
+//FACTORY_REGISTER(detector, jleic, "jleic");
+//FACTORY_REGISTER(detector, null, "4pi");
 
 } // namespace detector
 } // namespace pcsim
-
-#endif

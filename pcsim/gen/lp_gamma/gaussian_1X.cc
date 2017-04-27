@@ -13,7 +13,7 @@ namespace lp_gamma {
 // =============================================================================
 gaussian_qpq::gaussian_qpq(const configuration& cf, const string_path& path,
                            std::shared_ptr<TRandom> r)
-    : generator{r}
+    : base_type{r}
     , vm_pole_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
     , qpq_{static_cast<pdg_id>(cf.get<int>(path / "qpq_type")),
            particle::status_code::UNSTABLE}
@@ -45,7 +45,7 @@ lp_gamma_event gaussian_qpq::generate(const lp_gamma_data& initial) {
              "Event outside of W2 range - W2: " + std::to_string(gamma.W2()) +
                  " outside of [" + std::to_string(W2_range_.min) + ", " +
                  std::to_string(W2_range_.max) + "]");
-    return {0.};
+    return lp_gamma_event{0.};
   }
 
   // no generation step necessary, we just have to evaluate the cross section

@@ -1,4 +1,4 @@
-#include "gamma_p_2vmX.hh"
+#include "brodsky_2vmX.hh"
 #include <TMath.h>
 #include <pcsim/core/logger.hh>
 #include <pcsim/physics/kinematics.hh>
@@ -13,7 +13,7 @@ namespace lp_gamma {
 // =============================================================================
 brodsky_2vmX::brodsky_2vmX(const configuration& cf, const string_path& path,
                            std::shared_ptr<TRandom> r)
-    : gamma_p_2vmX{r}
+    : base_type{r}
     , recoil_{static_cast<pdg_id>(cf.get<int>(path / "recoil_type"))}
     , vm_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
     , photo_b_{cf.get<double>(path / "photo_b")}
@@ -43,7 +43,7 @@ brodsky_2vmX::brodsky_2vmX(const configuration& cf, const string_path& path,
   LOG_INFO("brodsky_2vmX", "recoil: " + std::string(recoil_.pdg()->GetName()));
 }
 
-lp_gamma_event brodsky_2vmX::generate(lp_gamma_data& initial) {
+lp_gamma_event brodsky_2vmX::generate(const lp_gamma_data& initial) {
 
   // generate a mass() in case of non-zero width, initialize the particles
   particle vm = {vm_.type(), rng()};
@@ -58,7 +58,7 @@ lp_gamma_event brodsky_2vmX::generate(lp_gamma_data& initial) {
     LOG_JUNK("brodsky_2vmX", "Not enough phase space available - W2: " +
                                  std::to_string(gamma.W2()) + " < " +
                                  std::to_string(threshold2(vm, recoil)));
-    return {0.};
+    return lp_gamma_event{0.};
   }
 
   // generate a phase space point
@@ -73,7 +73,7 @@ lp_gamma_event brodsky_2vmX::generate(lp_gamma_data& initial) {
                        recoil.mass())
           .excludes(t)) {
     LOG_JUNK("brodsky_2vmX", "t outside of the allowed range for this W2")
-    return {0.};
+    return lp_gamma_event{0.};
   }
 
   // evaluate the cross section
@@ -208,13 +208,12 @@ double brodsky_2vmX::threshold2(const particle& vm,
 // the lab-frame
 // =============================================================================
 lp_gamma_event brodsky_2vmX::make_event(const lp_gamma_data& initial,
-                                        const double t, particle vm1,
-                                        particle X1, const double xs,
-                                        const double R) {
+                                        const double t, particle vm, particle X,
+                                        const double xs, const double R) {
   const auto& gamma = initial.photon();
   const auto& target = initial.target();
 
-  event e{initial, xs, 1., R};
+  lp_gamma_event e{initial, xs, 1., R};
 
   // utility shortcuts
   const double W2 = gamma.W2();
@@ -223,8 +222,8 @@ lp_gamma_event brodsky_2vmX::make_event(const lp_gamma_data& initial,
   const double y = gamma.y();
   const double nu = gamma.nu();
   const double Mt2 = target.beam().mass2();
-  const double Mr2 = X_.mass2();
-  const double Mv2 = vm_.mass2();
+  const double Mr2 = X.mass2();
+  const double Mv2 = vm.mass2();
 
   // create our final state particles in the CM frame
   // energies and momenta
@@ -253,7 +252,7 @@ lp_gamma_event brodsky_2vmX::make_event(const lp_gamma_data& initial,
 
   // calculate some necessary boost and rotation vectors
   particle targ = target.beam();
-  particle phot = photon.beam();
+  particle phot = gamma.beam();
   // lab frame to target rest frame (trf)
   particle::Boost boost_to_trf{targ.p().BoostToCM()};
   targ.boost(boost_to_trf);

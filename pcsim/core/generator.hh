@@ -6,6 +6,7 @@
 #include <pcsim/core/assert.hh>
 #include <pcsim/core/configuration.hh>
 #include <pcsim/core/interval.hh>
+#include <pcsim/core/factory.hh>
 
 namespace pcsim {
 
@@ -90,12 +91,19 @@ public:
   using initial_type = InitialData;
   using base_type = generator<Event, InitialData>;
 
-  static factory<process_generator> factory;
+  static factory<process_generator, const configuration&, const string_path&,
+                 std::shared_ptr<TRandom>>
+      factory;
 
   process_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 
   virtual event_type generate(const initial_type&) = 0;
 };
+
+template <class Event, class InitialData>
+factory<process_generator<Event, InitialData>, const configuration&,
+        const string_path&, std::shared_ptr<TRandom>>
+    process_generator<Event, InitialData>::factory;
 
 // =============================================================================
 // Base class for all event_processors (detectors/decay_handlers/...)
@@ -111,12 +119,14 @@ public:
   using event_type = Event;
   using base_type = generator<void>;
 
-  process_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
+  event_processor(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 
-  virtual void process(event_type&) = 0;
+  virtual void process(event_type&) const = 0;
 
 private:
   virtual void generate() {}
+  virtual double max_cross_section() const { return -1.; }
+  virtual double phase_space() const { return -1.; }
 };
 
 
@@ -146,7 +156,7 @@ class event_generator : public generator<std::vector<Event>>,
 public:
   using event_type = Event;
   using initial_type = InitialData;
-  using base_type = generator<Event>;
+  using base_type = generator<std::vector<Event>>;
   using process_type = process_generator<event_type, initial_type>;
 
   event_generator(const configuration& cf, const string_path& path,
@@ -167,17 +177,20 @@ public:
                  "Initial cross section <= 0, abandoning trial cycle.");
         continue;
       }
+      LOG_JUNK("event_generator", "Initial cross section: " +
+                                      std::to_string(initial.cross_section()));
       // generate the sub_processes
       for (auto& process : process_list_) {
         LOG_JUNK(process.name, "Generating a trial event");
         // check if we need to generate an event for this process (ensure
         // correct sub-process mixing)
-        if (rng()->Uniform(0, proc_volume_) > process.vol) {
+        if (proc_volume_ != process.vol &&
+            this->rng()->Uniform(0, proc_volume_) > process.vol) {
           LOG_JUNK(process.name, "Skipping this trial cycle.");
           continue;
         }
         // generate one event
-        auto event = process->generate(initial);
+        auto event = process.gen->generate(initial);
         // go to the next process have a bad cross section, print a warning if
         // the cross section maximum was violated
         if (event.cross_section() <= 0) {
@@ -191,8 +204,13 @@ public:
               "the cross section maximum calculation. The MC "
               "distributions will be invalid if this happens too often.");
         }
-        // accept/reject this event 
-        if (rng()->Uniform(0, process.max) > event.cross_section()) {
+        // accept/reject this event
+        LOG_JUNK(process.name,
+                 "Testing accept reject for xs: " +
+                     std::to_string(event.cross_section()) + " (max: " +
+                     std::to_string(process.max * initial_max_) + ")");
+        if (this->rng()->Uniform(0, initial_max_ * process.max) <
+            event.cross_section()) {
           LOG_JUNK(process.name, "Event accepted!");
           event.update_process(process.id);
           event_list.push_back(event);
@@ -201,21 +219,31 @@ public:
         }
       }
     } while (event_list.size() == 0);
-    n_events_ += event_list.size();
     // event builder step
-    for (auto& event event_list) {
-      event.update_mc(n_events_, cross_section());
+    n_tot_events_ += event_list.size();
+    for (auto& event : event_list) {
+      event.update_mc(n_tot_events_, cross_section());
       build_event(event);
     }
     // that's all!
     return event_list;
   }
 
-  // total cross section is given by the size of the generator box 
+  // total cross section is given by the size of the generator box
   // (phase_space * max_cross_section) times the fraction of accepted events
   // compared to the number of trials
-  double cross_section() const { return volume_ * n_events_ / n_trials_; }
-  double n_events() const { return n_events_; }
+  //
+  // THis is true for all processes, as we rescaled the number of trials T2 for
+  // a process with less generation volume V2 compared to the prime process by a
+  // factor of V2/V1, i.e. T2 = V2/V1 * T1
+  //
+  // Therefore we get that
+  // sigma_2 = G2 / T2 * V2 = G2 / T1 * V1
+  //
+  // n_tot_events is the sum of all the generated events in all subprocesses,
+  // hence we obtain sigma_tot = sum_i sigma_i = sum_i G_i * V1/T1
+  double cross_section() const { return volume_ * n_tot_events_ / n_trials_; }
+  double n_events() const { return n_tot_events_; }
 
 protected:
   // GENERATION STEPS
@@ -227,19 +255,25 @@ protected:
   // register an initial state  sub-generator (not a process generator) with
   // this event generator. This stores the relevant phase_space and
   // max_cross_section variables with the event generator
-  template <class Data, class... Input>
-  void register_initial(const std::shared_ptr<generator<Data, Input...>>& gen) {
+  template <class InitialGen>
+  void register_initial(const std::shared_ptr<InitialGen>& gen) {
     LOG_DEBUG("event_generator", "Registering phase space and cross section max");
     tassert(gen, "Requested generator is a null pointer");
     initial_ps_ *= gen->phase_space();
     initial_max_ *= gen->max_cross_section();
+    LOG_DEBUG("event_generator",
+              "New initial cross section max: " + std::to_string(initial_max_));
+    LOG_DEBUG("event_generator",
+              "New initial phase space: " + std::to_string(initial_ps_));
     update_volume();
   }
 
 private:
   constexpr static const int N_MAX_PROC{10}; // maximum number of sub processes;
   constexpr static const char* PROC_KEY{"process_"}; // config file key
-  std::string process_id(const int i) { return PROC_KEY + std::to_string(i); }
+  static std::string process_id(const int i) {
+    return PROC_KEY + std::to_string(i);
+  }
 
   // the maximum cross section and total phase space volume functions
   // don't make sense here, as they are different for each of the sub-processes
@@ -258,13 +292,15 @@ private:
     LOG_INFO("event_generator", "Initializing the process list");
     for (int i = 0; i < N_MAX_PROC; ++i) {
       const string_path path{PROC_KEY + std::to_string(i)};
+      // shortcut to avoid overload of template keywords
+      const configuration& cf = conf();
       // check if the process is requested
-      auto type = conf().get_optional<std::string>(path / "type");
-      if (*type) {
+      auto type = cf.get_optional<std::string>(path / "type");
+      if (type) {
         LOG_DEBUG(path.str(),
                   "Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
-            {i, FACTORY_CREATE(process_type, conf(), path, rng())});
+            {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
         // check if we have a larger generation volume, update if needed
         const double volume = process_list_.back().vol;
         if (volume > proc_volume_) {
@@ -272,7 +308,7 @@ private:
           update_volume();
         }
       } else {
-        LOG_JUNK(path.str, "Not requested");
+        LOG_JUNK(path.str(), "Not requested");
       }
     }
     tassert(process_list_.size() > 0,
@@ -287,7 +323,7 @@ private:
     double vol{0};                     // generation volume
     double n_events{0};                // number of events
     std::shared_ptr<process_type> gen; // process sub-generator
-    process_info(std::shared_ptr<process_type> g, const int id)
+    process_info(const int id, std::shared_ptr<process_type> g)
         : id{id}
         , name{process_id(id)}
         , ps{g->phase_space()}
@@ -296,13 +332,13 @@ private:
         , gen{g} {}
   };
 
-  double initial_ps_{1.};  // initial state generator phase space
-  double inital_max_{1.};  // initial state generator max cross section
+  double initial_ps_{1.};   // initial state generator phase space
+  double initial_max_{1.};  // initial state generator max cross section
   double proc_volume_{-1.}; // largest generation volume in process_list
-  double volume_ { 1. }    // total volume
+  double volume_{1.};       // total volume
 
-  double n_trials_{0.};     // global trial counter, applies to all processes
-  double n_tot_events_{0.}; // total number of generated events
+  double n_trials_{0.};     // global trial counter
+  int n_tot_events_{0};      // total number of events
   std::vector<process_info> process_list_; // process dependent info
 };
 

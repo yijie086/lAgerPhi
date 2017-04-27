@@ -3,8 +3,7 @@
 
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
-#include <pcsim/gen/beam/beam.hh>
-#include <pcsim/gen/lp_gamma/lp_gamma.hh>
+#include <pcsim/gen/lp_gamma/generator.hh>
 #include <pcsim/gen/lp_gamma_event.hh>
 
 namespace pcsim {
@@ -23,8 +22,10 @@ namespace lp_gamma {
 //  * t-channel cross section:
 //        dsigma_dexp_bt_brodsky(...)
 // =============================================================================
-class brodsky_2vmX : public generator {
+class brodsky_2vmX : public lp_gamma::generator {
 public:
+  using base_type = lp_gamma::generator;
+
   brodsky_2vmX(const configuration& cf, const string_path& path,
                std::shared_ptr<TRandom> r);
   virtual lp_gamma_event generate(const lp_gamma_data&);

@@ -217,7 +217,7 @@ inline void event::update_mc(const size_t evgen, const double txs) {
   evgen_ = evgen;
   total_cross_section_ = txs;
 }
-inline const event::detected_particle& detected(const int index) const {
+inline const detected_particle& event::detected(const int index) const {
   return detected_[index];
 }
 
