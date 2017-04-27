@@ -3,7 +3,7 @@
 namespace pcsim {
 namespace detector {
 
-void jleic::process(lp_gamma_event& e) {
+void jleic::process(event& e) {
   for (auto& part : e) {
     if (part.final_state()) {
       const double kin[4] = {part.momentum(),

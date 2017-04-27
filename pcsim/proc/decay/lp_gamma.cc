@@ -6,7 +6,7 @@
 namespace pcsim {
 namespace decay {
 
-void lp_gamma::decay(event& e) {
+void lp_gamma::process(event& e) {
   for (int i = 0; i < e.size(); ++i) {
     // we won't decay stable particles
     if (e[i].stable()) {

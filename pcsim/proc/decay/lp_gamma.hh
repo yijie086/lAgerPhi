@@ -1,6 +1,7 @@
 #ifndef PCSIM_PROC_DECAY_LP_GAMMA_LOADED
 #define PCSIM_PROC_DECAY_LP_GAMMA_LOADED
 
+#include <pcsim/decay/decay.hh>
 #include <pcsim/gen/lp_gamma_event.hh>
 #include <pcsim/physics/decay.hh>
 
@@ -19,9 +20,9 @@ namespace decay {
 // the full decay width
 // =============================================================================
 
-class lp_gamma : public event_processor<lp_gamma_event> {
+class lp_gamma : public decay<lp_gamma_event> {
 public:
-  using base_type = event_processor<lp_gamma_event>;
+  using base_type = decay<lp_gamma_event>;
   lp_gamma(std::shared_ptr<TRandom rng>) : base_type{std::move(rng)} {}
   virtual void process(lp_gamma_event& e);
 private:
