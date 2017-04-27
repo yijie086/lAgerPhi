@@ -205,6 +205,12 @@ public:
 
   // detected 4-momentum
   const XYZTVector& p() const { return p_; }
+  // mass
+  double mass() const { return p_.M(); }
+  double mass2() const { return p_.M2(); }
+  // momentum and energy
+  double momentum() const { return sqrt(p_.Vect().Mag2()); }
+  double energy() const { return p_.E(); }
 
 private:
   int status_{0};

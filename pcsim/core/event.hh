@@ -95,7 +95,7 @@ public:
   detected_particle& detected(const int index) { return detected_[index]; }
   const detected_particle& detected(const int index) const;
 
-  int add_detected(const detected_particle dp);
+  int add_detected(const detected_particle& dp);
   
 private:
   size_t evgen_{1}; // total number of generated events including this event
@@ -221,7 +221,7 @@ inline const detected_particle& event::detected(const int index) const {
   return detected_[index];
 }
 
-inline int event::add_detected(const detected_particle dp) {
+inline int event::add_detected(const detected_particle& dp) {
   detected_.push_back(dp);
   return detected_.size() - 1;
 }

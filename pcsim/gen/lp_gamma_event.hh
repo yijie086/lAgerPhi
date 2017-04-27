@@ -34,7 +34,7 @@ private:
 };
 
 // =============================================================================
-// full lp_gamma event 
+// full lp_gamma event
 // =============================================================================
 class lp_gamma_event : public event {
 public:
@@ -47,7 +47,7 @@ public:
 
   // ===========================================================================
   // PHOTON INFO
-  double W() const {return W_;}
+  double W() const { return W_; }
   double W2() const { return W_ * W_; }
   double Q2() const { return Q2_; }
   double nu() const { return nu_; }
@@ -91,6 +91,26 @@ public:
   int recoil_index() const { return recoil_index_; }
 
   // ===========================================================================
+  // DETECTED PARTICLE INFO
+  //
+  int add_detected(const detected_particle dp);
+
+  // get photon, scat, leading and recoil info
+  particle& detected_photon();
+  const particle& detected_photon() const;
+  particle& detected_scat();
+  const particle& detected_scat() const;
+  particle& detected_leading();
+  const particle& detected_leading() const;
+  particle& detected_recoil();
+  const particle& detected_recoil() const;
+
+  int detected_photon_index() const { return rc_photon_index_; }
+  int detected_scat_index() const { return rc_scat_index_; }
+  int detected_leading_index() const { return rc_leading_index_; }
+  int detected_recoil_index() const { return rc_recoil_index_; }
+
+  // ===========================================================================
   // leading produced particle kinematics
   //
   // Mandelstam t
@@ -99,6 +119,19 @@ public:
   double xv() const;
   // modified Q2
   double Q2plusM2() const;
+
+  // ===========================================================================
+  // DETECTED KINEMATICS
+  //
+  double detected_W() const;
+  double detected_W2() const;
+  double detected_Q2() const;
+  double detected_nu() const;
+  double detected_x() const;
+  double detected_y() const;
+  double detected_t() const;
+  double detected_xv() const;
+  double detected_Q2plusM2() const;
 
 private:
   // photon info
@@ -115,6 +148,12 @@ private:
   // leading and recoil produced particle info
   int leading_index_{-1};
   int recoil_index_{-1};
+
+  // and reconstructed
+  int rc_photon_index_{-1};
+  int rc_scat_index_{-1};
+  int rc_leading_index_{-1};
+  int rc_recoil_index_{-1};
 };
 
 // =============================================================================
@@ -146,6 +185,19 @@ private:
   int16_t scat_index_;
   int16_t leading_index_;
   int16_t recoil_index_;
+  // and reconstructed
+  float rc_W_;
+  float rc_Q2_;
+  float rc_nu_;
+  float rc_x_;
+  float rc_y_;
+  float rc_t_;
+  float rc_xv_;
+  float rc_Q2plusM2_;
+  int16_t rc_photon_index_;
+  int16_t rc_scat_index_;
+  int16_t rc_leading_index_;
+  int16_t rc_recoil_index_
 };
 
 // =============================================================================
@@ -250,10 +302,79 @@ inline const particle& lp_gamma_event::recoil() const {
                               "data present in the event");
   return part(recoil_index_);
 }
+// detected particle, also set the relevant detected index
+inline int lp_gamma_event::add_detected(const detected_particle& dp) const {
+  const int index = event::add_detected(dp);
+  if (dp.generated().index() == scat_index()) {
+    rc_scat_index_ = index;
+    // also reconstruct the photon
+    // status set to -1 for purely reconstucted particle
+    if (beam_index >= 0 && photon_index() >= 0) {
+      rc_photon_index_ =
+          add_detected({photon(), beam().p() - detected_scat().p(), -1});
+    }
+  } else if (dp.generated().index() == photon_index()_ {
+    rc_photon_index_ = index;
+  } else if (dp.generated().index() == leading_index()) {
+    rc_leading_index_ = index;
+  } else if (dp.generated().index() == recoil_index()) {
+    rc_recoil_index_ = index;
+  }
+  return index;
+}
+
+inline particle& lp_gamma_event::detected_photon() {
+  tassert(detected_photon_index() >= 0,
+          "trying to access detected_photon data, but no detected_photon "
+          "data present in the event");
+  return part(detected_photon_index_);
+}
+inline const particle& lp_gamma_event::detected_photon() const {
+  tassert(detected_photon_index() >= 0,
+          "trying to access detected_photon data, but no detected_photon "
+          "data present in the event");
+  return part(detected_photon_index_);
+}
+inline particle& lp_gamma_event::detected_scat() {
+  tassert(detected_scat_index() >= 0,
+          "trying to access detected_scat data, but no detected_scat "
+          "data present in the event");
+  return part(detected_scat_index_);
+}
+inline const particle& lp_gamma_event::detected_scat() const {
+  tassert(detected_scat_index() >= 0,
+          "trying to access detected_scat data, but no detected_scat "
+          "data present in the event");
+  return part(detected_scat_index_);
+}
+inline particle& lp_gamma_event::detected_leading() {
+  tassert(detected_leading_index() >= 0,
+          "trying to access detected_leading data, but no detected_leading "
+          "data present in the event");
+  return part(detected_leading_index_);
+}
+inline const particle& lp_gamma_event::detected_leading() const {
+  tassert(detected_leading_index() >= 0,
+          "trying to access detected_leading data, but no detected_leading "
+          "data present in the event");
+  return part(detected_leading_index_);
+}
+inline particle& lp_gamma_event::detected_recoil() {
+  tassert(detected_recoil_index() >= 0,
+          "trying to access detected_recoil data, but no detected_recoil "
+          "data present in the event");
+  return part(detected_recoil_index_);
+}
+inline const particle& lp_gamma_event::detected_recoil() const {
+  tassert(detected_recoil_index() >= 0,
+          "trying to access detected_recoil data, but no detected_recoil "
+          "data present in the event");
+  return part(detected_recoil_index_);
+}
 
 // leading produced particle kinematics
 inline double lp_gamma_event::t() const {
-  if (leading_index_ < 0 || photon_index_ < 0) {
+  if (leading_index() < 0 || photon_index() < 0) {
     return 0.;
   }
   return (leading().p() - photon().p()).M2();
@@ -265,10 +386,64 @@ inline double lp_gamma_event::xv() const {
   return (Q2() + leading().mass2()) / (2 * target().mass() * nu());
 }
 inline double lp_gamma_event::Q2plusM2() const {
-  if (leading_index_ < 0 || photon_index_ < 0) {
+  if (leading_index() < 0 || photon_index() < 0) {
     return 0.;
   }
   return Q2() + leading().mass2();
+}
+
+// detected kinematics
+inline double lp_gamma_event::detected_W() const { return sqrt(detected_W2()); }
+inline double lp_gamma_event::detected_W2() const {
+  if (detected_photon_index() < 0 || target_index() < 0) {
+    return 0.;
+  }
+  return (detected_photon().p() + target().p()).M2;
+}
+inline double lp_gamma_event::detected_Q2() const {
+  if (detected_photon_index() < 0)
+    return 0.;
+}
+return detected_photon().p().M2;
+}
+inline double lp_gamma_event::detected_nu() const {
+  if (detected_photon_index() < 0 || target_index() < 0) {
+    return 0.;
+  }
+  return (detected_photon().p()).Dot(target().p()) / target().mass();
+}
+inline double lp_gamma_event::detected_x() const {
+  if (detected_photon_index() < 0 || target_index() < 0) {
+    return 0.;
+  }
+  return detected_Q2 / (2 * target.mass() * detected_nu());
+}
+inline double lp_gamma_event::detected_y() const {
+  if (detected_photon_index() < 0 || target_index() < 0 || beam_index() < 0) {
+    return 0.;
+  }
+  return (detected_photon().p()).Dot(target().p()) /
+         (beam().p()).Dot(target().p());
+}
+inline double lp_gamma_event::detected_t() const {
+  if (detected_photon_index() < 0 || detected_leading_index() < 0) {
+    return 0.;
+  }
+  return (detected_leading().p() - detected_photon().p()).M2();
+}
+inline double lp_gamma_event::detected_xv() const {
+  if (detected_leading_index() < 0 || detected_photon_index() < 0 ||
+      target_index() < 0) {
+    return 0.;
+  }
+  return (detected_Q2() + detected_leading().mass2()) /
+         (2 * target().mass() * detected_nu());
+}
+inline double lp_gamma_event::Q2plusM2() const {
+  if (detected_leading_index() < 0 || detected_photon_index() < 0) {
+    return 0.;
+  }
+  return detected_Q2() + detected_leading().mass2();
 }
 
 } // namespace pcsim

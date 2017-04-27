@@ -31,6 +31,19 @@ void lp_gamma_out::push(const lp_gamma_event& e) {
   leading_index_ = static_cast<int16_t>(e.leading_index());
   recoil_index_ = static_cast<int16_t>(e.recoil_index());
 
+  rc_W_ = static_cast<float>(e.detected_W());
+  rc_Q2_ = static_cast<float>(e.detected_Q2());
+  rc_nu_ = static_cast<float>(e.detected_nu());
+  rc_x_ = static_cast<float>(e.detected_x());
+  rc_y_ = static_cast<float>(e.detected_y());
+  rc_t_ = static_cast<float>(e.detected_t());
+  rc_xv_ = static_cast<float>(e.detected_xv());
+  rc_Q2plusM2_ = static_cast<float>(e.detected_Q2plusM2());
+  rc_photon_index_ = static_cast<int16_t>(e.detected_photon_index());
+  rc_scat_index_ = static_cast<int16_t>(e.detected_scat_index());
+  rc_leading_index_ = static_cast<int16_t>(e.detected_leading_index());
+  rc_recoil_index_ = static_cast<int16_t>(e.detected_recoil_index());
+
   event_out::push(e);
 }
 
@@ -49,6 +62,19 @@ void lp_gamma_out::create_branches() {
   tree()->Branch("scat_index", &scat_index_);
   tree()->Branch("leading_index", &leading_index_);
   tree()->Branch("recoil_index", &recoil_index_);
+
+  tree()->Branch("rc_W", &rc_W_);
+  tree()->Branch("rc_Q2", &rc_Q2_);
+  tree()->Branch("rc_nu", &rc_nu_);
+  tree()->Branch("rc_x", &rc_x_);
+  tree()->Branch("rc_y", &rc_y_);
+  tree()->Branch("rc_t", &rc_t_);
+  tree()->Branch("rc_xv", &rc_xv_);
+  tree()->Branch("Q2plusM2", &rc_Q2plusM2_);
+  tree()->Branch("rc_photon_index", &rc_photon_index_);
+  tree()->Branch("rc_scat_index", &rc_scat_index_);
+  tree()->Branch("rc_leading_index", &rc_leading_index_);
+  tree()->Branch("rc_recoil_index", &rc_recoil_index_);
 }
 
 } // namespace pcsim
