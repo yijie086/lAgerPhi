@@ -8,6 +8,7 @@
 #include <pcsim/gen/lp_gamma_event.hh>
 #include <pcsim/proc/decay/lp_gamma.hh>
 #include <pcsim/proc/detector/detector.hh>
+#include <pcsim/proc/reconstruction/lp_gamma.hh>
 
 namespace pcsim {
 
@@ -31,6 +32,7 @@ private:
   // event processors
   std::shared_ptr<decay::lp_gamma> decay_proc_;
   std::shared_ptr<detector::detector> detector_proc_;
+  std::shared_ptr<reconstruction::lp_gamma> rc_proc_;
 };
 
 } // namespace pcsim

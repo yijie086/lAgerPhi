@@ -8,9 +8,10 @@ set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 ################################################################################
 ## Sources and install headers
 ################################################################################
-file (GLOB SOURCES "decay/*.cc" "detector/*.cc")
+file (GLOB SOURCES "decay/*.cc" "detector/*.cc" "reconstruction/*.cc")
 file (GLOB HEADERS_DECAY "decay/*.hh")
 file (GLOB HEADERS_DETECTORS "detectors/*.hh")
+file (GLOB HEADERS_RC "reconstruction/*.hh")
 file (GLOB HEADERS_JLEIC "detectors/eic-fastmc/acceptance.hh" 
                          "detectors/eic-fastmc/resolution.hh")
 
@@ -66,4 +67,8 @@ install(FILES
 install(FILES 
   ${HEADERS_JLEIC} 
   DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/detector/eic-fastmc" 
+  COMPONENT dev)
+install(FILES 
+  ${HEADERS_RC} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/reconstruction" 
   COMPONENT dev)
