@@ -1,7 +1,4 @@
 #include "generator.hh"
-#include <TRandom.h>
-#include <memory>
-#include <pcsim/core/configuration.hh>
 #include <pcsim/gen/beam/photon_gen.hh>
 #include <pcsim/gen/beam/primary_gen.hh>
 

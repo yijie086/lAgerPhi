@@ -1,5 +1,5 @@
-#ifndef PCSIM_GEN_BEAM_BEAM_LOADED
-#define PCSIM_GEN_BEAM_BEAM_LOADED
+#ifndef PCSIM_GEN_LP_GAMMA_GENERATOR_LOADED
+#define PCSIM_GEN_LP_GAMMA_GENERATOR_LOADED
 
 #include <pcsim/core/factory.hh>
 #include <pcsim/core/generator.hh>

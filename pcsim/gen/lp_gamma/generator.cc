@@ -1,4 +1,4 @@
-#include "lp_gamma.hh"
+#include "generator.hh"
 #include <TRandom.h>
 #include <memory>
 #include <pcsim/core/configuration.hh>
@@ -17,5 +17,5 @@ factory<generator, const configuration&, const string_path&,
 FACTORY_REGISTER(generator, brodsky_2vmX, "brodsky_2vmX");
 FACTORY_REGISTER(generator, gaussian_1X, "gaussian_1X");
 
-} // namespace beam
+} // namespace lp_gamma
 } // namespace pcsim
