@@ -2,31 +2,40 @@
 #include <cmath>
 #include <pcsim/core/particle.hh>
 #include <pcsim/core/pdg.hh>
+#include <pcsim/core/stringify.hh>
 
 namespace pcsim {
 namespace decay {
 
 void lp_gamma::process(lp_gamma_event& e) const {
   for (int i = 0; i < e.size(); ++i) {
+    LOG_JUNK2("decay::lp_gamma",
+              "Considering decay for particle " + e[i].name());
     // we won't decay stable particles
     if (e[i].stable()) {
+      LOG_JUNK2("decay::lp_gamma", "Particle does not need to be decayed");
       continue;
     }
     // SCHC leptonic e+e- decay of vms
     if (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
         e[i].type() == pdg_id::phi) {
+      LOG_JUNK2("decay::lp_gamma", "Performing SCHC decay for VMs");
       quarkonium_schc(e, i);
     }
     // Pc decay according to wang et al.
-    else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
+    else if (e[i].type() == pdg_id::Pc_4450_52p ||
+             e[i].type() == pdg_id::Pc_4380_52p ||
+             e[i].type() == pdg_id::Pc_4450_52m ||
+             e[i].type() == pdg_id::Pc_4380_52m ||
+             e[i].type() == pdg_id::Pc_4450_32p ||
+             e[i].type() == pdg_id::Pc_4380_32p ||
+             e[i].type() == pdg_id::Pc_4450_32m ||
+             e[i].type() == pdg_id::Pc_4380_32m) {
+      LOG_JUNK2("decay::lp_gamma", "Pc decay according to Wang et. al.");
       pentaquark_wang(e, i);
+    } else {
+      LOG_DEBUG("decay::lp_gamma", "Unstable particle " + e[i].name() +
+                                       ", but no decay path implemented");
     }
   }
   // that's all
@@ -56,8 +65,8 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
       {pdg_id::J_psi, particle::status_code::UNSTABLE_SCHC}, {pdg_id::p}};
   const double phi = rng()->Uniform(0., TMath::TwoPi());
   double ctheta = -1;
-  if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1) ||
-      e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 4)) {
+  if (e[i].type() == pdg_id::Pc_4450_52p ||
+      e[i].type() == pdg_id::Pc_4380_52p) {
     // result from a pol6 fit to a digitized version of figure 6c from
     // PRD92-034022(2015)
     ctheta = rand_f({-1, 1},
@@ -72,8 +81,8 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
                              0.0931712 * x6;
                     },
                     0.63);
-  } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 2) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 5, -1, 3)) {
+  } else if (e[i].type() == pdg_id::Pc_4450_52m ||
+             e[i].type() == pdg_id::Pc_4380_52m) {
     // result from a pol7 fit to a digitized version of figure 5c from
     // PRD92-034022(2015)
     ctheta = rand_f({-1, 1},
@@ -89,14 +98,14 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
                              2.67151 * x6 + 6.06378 * x7;
                     },
                     44.06);
-  } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 3) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, 1, 2)) {
+  } else if (e[i].type() == pdg_id::Pc_4450_32p ||
+             e[i].type() == pdg_id::Pc_4380_32p) {
     // result from a expo fit to a digitized version of figure 5b from
     // PRD92-034022(2015)
     ctheta = rand_f({-1, 1}, [](const double x) { return exp(-5.944 - x); },
                     0.00713);
-  } else if (e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 4) ||
-             e[i].type<int>() == pdg_pentaquark_id(4, 2, 2, 1, 4, 3, -1, 1)) {
+  } else if (e[i].type() == pdg_id::Pc_4450_32m ||
+             e[i].type() == pdg_id::Pc_4380_32m) {
     // result from a pol2 fit to a digitized version of figure 6b from
     // PRD92-034022(2015)
     ctheta = rand_f({-1, 1},
