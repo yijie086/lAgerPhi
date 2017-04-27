@@ -19,22 +19,22 @@ std::string to_string_exp(double d) {
 }
 
 int run_mc(const configuration& cf, const std::string& output) {
-  LOG_INFO("pcsim-lp-gamma", "Initializing PCSIM for lp-gamma processes");
+  LOG_INFO("pcsim-lp_gamma", "Initializing PCSIM for lp-gamma processes");
 
   // get RNG
-  LOG_INFO("pcsim-lp-gamma",
+  LOG_INFO("pcsim-lp_gamma",
             "Initializing the RNG with seed " + cf.get<std::string>("run"));
   std::shared_ptr<TRandom> r {std::make_shared<TRandom3>()};
   r->SetSeed(cf.get<int>("run"));
 
   // make output file and buffer
-  LOG_INFO("pcsim-lp-gamma", "Initializing the output buffer");
+  LOG_INFO("pcsim-lp_gamma", "Initializing the output buffer");
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
   lp_gamma_out evbuf{ofile, "lp_gamma_event"};
 
   // get event generator
-  LOG_INFO("pcsim-lp-gamma", "Initializing the event generator");
+  LOG_INFO("pcsim-lp_gamma", "Initializing the event generator");
   lp_gamma_generator gen{cf, "generator", r};
 
   // number of requested events:
@@ -42,7 +42,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   progress_meter progress{events};
 
   // loop over events
-  LOG_INFO("pcsim-lp-gamma", "Starting the main generation loop");
+  LOG_INFO("pcsim-lp_gamma", "Starting the main generation loop");
   while (gen.n_events() < events) {
     evbuf.push(gen.generate());
     progress.update();
