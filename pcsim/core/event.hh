@@ -138,8 +138,9 @@ public:
   event_out(const event_out&) = delete;
   event_out& operator=(const event_out&) = delete;
 
-  // add a new event to the event buffer, and flush the buffer to the tree
+  // add a event(s) to the event buffer, and flush the buffer to the tree
   void push(const event& e);
+  void push(const std::vector<event>& e);
 
   TTree* tree() { return tree_; }
 

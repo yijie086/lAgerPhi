@@ -9,6 +9,12 @@ lp_gamma_out::lp_gamma_out(std::shared_ptr<TFile> f, const std::string& name)
     : event_out{f, name} {
   create_branches();
 }
+
+void lp_gamma_out::push(const std::vector<lp_gamma_event>& events) {
+  for (const auto& e : events) {
+    push(e);
+  }
+}
 void lp_gamma_out::push(const lp_gamma_event& e) {
   W_ = static_cast<float>(e.W());
   Q2_ = static_cast<float>(e.Q2());

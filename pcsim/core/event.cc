@@ -15,6 +15,11 @@ event_out::event_out(std::shared_ptr<TFile> f, const std::string& name)
   tassert(tree_, "Failed to inialize tree " + name);
   create_branches();
 }
+void event_out::push(const std::vector<event>& events) {
+  for (const auto e : events) {
+    push(e);
+  }
+}
 void event_out::push(const event& e) {
   evgen_ = e.evgen();
   cross_section_ = static_cast<float>(e.cross_section());
