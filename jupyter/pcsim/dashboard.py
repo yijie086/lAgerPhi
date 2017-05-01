@@ -9,6 +9,7 @@ import subprocess
 from tempfile import NamedTemporaryFile
 
 PCSIM_PATH='../BUILD/program/pcsim-lp_gamma'
+#PCSIM_PATH='../DEBUG3/program/pcsim-lp_gamma'
 
 hbox_layout = widgets.Layout(display='flex',
                     flex_flow='row',
@@ -189,7 +190,7 @@ beam.lepton.energy = float_slider_widget(
 beam.target.energy = float_slider_widget(
     'Energy', 
     'Select the beam energy in GeV',
-    min=.938272, max=1000, value=5)
+    min=.938272, max=1000, value=100)
 
 ## CM energy display
 beam.CM = empty_widget()
@@ -490,7 +491,9 @@ def dashboard():
 def run_mc(dummy):
     my_fname = fname()
     run.button.button.disabled = True
-    run.button.button.button_style=''
+    run.button.button.button_style='danger'
+    run.button.button.description = 'Processing...'
+    run.button.button.icon = 'hourglass'
 
     run.status.handler({'fname': my_fname, 'running': True})
     config = {
@@ -569,6 +572,8 @@ def run_mc(dummy):
     os.unlink(fconf.name)
     run.button.button.disabled = False
     run.button.button.button_style='success'
+    run.button.button.description = 'Run MC'
+    run.button.button.icon = 'check'
     run.status.handler({'fname': my_fname, 'fname_done': my_fname})
     
 run.button.button.on_click(run_mc)
