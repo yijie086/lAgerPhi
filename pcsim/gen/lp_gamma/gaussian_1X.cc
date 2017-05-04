@@ -111,7 +111,7 @@ double gaussian_qpq::calc_max_xsec(const configuration& cf) const {
 // =============================================================================
 interval<double> gaussian_qpq::calc_W2_range(const double n_sigma) const {
   double min = qpq_.pole_mass() - n_sigma * qpq_.width();
-  double max = qpq_.pole_mass() - n_sigma * qpq_.width();
+  double max = qpq_.pole_mass() + n_sigma * qpq_.width();
   return {min * min, max * max};
 }
 
