@@ -44,9 +44,13 @@ framework::framework(int argc, char* argv[],
   LOG_INFO("pcsim", "Starting pcsim framework");
   LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
 
-  // get our run info and number of events to be generated
+  // get our run info and luminosity/number of events to be generated
   const int run = get_option<int>("run");
-  const int events = get_option<int>("events");
+  auto lumi = conf_.get_optional<double>("lumi");
+  int events = -1;
+  if (!lumi) {
+    events = get_option<int>("events");
+  }
 
   // output file name
 
@@ -74,9 +78,13 @@ framework::framework(int argc, char* argv[],
   if (tag && tag->size()) {
     output_ += "." + *tag;
   }
-  // add the run info and number of generated events
+  // add the run info and lumi or number of generated events
   char info[1024];
-  sprintf(info, ".run%05i-%i", run, events);
+  if (lumi) {
+    sprintf(info, ".run%05i-lumi%f", run, *lumi);
+  } else {
+    sprintf(info, ".run%05i-%i", run, events);
+  }
   output_ += info;
 
   // communicate file name to user

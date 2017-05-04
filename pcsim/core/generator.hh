@@ -2,11 +2,12 @@
 #define PCSIM_CORE_GENERATOR_LOADED
 
 #include <TRandom.h>
+#include <algorithm>
 #include <memory>
 #include <pcsim/core/assert.hh>
 #include <pcsim/core/configuration.hh>
-#include <pcsim/core/interval.hh>
 #include <pcsim/core/factory.hh>
+#include <pcsim/core/interval.hh>
 
 namespace pcsim {
 
@@ -163,6 +164,7 @@ public:
                   std::shared_ptr<TRandom> r)
       : base_type{std::move(r)}, configurable{cf, path} {
     init_process_list();
+    init_lumi(cf);
   }
 
   virtual std::vector<event_type> generate() {
@@ -257,8 +259,23 @@ public:
   //
   // n_tot_events is the sum of all the generated events in all subprocesses,
   // hence we obtain sigma_tot = sum_i sigma_i = sum_i G_i * V1/T1
-  double cross_section() const { return volume_ * n_tot_events_ / n_trials_; }
-  double n_events() const { return n_tot_events_; }
+  double cross_section() const { 
+    // return a safe upper boundary in case we don't have enough events yet to have
+    // some kind of reasonable estimate
+    if (n_tot_events_ < 50) {
+      return volume_ * process_list_.size();
+    }
+    // the actual cross section estimate
+    return volume_ * n_tot_events_ / n_trials_;
+  }
+  int n_events() const { return n_tot_events_; }
+
+  int n_requested() const {
+    return std::max(static_cast<int>(std::round(lumi_ * cross_section())),
+                    n_requested_);
+  }
+
+  bool finished() const { return (n_events() >= n_requested()); }
 
 protected:
   // GENERATION STEPS
@@ -330,6 +347,19 @@ private:
             "At least one process has to be specified");
   }
 
+  // init the number of requested events, or alternatively the requested
+  // integrated luminosity
+  void init_lumi(const configuration& cf) {
+    auto lumi = cf.get_optional<double>("lumi");
+    if (lumi) {
+      lumi_ = *lumi;
+      n_requested_ = -1;
+    } else {
+      int n_requested_ = cf.get<int>("events");
+      lumi_ = -1;
+    }
+  }
+
   struct process_info {
     const int id;                      // process identifier
     const std::string name;            // process name
@@ -353,8 +383,11 @@ private:
   double volume_{1.};       // total volume
 
   double n_trials_{0.};     // global trial counter
-  int n_tot_events_{0};      // total number of events
+  int n_tot_events_{0};     // total number of events
   std::vector<process_info> process_list_; // process dependent info
+
+  int n_requested_{-1}; // number of requested events
+  double lumi_{-1};     // or alternatively, the requested luminosity (in nb^-1)
 };
 
 } // namespace pcsim

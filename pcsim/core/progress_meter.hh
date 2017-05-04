@@ -34,10 +34,14 @@ public:
       std::cerr << msg << std::flush;
     }
   }
+  void update(size_t i, const size_t max) {
+    max_ = max;
+    update(i);
+  }
   ~progress_meter() { std::cerr << "      Done!" << std::endl; }
 
 private:
-  const size_t max_;
+  size_t max_;
   size_t index_;
   const size_t precision_;
 };

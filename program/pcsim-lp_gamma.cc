@@ -63,15 +63,14 @@ int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim-lp_gamma", "Initializing the event generator");
   lp_gamma_generator gen{cf, "generator", r};
 
-  // number of requested events:
-  const size_t events = cf.get<size_t>("events");
-  progress_meter progress{events};
+  // init the progress meter with number of requested events
+  progress_meter progress{static_cast<size_t>(gen.n_requested())};
 
   // loop over events
   LOG_INFO("pcsim-lp_gamma", "Starting the main generation loop");
-  while (gen.n_events() < events) {
+  while (!gen.finished()) {
     evbuf.push(gen.generate());
-    progress.update();
+    progress.update(1, gen.n_requested());
   }
   LOG_INFO("pcsim", "Event generation complete");
   LOG_INFO("pcsim", "Total number of generated events: " +
