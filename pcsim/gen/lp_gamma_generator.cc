@@ -12,7 +12,7 @@ lp_gamma_generator::lp_gamma_generator(const configuration& cf,
     , photon_gen_{FACTORY_CREATE(beam::photon_generator, conf(), "photon", r)}
     , decay_proc_{std::make_shared<decay::lp_gamma>(r)}
     , detector_proc_{FACTORY_CREATE(detector::detector, cf, "detector", r)}
-    , rc_proc_{std::make_shared<reconstruction::lp_gamma>(r)} {
+    , rc_proc_{std::make_shared<reconstruction::lp_gamma>(cf, "reconstruction", r)} {
   register_initial(lepton_gen_);
   register_initial(proton_gen_);
   register_initial(photon_gen_);

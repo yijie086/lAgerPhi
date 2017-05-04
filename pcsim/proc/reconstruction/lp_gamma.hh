@@ -7,25 +7,24 @@
 namespace pcsim {
 namespace reconstruction {
 // =============================================================================
-// RECONSTRUCTION ALL UNSTABLE PARTICLES IN A GAMMA_P EVENT
+// RECONSTRUCT ADDITIONAL PARTICLES IN A GAMMA_P EVENT
 //
-// also handles chained reconstructions
+// also handles trigger-level cuts
 //
-// Supported channels:
-//  * Pc according to Wang
-//  * e+e- reconstruction of VMs
-//
-// Note: adds event weight to account for branching ratios when not simulating
-// the full reconstruction width
+// Note: sets the event weight to zero for events that don't pass the cut
+//       (will then be removed by the event_generator)
 // =============================================================================
 
 class lp_gamma : public reconstruction<lp_gamma_event> {
 public:
   using base_type = reconstruction<lp_gamma_event>;
-  lp_gamma(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
+  lp_gamma(const configuration& conf, const string_path& path,
+           std::shared_ptr<TRandom> r);
   virtual void process(lp_gamma_event& e) const;
 
 private:
+  const bool require_leading_{false};
+  const bool require_scat_{false};
 };
 
 } // namespace reconstruction

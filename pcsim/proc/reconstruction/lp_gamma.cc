@@ -6,6 +6,23 @@
 namespace pcsim {
 namespace reconstruction {
 
+namespace {
+// TODO this helper function should really be part of configuration
+bool get_bool(const configuration& conf, const string_path& path) {
+  auto requirement = conf.get_optional<bool>(path);
+  if (requirement && *requirement) {
+    return true;
+  }
+  return false;
+}
+} // namespace
+
+lp_gamma::lp_gamma(const configuration& conf, const string_path& path,
+                   std::shared_ptr<TRandom> r)
+    : lp_gamma::base_type{std::move(r)}
+    , require_leading_{get_bool(conf, path / "require_leading")}
+    , require_scat_{get_bool(conf, path / "require_scat")} {}
+
 void lp_gamma::process(lp_gamma_event& e) const {
   // do additional event reconstruction 
   for (int i = 0; i < e.detected().size(); ++i) {
@@ -39,6 +56,17 @@ void lp_gamma::process(lp_gamma_event& e) const {
         }
       }
     }
+    // check if we are fullfilling all requirments
+    if (require_leading_ && e.detected_leading_index() < 0) {
+      LOG_JUNK2("lp_gamma", "Leading particle not reconstructed but required, "
+                            "setting event weight to zero.");
+      e.update_weight(0);
+    } else if (require_scat_ && e.detected_scat_index() < 0) {
+      LOG_JUNK2("lp_gamma", "Scattered lepton not reconstructed but required, "
+                            "setting event weight to zero.");
+      e.update_weight(0);
+    }
+
     // that's all
   }
 }
