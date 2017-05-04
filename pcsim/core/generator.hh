@@ -275,9 +275,9 @@ public:
   //
   // note that lumi is given in fb^-1, and cross section in nb
   int n_requested() const {
-    return std::max(
-        static_cast<int>(std::round(1000000. * lumi_ * cross_section())),
-        n_requested_);
+    return (n_requested_ > 0) ? n_requested_
+                              : static_cast<int>(std::round(1000000. * lumi_ *
+                                                            cross_section()));
   }
 
   bool finished() const { return (n_events() >= n_requested()); }
@@ -360,7 +360,7 @@ private:
       lumi_ = *lumi;
       n_requested_ = -1;
     } else {
-      int n_requested_ = cf.get<int>("events");
+      n_requested_ = cf.get<int>("events");
       lumi_ = -1;
     }
   }

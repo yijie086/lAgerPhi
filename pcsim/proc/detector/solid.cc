@@ -30,15 +30,22 @@ void solid::process(event& e) const {
       LOG_JUNK2("solid",
                 "Checking acceptance for final state particle " + part.name() +
                     " (status: " + std::to_string(part.status<int>()) + ")");
-      double acc = forward_angle_->GetBinContent(forward_angle_->GetBin(
-          part.theta() * TMath::RadToDeg(), part.momentum()));
+      const double theta = part.theta() * TMath::RadToDeg();
+      const double p = part.momentum();
+      LOG_JUNK2("solid", "theta [deg.]: " + std::to_string(theta) +
+                             " p [GeV]: " + std::to_string(p));
+
+      double acc = forward_angle_->GetBinContent(
+          forward_angle_->GetXaxis()->FindBin(theta),
+          forward_angle_->GetYaxis()->FindBin(p));
       int region = 0;
 
       if (acc > 0) {
         region = 1;
       } else {
-        double acc = large_angle_->GetBinContent(large_angle_->GetBin(
-            part.theta() * TMath::RadToDeg(), part.momentum()));
+        acc = large_angle_->GetBinContent(
+            large_angle_->GetXaxis()->FindBin(theta),
+            large_angle_->GetYaxis()->FindBin(p));
         if (acc > 0) {
           region = 2;
         }
