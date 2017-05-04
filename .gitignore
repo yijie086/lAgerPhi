@@ -34,3 +34,4 @@ install_manifest.txt
 __pycache__/
 *.py[cod]
 *$py.class
+.ipynb_checkpoints
