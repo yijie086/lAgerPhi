@@ -168,81 +168,91 @@ public:
   }
 
   virtual std::vector<event_type> generate() {
-    // generate a phase space point
-    std::vector<event_type> event_list;
-    do {
-      n_trials_ += 1;
-      auto initial = generate_initial();
-      // start over if we already have a bad initial state
-      if (initial.cross_section() <= 0) {
-        LOG_JUNK("event_generator",
-                 "Initial cross section <= 0, abandoning trial cycle.");
-        continue;
-      }
-      LOG_JUNK("event_generator", "Initial cross section: " +
-                                      std::to_string(initial.cross_section()));
-      // generate the sub_processes
-      for (auto& process : process_list_) {
-        LOG_JUNK(process.name, "Generating a trial event");
-        // check if we need to generate an event for this process (ensure
-        // correct sub-process mixing)
-        if (proc_volume_ != process.vol &&
-            this->rng()->Uniform(0, proc_volume_) > process.vol) {
-          LOG_JUNK(process.name, "Skipping this trial cycle.");
-          continue;
-        }
-        // generate one event
-        auto event = process.gen->generate(initial);
-        // go to the next process have a bad cross section, print a warning if
-        // the cross section maximum was violated
-        if (event.cross_section() <= 0) {
-          LOG_JUNK(process.name,
-                   "Cross section <= 0, skipping this trial cycle");
-          continue;
-        } else if (event.cross_section() > initial_max_ * process.max) {
-          LOG_WARNING(
-              process.name,
-              "Cross section maximum exceeded, please check "
-              "the cross section maximum calculation. The MC "
-              "distributions will be invalid if this happens too often.");
-        }
-        // accept/reject this event
-        LOG_JUNK(process.name,
-                 "Testing accept reject for xs: " +
-                     std::to_string(event.cross_section()) + " (max: " +
-                     std::to_string(process.max * initial_max_) + ")");
-        if (this->rng()->Uniform(0, initial_max_ * process.max) <
-            event.cross_section()) {
-          LOG_JUNK(process.name, "Event accepted!");
-          event.update_process(process.id);
-          event_list.push_back(event);
-        } else {
-          LOG_JUNK(process.name, "Event rejected.");
-        }
-      }
-    } while (event_list.size() == 0);
-    // event builder step
-    n_tot_events_ += event_list.size();
-
     // buffer for the final events we return
     // this is needed because we do one additional accept-reject step where we
     // remove events to compensate for a weight smaller than 1, which can occur
     // when, e.g., the event builder only simulates one particular decay channel
     std::vector<event_type> good_event_list;
+    do {
 
-    for (auto& event : event_list) {
-      event.update_mc(n_tot_events_, cross_section());
-      build_event(event);
-      if (event.weight() == 1 ||
-          this->rng()->Uniform(0., 1.) <= event.weight()) {
-        event.reset_weight();
-        good_event_list.push_back(event);
+      // generate a phase space point
+      std::vector<event_type> event_list;
+      do {
+        n_trials_ += 1;
+        auto initial = generate_initial();
+        // start over if we already have a bad initial state
+        if (initial.cross_section() <= 0) {
+          LOG_JUNK("event_generator",
+                   "Initial cross section <= 0, abandoning trial cycle.");
+          continue;
+        }
+        LOG_JUNK("event_generator",
+                 "Initial cross section: " +
+                     std::to_string(initial.cross_section()));
+        // generate the sub_processes
+        for (auto& process : process_list_) {
+          LOG_JUNK(process.name, "Generating a trial event");
+          // check if we need to generate an event for this process (ensure
+          // correct sub-process mixing)
+          if (proc_volume_ != process.vol &&
+              this->rng()->Uniform(0, proc_volume_) > process.vol) {
+            LOG_JUNK(process.name, "Skipping this trial cycle.");
+            continue;
+          }
+          // generate one event
+          auto event = process.gen->generate(initial);
+          // go to the next process have a bad cross section, print a warning if
+          // the cross section maximum was violated
+          if (event.cross_section() <= 0) {
+            LOG_JUNK(process.name,
+                     "Cross section <= 0, skipping this trial cycle");
+            continue;
+          } else if (event.cross_section() > initial_max_ * process.max) {
+            LOG_WARNING(
+                process.name,
+                "Cross section maximum exceeded, please check "
+                "the cross section maximum calculation. The MC "
+                "distributions will be invalid if this happens too often.");
+          }
+          // accept/reject this event
+          LOG_JUNK(process.name,
+                   "Testing accept reject for xs: " +
+                       std::to_string(event.cross_section()) + " (max: " +
+                       std::to_string(process.max * initial_max_) + ")");
+          if (this->rng()->Uniform(0, initial_max_ * process.max) <
+              event.cross_section()) {
+            LOG_JUNK(process.name, "Event accepted!");
+            event.update_process(process.id);
+            event_list.push_back(event);
+          } else {
+            LOG_JUNK(process.name, "Event rejected.");
+          }
+        }
+      } while (event_list.empty());
+      // event builder step
+      n_tot_events_ += event_list.size();
+
+      for (auto& event : event_list) {
+        event.update_mc(n_tot_events_, cross_section());
+        LOG_JUNK("generator", "Processing event (process " +
+                                  std::to_string(event.process()) + ")");
+        build_event(event);
+        if (event.weight() == 1 ||
+            this->rng()->Uniform(0., 1.) <= event.weight()) {
+          LOG_JUNK("generator",
+                   "Event accepted after event builder step (weight: " +
+                       std::to_string(event.weight()) + ", reset to 1)");
+          event.reset_weight();
+          good_event_list.push_back(event);
+        } else {
+          LOG_JUNK("generator",
+                   "Event rejected after event builder step (weight: " +
+                       std::to_string(event.weight()) + ")");
+        }
       }
-    }
-    // ensure we actually have an event, else start over
-    if (good_event_list.empty()) {
-      return this->generate();
-    }
+      // ensure we actually have an event, else start over
+    } while (good_event_list.empty());
+
     return good_event_list;
   }
 
@@ -259,7 +269,7 @@ public:
   //
   // n_tot_events is the sum of all the generated events in all subprocesses,
   // hence we obtain sigma_tot = sum_i sigma_i = sum_i G_i * V1/T1
-  double cross_section() const { 
+  double cross_section() const {
     // return a safe upper boundary in case we don't have enough events yet to have
     // some kind of reasonable estimate
     if (n_tot_events_ < 50) {

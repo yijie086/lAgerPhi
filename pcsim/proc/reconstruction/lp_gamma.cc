@@ -56,19 +56,21 @@ void lp_gamma::process(lp_gamma_event& e) const {
         }
       }
     }
-    // check if we are fullfilling all requirments
-    if (require_leading_ && e.detected_leading_index() < 0) {
-      LOG_JUNK2("lp_gamma", "Leading particle not reconstructed but required, "
-                            "setting event weight to zero.");
-      e.update_weight(0);
-    } else if (require_scat_ && e.detected_scat_index() < 0) {
-      LOG_JUNK2("lp_gamma", "Scattered lepton not reconstructed but required, "
-                            "setting event weight to zero.");
-      e.update_weight(0);
-    }
-
-    // that's all
   }
+  // check if we are fullfilling all requirments
+  if (require_leading_ && e.detected_leading_index() < 0) {
+    LOG_JUNK2("lp_gamma", "Leading particle not reconstructed but required, "
+                          "setting event weight to zero.");
+    e.update_weight(0);
+  } else if (require_scat_ && e.detected_scat_index() < 0) {
+    LOG_JUNK2("lp_gamma", "Scattered lepton not reconstructed but required, "
+                          "setting event weight to zero.");
+    e.update_weight(0);
+  } else {
+    LOG_JUNK2("lp_gamma", "All reconstruction requirements fulfilled");
+  }
+
+  // that's all
 }
 
 } // namespace reconstruction
