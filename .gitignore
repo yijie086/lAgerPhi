@@ -29,3 +29,8 @@ install_manifest.txt
 ~*
 *.swp
 *.swo
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class

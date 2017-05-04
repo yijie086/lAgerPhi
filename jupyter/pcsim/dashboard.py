@@ -288,7 +288,7 @@ photon.vphoton.Q2range = float_range_widget(
 photon.bs.Erange = float_range_widget(
     '<i>E</i> range',
     'Select the photon <i>E</i> range in GeV.',
-    min=3, max=1e9)
+    min=.001, max=1e9)
 
 ## W range
 photon.vphoton.Wrange = optional_float_range_widget(
@@ -517,7 +517,9 @@ def run_mc(dummy):
                 'energy': beam.target.energy.slider.value
             },
             'photon': {
-                'type': photon.type.menu.value
+                'type': photon.type.menu.value,
+                'E_range': [photon.bs.Erange.min.value,
+                            photon.bs.Erange.max.value]
             },
             'process_0': {
                 'type': gen.model.menu.value,
@@ -531,7 +533,6 @@ def run_mc(dummy):
     }}
     jsph = config['mc']['generator']['photon']
     if photon.type.menu.value == 'bremsstrahlung':
-        jsph['E_range'] = [photon.bs.Erange.min.value, photon.bs.Erange.max.value],
         jsph['model'] = photon.bs.model.menu.value
         if photon.bs.model.menu.value == 'param':
             jsph['rl'] = photon.bs.rl.param.menu.value
@@ -545,6 +546,7 @@ def run_mc(dummy):
         if photon.vphoton.Wrange.enable.value:
             jsph['W_range'] = [photon.vphoton.Wrange.min.value,
                                 photon.vphoton.Wrange.max.value]
+        del jsph['E_range']
     ## gen
     jsgen = config['mc']['generator']['process_0']
     if gen.model.menu.value == 'brodsky_2vmX':
@@ -554,7 +556,7 @@ def run_mc(dummy):
         jsgen['R_vm_c'] = gen.brodsky.R.param.factor.value
         jsgen['R_vm_n'] = gen.brodsky.R.param.power.value
         jsgen['dipole_n'] = gen.brodsky.dipole.param.power.value
-    #print config
+    print config
 
     fconf = open('config.json', 'w')
     json.dump(config, fconf, indent=4, sort_keys=True)
