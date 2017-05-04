@@ -221,12 +221,27 @@ public:
     } while (event_list.size() == 0);
     // event builder step
     n_tot_events_ += event_list.size();
+
+    // buffer for the final events we return
+    // this is needed because we do one additional accept-reject step where we
+    // remove events to compensate for a weight smaller than 1, which can occur
+    // when, e.g., the event builder only simulates one particular decay channel
+    std::vector<event_type> good_event_list;
+
     for (auto& event : event_list) {
       event.update_mc(n_tot_events_, cross_section());
       build_event(event);
+      if (event.weight() == 1 ||
+          this->rng()->Uniform(0., 1.) <= event.weight()) {
+        event.reset_weight();
+        good_event_list.push_back(event);
+      }
     }
-    // that's all!
-    return event_list;
+    // ensure we actually have an event, else start over
+    if (good_event_list.empty()) {
+      return this->generate();
+    }
+    return good_event_list;
   }
 
   // total cross section is given by the size of the generator box

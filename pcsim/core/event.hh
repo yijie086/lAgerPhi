@@ -43,6 +43,7 @@ public:
   void update_mc(const size_t evgen, const double txs);
   // update weight and process number
   void update_weight(const double w) { weight_ *= w; }
+  void reset_weight(const double w = 1.) { weight_ = w; }
   void update_process(const int proc) { process_ = proc; }
 
   // ===========================================================================
