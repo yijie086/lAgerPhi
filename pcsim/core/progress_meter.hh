@@ -20,8 +20,8 @@ public:
     std::cerr << "\nProcessing " << max_ << " events..." << std::endl;
     update();
   }
-  void update(size_t i = 1) {
-    index_ += i;
+  void update(size_t i) {
+    index_ = i;
     if (index_ > max_) {
       index_ = max_;
     }
@@ -37,6 +37,10 @@ public:
   void update(size_t i, const size_t max) {
     max_ = max;
     update(i);
+  }
+  void update() {
+    index_ += 1;
+    update(index_);
   }
   ~progress_meter() { std::cerr << "      Done!" << std::endl; }
 

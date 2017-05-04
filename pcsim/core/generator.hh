@@ -270,9 +270,14 @@ public:
   }
   int n_events() const { return n_tot_events_; }
 
+  // calculate the number of requested events from the lumi * cross section,
+  // or alternatively use the fixed number of events
+  //
+  // note that lumi is given in fb^-1, and cross section in nb
   int n_requested() const {
-    return std::max(static_cast<int>(std::round(lumi_ * cross_section())),
-                    n_requested_);
+    return std::max(
+        static_cast<int>(std::round(1000000. * lumi_ * cross_section())),
+        n_requested_);
   }
 
   bool finished() const { return (n_events() >= n_requested()); }
@@ -387,7 +392,7 @@ private:
   std::vector<process_info> process_list_; // process dependent info
 
   int n_requested_{-1}; // number of requested events
-  double lumi_{-1};     // or alternatively, the requested luminosity (in nb^-1)
+  double lumi_{-1};     // or alternatively, the requested luminosity (in fb^-1)
 };
 
 } // namespace pcsim

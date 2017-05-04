@@ -70,7 +70,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim-lp_gamma", "Starting the main generation loop");
   while (!gen.finished()) {
     evbuf.push(gen.generate());
-    progress.update(1, gen.n_requested());
+    progress.update(gen.n_events(), gen.n_requested());
   }
   LOG_INFO("pcsim", "Event generation complete");
   LOG_INFO("pcsim", "Total number of generated events: " +

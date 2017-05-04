@@ -47,11 +47,11 @@ void solid::process(event& e) const {
                              "\% (region: " + std::to_string(region) + ")");
 
       if (region == 0 || rng()->Uniform(0, 1) > acc) {
-        LOG_JUNK2("jleic", "Not accepted");
+        LOG_JUNK2("solid", "Not accepted");
         // not accepted, continue
         continue;
       }
-      LOG_JUNK2("jleic", "Particle accepted!");
+      LOG_JUNK2("solid", "Particle accepted!");
 
       e.add_detected({part, region});
     }
