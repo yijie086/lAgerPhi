@@ -19,7 +19,7 @@ gaussian_qpq::gaussian_qpq(const configuration& cf, const string_path& path,
            particle::status_code::UNSTABLE}
     , W2_range_{calc_W2_range(cf.get<double>(path / "n_sigma"))}
     , qpq_amplitude_{cf.get<double>(path / "qpq_amplitude")}
-    , qpq_coupling_{cf.get<double>(path / "qpq_couping")}
+    , qpq_coupling_{cf.get<double>(path / "qpq_coupling")}
     , R_vm_c_{cf.get<double>(path / "R_vm_c")}
     , R_vm_n_{cf.get<double>(path / "R_vm_n")}
     , dipole_n_{cf.get<double>(path / "dipole_n")}
@@ -101,6 +101,8 @@ double gaussian_qpq::calc_max_xsec(const configuration& cf) const {
                   : target.mass2();
   auto func = [this](double* W2, double*) { return this->sigma(W2[0]); };
   TF1 f("qpq_xsec", func, W2min, W2max, 0.);
+  LOG_INFO("gaussian_qpq",
+           "Max cross section: " + std::to_string(f.GetMaximum()));
   return f.GetMaximum() * 1.0000001;
 }
 
