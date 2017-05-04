@@ -121,6 +121,8 @@ public:
     return sqrt(p_.X() * p_.X() + p_.Y() * p_.Y() + p_.Z() * p_.Z());
   }
   double energy() const { return p_.E(); }
+  double theta() const { return p_.theta(); }
+  double phi() const { return p_.phi(); }
   // name
   std::string name() const { return pdg_->GetName(); }
 
