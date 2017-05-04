@@ -13,6 +13,7 @@
 #include <pcsim/gen/beam/primary_gen.hh>
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
+#include <pcsim/proc/detector/solid.hh>
 #include <pcsim/proc/detector/jleic.hh>
 #include <pcsim/proc/detector/null.hh>
 // TODO
@@ -39,6 +40,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(beam::photon_generator, beam::bremsstrahlung,
                     "bremsstrahlung");
   FACTORY_REGISTER2(beam::photon_generator, beam::vphoton, "vphoton");
+  FACTORY_REGISTER2(detector::detector, detector::solid, "solid");
   FACTORY_REGISTER2(detector::detector, detector::jleic, "jleic");
   FACTORY_REGISTER2(detector::detector, detector::null, "4pi");
   // TODO
