@@ -268,16 +268,16 @@ public:
     // the actual cross section estimate
     return volume_ * n_tot_events_ / n_trials_;
   }
-  int n_events() const { return n_tot_events_; }
+  int64_t n_events() const { return n_tot_events_; }
 
   // calculate the number of requested events from the lumi * cross section,
   // or alternatively use the fixed number of events
   //
   // note that lumi is given in fb^-1, and cross section in nb
-  int n_requested() const {
+  int64_t n_requested() const {
     return (n_requested_ > 0) ? n_requested_
-                              : static_cast<int>(std::round(1000000. * lumi_ *
-                                                            cross_section()));
+                              : static_cast<int64_t>(std::round(
+                                    1000000. * lumi_ * cross_section()));
   }
 
   bool finished() const { return (n_events() >= n_requested()); }
@@ -388,11 +388,11 @@ private:
   double volume_{1.};       // total volume
 
   double n_trials_{0.};     // global trial counter
-  int n_tot_events_{0};     // total number of events
+  int64_t n_tot_events_{0}; // total number of events
   std::vector<process_info> process_list_; // process dependent info
 
-  int n_requested_{-1}; // number of requested events
-  double lumi_{-1};     // or alternatively, the requested luminosity (in fb^-1)
+  int64_t n_requested_{-1}; // number of requested events
+  double lumi_{-1}; // or alternatively, the requested luminosity (in fb^-1)
 };
 
 } // namespace pcsim

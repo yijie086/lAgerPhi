@@ -17,7 +17,7 @@ public:
       : max_{max}
       , index_{start_index}
       , precision_{precision > max ? max : precision} {
-    std::cerr << "\nProcessing " << max_ << " events..." << std::endl;
+    std::cerr << "\nProcessing... " << std::endl;
     update();
   }
   void update(size_t i) {
@@ -26,7 +26,7 @@ public:
       index_ = max_;
     }
     // update when needed
-    if (!index_ || !(index_ % (max_ / precision_))) {
+    if (!index_ || !(index_ % (max_ / precision_) || !(index_ % 1000))) {
       double cnt = index_ * precision_ / max_;
       cnt /= (precision_ / 100.);
       char msg[15];
