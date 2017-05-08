@@ -112,8 +112,8 @@ double gaussian_qpq::calc_max_xsec(const configuration& cf) const {
 // Utility function to calculate the W2 range we allow for q-Pq production
 // =============================================================================
 interval<double> gaussian_qpq::calc_W2_range(const double n_sigma) const {
-  double min = qpq_.pole_mass() - n_sigma * qpq_.width();
-  double max = qpq_.pole_mass() + n_sigma * qpq_.width();
+  double min = qpq_.pole_mass() - n_sigma * qpq_.width() / 2.;
+  double max = qpq_.pole_mass() + n_sigma * qpq_.width() / 2.;
   return {min * min, max * max};
 }
 
@@ -126,7 +126,7 @@ interval<double> gaussian_qpq::calc_W2_range(const double n_sigma) const {
 // =============================================================================
 double gaussian_qpq::sigma(const double W2) const {
   return qpq_coupling_ * qpq_coupling_ * qpq_amplitude_ *
-         TMath::Gaus(sqrt(W2), qpq_.mass(), qpq_.width());
+         TMath::Gaus(sqrt(W2), qpq_.mass(), qpq_.width() / 2.);
 }
 double gaussian_qpq::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_pole_.mass(), R_vm_c_, R_vm_n_);
