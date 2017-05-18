@@ -282,12 +282,10 @@ public:
 
   // calculate the number of requested events from the lumi * cross section,
   // or alternatively use the fixed number of events
-  //
-  // note that lumi is given in fb^-1, and cross section in nb
   int64_t n_requested() const {
-    return (n_requested_ > 0) ? n_requested_
-                              : static_cast<int64_t>(std::round(
-                                    1000000. * lumi_ * cross_section()));
+    return (n_requested_ > 0)
+               ? n_requested_
+               : static_cast<int64_t>(std::round(lumi_ * cross_section()));
   }
 
   bool finished() const { return (n_events() >= n_requested()); }
@@ -367,7 +365,7 @@ private:
   void init_lumi(const configuration& cf) {
     auto lumi = cf.get_optional<double>("lumi");
     if (lumi) {
-      lumi_ = *lumi;
+      lumi_ = *lumi * 1e6; // conversion from fb^-1 to nb^-1
       n_requested_ = -1;
     } else {
       n_requested_ = cf.get<int>("events");
