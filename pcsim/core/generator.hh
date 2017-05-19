@@ -222,7 +222,10 @@ public:
           if (this->rng()->Uniform(0, initial_max_ * process.max) <
               event.cross_section()) {
             LOG_JUNK(process.name, "Event accepted!");
-            event.update_process(process.id);
+            n_tot_events_ += 1;
+            event.update_mc(n_tot_events_, process.id, cross_section(),
+                            cross_section() / initial.cross_section());
+
             event_list.push_back(event);
           } else {
             LOG_JUNK(process.name, "Event rejected.");
@@ -233,7 +236,6 @@ public:
       n_tot_events_ += event_list.size();
 
       for (auto& event : event_list) {
-        event.update_mc(n_tot_events_, cross_section());
         LOG_JUNK("generator", "Processing event (process " +
                                   std::to_string(event.process()) + ")");
         build_event(event);

@@ -33,18 +33,20 @@ public:
   // generator_data base class
   size_t evgen() const { return evgen_; }
   double total_cross_section() const { return total_cross_section_; }
+  double process_cross_section() const { return process_cross_section_; }
   double weight() const { return weight_; }
   int process() const { return process_; }
   
   // event CM energy (from beam/target)
   double s() const;
 
-  // update MC info (evgen and total cross section)
-  void update_mc(const size_t evgen, const double txs);
+  // update MC info (evgen, total cross section and process cross
+  // section
+  void update_mc(const size_t evgen, const int proc, const double txs,
+                 const double pxs);
   // update weight and process number
   void update_weight(const double w) { weight_ *= w; }
   void reset_weight(const double w = 1.) { weight_ = w; }
-  void update_process(const int proc) { process_ = proc; }
 
   // ===========================================================================
   // PARICLE INFO
@@ -100,7 +102,8 @@ public:
   
 private:
   size_t evgen_{1}; // total number of generated events including this event
-  double total_cross_section_{0.}; // estimated total integrated cross section
+  double total_cross_section_{0.};   // estimated total integrated cross section
+  double process_cross_section_{0.}; // differential process cross section
   double weight_{1.};
   int process_{0}; // optional process identifier
 
@@ -165,6 +168,7 @@ private:
   int32_t evgen_;
   float cross_section_;
   float total_cross_section_;
+  float process_cross_section_;
   float weight_;
   int32_t process_;
   float s_;
@@ -214,9 +218,12 @@ inline int event::add_daughter(particle daughter, const int parent1,
   }
   return index;
 }
-inline void event::update_mc(const size_t evgen, const double txs) {
+inline void event::update_mc(const size_t evgen, const int proc,
+                             const double txs, const double pxs) {
   evgen_ = evgen;
+  process_ = proc;
   total_cross_section_ = txs;
+  process_cross_section_ = pxs;
 }
 inline const detected_particle& event::detected(const int index) const {
   return detected_[index];
