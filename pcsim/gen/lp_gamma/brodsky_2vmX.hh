@@ -44,6 +44,9 @@ private:
   double R(const double Q2) const;
   double dipole(const double Q2) const;
 
+  // jacobian for d/dexp_bt -> d/dt
+  double jacobian(const double t) const;
+
   // threshold squared for these particular particles (correctly handels the
   // case of particles with non-zero width)
   double threshold2(const particle& vm, const particle& recoil) const;

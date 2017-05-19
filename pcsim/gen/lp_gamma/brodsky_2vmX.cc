@@ -175,6 +175,7 @@ interval<double> brodsky_2vmX::exp_bt_range(const double W2, const double Q2,
 }
 // =============================================================================
 // brodsky_2vmX::dsigma_dexp_bt()
+// brodsky_2vmX::jacobian()
 // brodsky_2vmX::R()
 // brodsky_2vmX::dipole()
 //
@@ -183,6 +184,9 @@ interval<double> brodsky_2vmX::exp_bt_range(const double W2, const double Q2,
 double brodsky_2vmX::dsigma_dexp_bt(const double W2, const double Mt) const {
   return physics::dsigma_dexp_bt_vm_brodsky(W2, Mt, vm_.mass(), photo_b_,
                                             photo_c2g_, photo_c3g_);
+}
+double brodsky_2vmX::jacobian(const double t) const {
+  return photo_b_ * exp(photo_b_ * t);
 }
 double brodsky_2vmX::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_.mass(), R_vm_c_, R_vm_n_);
@@ -214,6 +218,8 @@ lp_gamma_event brodsky_2vmX::make_event(const lp_gamma_data& initial,
   const auto& target = initial.target();
 
   lp_gamma_event e{initial, xs, 1., R};
+
+  e.update_jacobian(jacobian(t));
 
   // utility shortcuts
   const double W2 = gamma.W2();

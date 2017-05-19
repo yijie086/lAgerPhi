@@ -18,11 +18,16 @@ class generator_data {
 public:
   explicit generator_data(const double xs = 1.) : cross_section_{xs} {}
 
-  void update_cross_section(const double xs) { cross_section_ *= xs; }
   double cross_section() const { return cross_section_; }
+  double jacobian() const { return jacobian_; }
+
+  void update_cross_section(const double xs) { cross_section_ *= xs; }
+  void update_jacobian(const double j) { jacobian_ *= j; }
 
 private:
   double cross_section_;
+  double jacobian_{1.}; // jacobian to transform to more sane coordinate
+                        // system, if necessary
 };
 
 // =============================================================================
@@ -224,7 +229,7 @@ public:
             LOG_JUNK(process.name, "Event accepted!");
             n_tot_events_ += 1;
             event.update_mc(n_tot_events_, process.id, cross_section(),
-                            event.cross_section() / initial.cross_section());
+                            initial);
 
             event_list.push_back(event);
           } else {

@@ -41,9 +41,11 @@ public:
   double s() const;
 
   // update MC info (evgen, total cross section and process cross
-  // section
+  // section, also apply jacobians if necessary to go to a more sane
+  // differential form, in case we generated in some clever unintuitive phase
+  // space)
   void update_mc(const size_t evgen, const int proc, const double txs,
-                 const double pxs);
+                 const generator_data& initial);
   // update weight and process number
   void update_weight(const double w) { weight_ *= w; }
   void reset_weight(const double w = 1.) { weight_ = w; }
@@ -219,11 +221,13 @@ inline int event::add_daughter(particle daughter, const int parent1,
   return index;
 }
 inline void event::update_mc(const size_t evgen, const int proc,
-                             const double txs, const double pxs) {
+                             const double txs, const generator_data& initial) {
   evgen_ = evgen;
   process_ = proc;
   total_cross_section_ = txs;
-  process_cross_section_ = pxs;
+  update_cross_section(jacobian());
+  process_cross_section_ =
+      cross_section() / initial.cross_section() / initial.jacobian();
 }
 inline const detected_particle& event::detected(const int index) const {
   return detected_[index];
