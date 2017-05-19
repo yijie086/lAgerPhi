@@ -224,7 +224,7 @@ public:
             LOG_JUNK(process.name, "Event accepted!");
             n_tot_events_ += 1;
             event.update_mc(n_tot_events_, process.id, cross_section(),
-                            cross_section() / initial.cross_section());
+                            event.cross_section() / initial.cross_section());
 
             event_list.push_back(event);
           } else {
@@ -348,9 +348,16 @@ private:
                   "Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
             {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
+        LOG_DEBUG(path.str(), "Cross section max: " +
+                                  std::to_string(process_list_.back().max));
+        LOG_DEBUG(path.str(),
+                  "Phase space: " + std::to_string(process_list_.back().ps));
         // check if we have a larger generation volume, update if needed
         const double volume = process_list_.back().vol;
         if (volume > proc_volume_) {
+          LOG_DEBUG("event_generator",
+                    "Updating maximum process generation volume: " +
+                        std::to_string(volume));
           proc_volume_ = volume;
           update_volume();
         }
