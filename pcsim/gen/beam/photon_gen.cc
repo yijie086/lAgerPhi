@@ -260,7 +260,7 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
 
   // Cap the minimum Q2 at lepton mass squared
   const double Q2min =
-      fmax(physics::Q2_range(beam, target, y_range_.min).min, beam.mass2());
+      fmax(physics::Q2_range(beam, target, y_range_.min).min, 1.0e-12);
 
   // In general, the maximum Q2 range is determined through the kinematics of
   // t-channel scattering (falling function of y), as well as the requirement
