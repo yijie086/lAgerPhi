@@ -237,8 +237,6 @@ public:
           }
         }
       } while (event_list.empty());
-      // event builder step
-      n_tot_events_ += event_list.size();
 
       for (auto& event : event_list) {
         LOG_JUNK("generator", "Processing event (process " +
