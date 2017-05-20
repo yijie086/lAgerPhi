@@ -143,11 +143,11 @@ int resolution::get_resolution(const int pid, const double* kin,
   // delta_p/p(%), theta(deg), phi(deg), vertexz(cm)
   double DEG = 180. / TMath::Pi();
   double res_region[9][4] = {
-      1, 1e-3 * DEG, 1e-3 * DEG, 0.5, 1, 1e-3 * DEG, 1e-3 * DEG, 0.5,
-      1, 1e-3 * DEG, 1e-3 * DEG, 0.5, 1, 1e-3 * DEG, 1e-3 * DEG, 0.5,
-      1, 1e-3 * DEG, 1e-3 * DEG, 0.5, 1, 1e-3 * DEG, 1e-3 * DEG, 0.5,
-      1, 1e-3 * DEG, 1e-3 * DEG, 0.5, 1, 1e-3 * DEG, 1e-3 * DEG, 0.5,
-      1, 1e-3 * DEG, 1e-3 * DEG, 0.5,
+      .04, .2e-3 * DEG, .2e-3 * DEG, 0.5, .04, .2e-3 * DEG, .2e-3 * DEG, 0.5,
+      .04, .2e-3 * DEG, .2e-3 * DEG, 0.5, .04, .2e-3 * DEG, .2e-3 * DEG, 0.5,
+      .04, .2e-3 * DEG, .2e-3 * DEG, 0.5, .04, .2e-3 * DEG, .2e-3 * DEG, 0.5,
+      .04, .2e-3 * DEG, .2e-3 * DEG, 0.5, .04, .2e-3 * DEG, .2e-3 * DEG, 0.5,
+      .04, .2e-3 * DEG, .2e-3 * DEG, 0.5,
   };
 
   res[0] = res_region[region][0];
@@ -162,7 +162,7 @@ int resolution::get_resolution(const int pid, const double* kin,
     cout << "begin smear" << endl;
     cout << kin[0] << " " << kin[1] << " " << kin[2] << " " << kin[3] << endl;
   }
-  double res_factor = .1;
+  double res_factor = 1;
   kin_smeared[0] = rng_->Gaus(kin[0], res_factor * res[0] / 100. * kin[0]);
   kin_smeared[1] = rng_->Gaus(kin[1], res_factor * res[1]);
   kin_smeared[2] = rng_->Gaus(kin[2], res_factor * res[2]);
