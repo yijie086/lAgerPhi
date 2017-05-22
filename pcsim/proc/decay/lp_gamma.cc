@@ -60,11 +60,12 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // add the decay particles
-  e.add_daughter(decay_products.first, i);
-  e.add_daughter(decay_products.second, i);
+  e.add_daughter(decay_products, i);
+
   // add the SCHC info in the VM helicity frame
-  e.add_daughter(decay_products_cm.first, i);
-  e.add_daughter(decay_products_cm.second, i);
+  decay_products_cm.first.add_parent(i);
+  decay_products_cm.second.add_parent(i);
+  e.add_particle(decay_products_cm);
 
   // mark the vm as decayed
   e[i].update_status(particle::status_code::DECAYED_SCHC);
@@ -134,12 +135,13 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
     e.add_leading(decay_products.first, i);
     e.add_recoil(decay_products.second, i);
   } else {
-    e.add_daughter(decay_products.first, i);
-    e.add_daughter(decay_products.second, i);
+    e.add_daughter(decay_products, i);
   }
+
   // also add the Pc CM info particles
-  e.add_daughter(decay_products_cm.first, i);
-  e.add_daughter(decay_products_cm.second, i);
+  decay_products_cm.first.add_parent(i);
+  decay_products_cm.second.add_parent(i);
+  e.add_particle(decay_products_cm);
 
   // mark the Pc as decayed
   e[i].update_status(particle::status_code::DECAYED);

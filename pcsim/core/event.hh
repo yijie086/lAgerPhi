@@ -72,11 +72,14 @@ public:
 
   // add a misc particle. returns the index of the particle
   int add_particle(const particle& p);
+  int add_particle(const std::pair<particle, particle>& p);
 
   // add a daughter particle with 1 or 2 parents
   // returns the index of the daughter
   int add_daughter(particle daughter, const int parent1,
                    const int parent2 = -1);
+  int add_daughter(const std::pair<particle, particle>& daughters,
+                   const int parent1, const int parent2 = -1);
 
   // add beam and target
   // returns the beam and target index
@@ -209,6 +212,12 @@ inline int event::add_particle(const particle& p) {
   part_[index].update_index(index);
   return index;
 }
+inline int event::add_particle(const std::pair<particle, particle>& p) {
+  int first = add_particle(p.first);
+  add_particle(p.second);
+  return first;
+}
+
 inline int event::add_daughter(particle daughter, const int parent1,
                                const int parent2) {
   daughter.add_parent(parent1);
@@ -220,6 +229,13 @@ inline int event::add_daughter(particle daughter, const int parent1,
   }
   return index;
 }
+inline int event::add_daughter(const std::pair<particle, particle>& daughters,
+                               const int parent1, const int parent2) {
+  int first = add_daughter(daughters.first, parent1, parent2);
+  add_daughter(daughters.second, parent1, parent2);
+  return first;
+}
+
 inline void event::update_mc(const size_t evgen, const int proc,
                              const double txs, const generator_data& initial) {
   evgen_ = evgen;
@@ -247,22 +263,22 @@ inline int event::add_target(const particle& p) {
 }
 inline particle& event::beam() {
   tassert(beam_index_ >= 0, "trying to access beam data, but no beam "
-                           "data present in the event.");
+                            "data present in the event.");
   return part_[beam_index_];
 }
 inline const particle& event::beam() const {
   tassert(beam_index_ >= 0, "trying to access beam data, but no beam "
-                           "data present in the event.");
+                            "data present in the event.");
   return part_[beam_index_];
 }
 inline particle& event::target() {
   tassert(target_index_ >= 0, "trying to access target data, but no target "
-                             "data present in the event.");
+                              "data present in the event.");
   return part_[target_index_];
 }
 inline const particle& event::target() const {
   tassert(target_index_ >= 0, "trying to access target data, but no target "
-                             "data present in the event.");
+                              "data present in the event.");
   return part_[target_index_];
 }
 inline double event::s() const {
