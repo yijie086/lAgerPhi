@@ -17,6 +17,10 @@ namespace physics {
 // Note: the angles are assumed to be in the helicity frame of 'part'
 void decay_2body(const particle& part, const double theta_1, const double phi_1,
                  std::pair<particle, particle>& xx);
+// same, but will also store the decay particles in the helicity frame
+void decay_2body(const particle& part, const double theta_1, const double phi_1,
+                 std::pair<particle, particle>& xx,
+                 std::pair<particle, particle>& xx_cm);
 
 } // physics
 } // pcsim

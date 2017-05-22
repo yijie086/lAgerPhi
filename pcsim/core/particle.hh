@@ -35,6 +35,8 @@ public:
     FINAL = 30,
     DECAYED = 31,
     DECAYED_SCHC = 32,
+    INFO = 40,
+    INFO_PARENT_CM = 41,
     OTHER = 99
   };
 

@@ -10,7 +10,8 @@ namespace physics {
 //
 // Note: the angles are assumed to be in the helicity frame of 'part'
 void decay_2body(const particle& part, const double theta_1, const double phi_1,
-                 std::pair<particle, particle>& xx) {
+                 std::pair<particle, particle>& xx,
+                 std::pair<particle, particle>& xx_cm) {
 
   // calculate the CM kinematics
   const double E = part.mass();
@@ -28,6 +29,10 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
   const particle::Polar3DVector p3_2{P_2, theta_1 + TMath::Pi(), phi_1};
   xx.second.p() = {p3_2.X(), p3_2.Y(), p3_2.Z(), E_2};
 
+  // store the CM info prior to boosting / rotating
+  xx_cm.first.p() = xx.first.p();
+  xx_cm.second.p() = xx.first.p();
+
   // boost back to the rotated version of the original frame pointing in the
   // direction of part
   const particle::Boost b_from_cm{
@@ -41,6 +46,11 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
   xx.second.rotate_uz(part.p().Vect());
 
   // that's all
+}
+void decay_2body(const particle& part, const double theta_1, const double phi_1,
+                 std::pair<particle, particle>& xx) {
+  std::pair<particle, particle> dummy_cm;
+  decay_2body(part, theta_1, phi_1, xx, dummy_cm);
 }
 
 } // physics

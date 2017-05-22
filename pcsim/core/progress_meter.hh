@@ -26,7 +26,9 @@ public:
       index_ = max_;
     }
     // update when needed
-    if (!index_ || !(index_ % (max_ / precision_) || !(index_ % 1000))) {
+    // commented out because of FPE, need to fix this TODO
+//    if (!index_ || !(index_ % (max_ / precision_) || !(index_ % 1000))) {
+    if (!(index_ % 100)) {
       double cnt = index_ * precision_ / max_;
       cnt /= (precision_ / 100.);
       char msg[15];

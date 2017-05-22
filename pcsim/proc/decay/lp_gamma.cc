@@ -45,6 +45,9 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
   e.update_weight(e[i].pdg()->DecayChannel(0)->BranchingRatio());
   std::pair<particle, particle> decay_products{{pdg_id::e_plus},
                                                {pdg_id::e_minus}};
+  std::pair<particle, particle> decay_products_cm{
+      {pdg_id::e_plus, particle::status_code::INFO_PARENT_CM},
+      {pdg_id::e_minus, particle::status_code::INFO_PARENT_CM}};
   const double epsilon_R = e.epsilon() * e.R();
   const double r04 = epsilon_R / (1 + epsilon_R);
   const double phi = rng()->Uniform(0., TMath::TwoPi());
@@ -55,14 +58,23 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
              },
              2.001);
   const double theta = acos(ctheta);
-  physics::decay_2body(e[i], theta, phi, decay_products);
+  physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
+  // add the decay particles
   e.add_daughter(decay_products.first, i);
   e.add_daughter(decay_products.second, i);
+  // add the SCHC info in the VM helicity frame
+  e.add_daughter(decay_products_cm.first, i);
+  e.add_daughter(decay_products_cm.second, i);
+
+  // mark the vm as decayed
   e[i].update_status(particle::status_code::DECAYED_SCHC);
 }
 void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
   std::pair<particle, particle> decay_products{
       {pdg_id::J_psi, particle::status_code::UNSTABLE_SCHC}, {pdg_id::p}};
+  std::pair<particle, particle> decay_products_cm{
+      {pdg_id::J_psi, particle::status_code::INFO_PARENT_CM},
+      {pdg_id::p, particle::status_code::INFO_PARENT_CM}};
   const double phi = rng()->Uniform(0., TMath::TwoPi());
   double ctheta = -1;
   if (e[i].type() == pdg_id::Pc_4450_52p ||
@@ -116,7 +128,7 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
                     0.0266);
   }
   const double theta = acos(ctheta);
-  physics::decay_2body(e[i], theta, phi, decay_products);
+  physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // add the decay particles as leading/recoil if not already set
   if (e.leading_index() < 0) {
     e.add_leading(decay_products.first, i);
@@ -125,6 +137,11 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
     e.add_daughter(decay_products.first, i);
     e.add_daughter(decay_products.second, i);
   }
+  // also add the Pc CM info particles
+  e.add_daughter(decay_products_cm.first, i);
+  e.add_daughter(decay_products_cm.second, i);
+
+  // mark the Pc as decayed
   e[i].update_status(particle::status_code::DECAYED);
 } // namespace decay
 
