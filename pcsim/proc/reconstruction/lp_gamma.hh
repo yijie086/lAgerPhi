@@ -24,7 +24,9 @@ public:
 
 private:
   const bool require_leading_{false};
+  const bool veto_leading_{false};
   const bool require_scat_{false};
+  const bool veto_scat_{false};
 };
 
 } // namespace reconstruction
