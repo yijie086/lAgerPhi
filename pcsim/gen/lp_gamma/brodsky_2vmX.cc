@@ -136,7 +136,9 @@ double brodsky_2vmX::calc_max_xsec(const configuration& cf) const {
 // max t-range occurs for:
 //  * photon that carries all of the beam energy (or when we have reached the
 //    user-defined maximum value of W max)
-//  * maximum Q2 for the given W (or zero for real photons)
+//  * maximum Q2 for the given W (or zero for real photons) for the lower t
+//  bound
+//  * Q2 = 0 for the upper t bound (tmin)
 // =============================================================================
 interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
@@ -157,11 +159,21 @@ interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
   // some shortcuts
   const double M_nu = (photon.p()).Dot(target.p());
   const double Q2max = target.mass2() + 2 * M_nu - W2max;
-  // return the corresponding t range
+  const double Q2min = 0.;
+  // calculate the corresponding t range
   // in case of particles with non-zero width, we use M - 4 x sigma
-  return physics::t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
-                          vm_.pole_mass() - vm_.width() * 4.,
-                          recoil_.pole_mass() - recoil_.width() * 4);
+  // 
+  // tlim1: the correct lower t limit (tmax)
+  const auto tlim1 =
+      physics::t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
+                       vm_.pole_mass() - vm_.width() * 4.,
+                       recoil_.pole_mass() - recoil_.width() * 4);
+  // tlim2: the correct upper t limit (tmin)
+  const auto tlim2 = physics::t_range(
+      W2max, 0, target.mass(), vm_.pole_mass() - vm_.width() * 4.,
+      recoil_.pole_mass() - recoil_.width() * 4);
+  const auto tlim = interval<double>(tlim1.min, tlim2.max);
+  return tlim;
 }
 // =============================================================================
 // brodsky_2vmX::exp_bt_range()
