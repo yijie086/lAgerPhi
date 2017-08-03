@@ -1,7 +1,9 @@
 #ifndef PCSIM_CORE_EVENT_LOADED
 #define PCSIM_CORE_EVENT_LOADED
 
+#include <TClonesArray.h>
 #include <TFile.h>
+#include <TParticle.h>
 #include <TTree.h>
 #include <memory>
 #include <pcsim/core/assert.hh>
@@ -139,6 +141,8 @@ private:
 namespace pcsim {
 class event_out {
 public:
+  constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
+
   event_out(std::shared_ptr<TFile> f, const std::string& name);
   ~event_out() { tree_->AutoSave(); }
 
@@ -181,24 +185,10 @@ private:
   int16_t target_index_;
 
   // particle data
-  int16_t n_part_ {0};
-  std::vector<int32_t> part_index_;
-  std::vector<int32_t> type_;
-  std::vector<int16_t> status_;
-  std::vector<int16_t> charge_;
-  std::vector<float> mass_;
-  std::vector<particle::XYZTVector> p_;
-  std::vector<particle::XYZTVector> vertex_;
-  std::vector<int16_t> parent_first_;
-  std::vector<int16_t> parent_second_;
-  std::vector<int16_t> daughter_begin_;
-  std::vector<int16_t> daughter_end_;
-  // detected particle data
-  int16_t rc_n_part_ {0};
-  std::vector<particle::XYZTVector> rc_p_;
-  std::vector<int32_t> rc_type_;
-  std::vector<int16_t> rc_index_;
-  std::vector<int16_t> rc_status_;
+  int16_t n_part_{0};
+  TClonesArray parts_;
+  int16_t rc_n_part_{0};
+  TClonesArray rc_parts_;
 };
 } // namespace pcsim
 

@@ -7,7 +7,9 @@
 
 namespace pcsim {
 event_out::event_out(std::shared_ptr<TFile> f, const std::string& name)
-    : file_{f} {
+    : file_{f}
+    , parts_{"TParticle", PARTICLE_BUFFER_SIZE}
+    , rc_parts_{"TParticle", PARTICLE_BUFFER_SIZE} {
   LOG_INFO("event_out", "Initializing ROOT output stream");
   tassert(file_, "invalid file pointer");
   file_->cd();
@@ -49,45 +51,38 @@ void event_out::push(const event& e) {
 }
 void event_out::clear() {
   n_part_ = 0;
-  part_index_.clear();
-  type_.clear();
-  status_.clear();
-  mass_.clear();
-  charge_.clear();
-  p_.clear();
-  vertex_.clear();
-  parent_first_.clear();
-  parent_second_.clear();
-  daughter_begin_.clear();
-  daughter_end_.clear();
-
   rc_n_part_ = 0;
-  rc_p_.clear();
-  rc_type_.clear();
-  rc_index_.clear();
-  rc_status_.clear();
+  parts_.Clear();
+  rc_parts_.Clear();
 }
 void event_out::add(const particle& part) {
+  auto pbuf = new (parts_[n_part_]) TParticle(
+      static_cast<int32_t>(part.type()), static_cast<int32_t>(part.status()),
+      part.parent_first(), part.parent_second(), part.daughter_begin(),
+      part.daughter_end(), part.p().X(), part.p().Y(), part.p().Z(),
+      part.p().E(), part.vertex().X(), part.vertex().Y(), part.vertex().Z(),
+      part.vertex().T());
+  // set the weight of non final state particles to zero
+  pbuf->SetWeight(part.final_state() ? 1. : 0.);
+  // increment our particle counter
   n_part_ += 1;
-  part_index_.push_back(static_cast<int32_t>(part.index()));
-  type_.push_back(static_cast<int32_t>(part.type()));
-  status_.push_back(static_cast<int16_t>(part.status()));
-  mass_.push_back(static_cast<float>(part.mass()));
-  charge_.push_back(static_cast<int8_t>(part.charge()));
-  p_.push_back(part.p());
-  vertex_.push_back(part.vertex());
-  parent_first_.push_back(part.parent_first());
-  parent_second_.push_back(part.parent_second());
-  daughter_begin_.push_back(part.daughter_begin());
-  daughter_end_.push_back(part.daughter_end());
 }
 // add a detected particle to the buffer
 void event_out::add_detected(const detected_particle& dp) {
+  auto pbuf = new (rc_parts_[rc_n_part_]) TParticle(
+      static_cast<int32_t>(dp.generated().type<int32_t>()),
+      dp.status(),
+      dp.generated().index(), 0,0,0,
+      dp.p().X(),
+      dp.p().Y(),
+      dp.p().Z(),
+      dp.p().E(),
+      dp.vertex().X(),
+      dp.vertex().Y(),
+      dp.vertex().Z(),
+      dp.vertex().T());
+  // increment our detected particle counter
   rc_n_part_ += 1;
-  rc_p_.push_back(dp.p());
-  rc_type_.push_back(dp.generated().type<int32_t>());
-  rc_index_.push_back(static_cast<int16_t>(dp.generated().index()));
-  rc_status_.push_back(static_cast<int16_t>(dp.status()));
 }
 
 void event_out::create_branches() {
@@ -102,22 +97,9 @@ void event_out::create_branches() {
   tree_->Branch("beam_index", &beam_index_);
   tree_->Branch("target_index", &target_index_);
   tree_->Branch("n_part", &n_part_);
-  tree_->Branch("part_index", &part_index_);
-  tree_->Branch("type", &type_);
-  tree_->Branch("status", &status_);
-  tree_->Branch("mass", &mass_);
-  tree_->Branch("charge", &charge_);
-  tree_->Branch("p", &p_);
-  tree_->Branch("vertex", &vertex_);
-  tree_->Branch("parent_first", &parent_first_);
-  tree_->Branch("parent_second", &parent_second_);
-  tree_->Branch("daughter_begin", &daughter_begin_);
-  tree_->Branch("daughter_end", &daughter_end_);
+  tree_->Branch("particles", &parts_);
   tree_->Branch("rc_n_part", &rc_n_part_);
-  tree_->Branch("rc_p", &rc_p_);
-  tree_->Branch("rc_type", &rc_type_);
-  tree_->Branch("rc_index", &rc_index_);
-  tree_->Branch("rc_status", &rc_status_);
+  tree_->Branch("rc_particles", &rc_parts_);
 }
 
 } // namespace pcsim

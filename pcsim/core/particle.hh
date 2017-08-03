@@ -193,10 +193,19 @@ public:
   detected_particle& operator=(const detected_particle&) = default;
   // from a particle with a given index
   detected_particle(const particle& part, const XYZTVector& momentum,
+                    const XYZTVector vertex, const int status = 0)
+      : status_{status}, generated_{&part}, p_{momentum}, vertex_{vertex} {}
+  detected_particle(const particle& part, const XYZTVector& momentum,
                     const int status = 0)
-      : status_{status}, generated_{&part}, p_{momentum} {}
+      : status_{status}
+      , generated_{&part}
+      , p_{momentum}
+      , vertex_{part.vertex()} {}
   detected_particle(const particle& part, const int status = 0)
-      : status_{status}, generated_{&part}, p_{part.p()} {}
+      : status_{status}
+      , generated_{&part}
+      , p_{part.p()}
+      , vertex_{part.vertex()} {}
 
   // particle status
   int status() const {return status_;}
@@ -211,6 +220,9 @@ public:
 
   // detected 4-momentum
   const XYZTVector& p() const { return p_; }
+  // detected vertex
+  const XYZTVector& vertex() const { return vertex_; }
+
   // mass
   double mass() const { return p_.M(); }
   double mass2() const { return p_.M2(); }
@@ -222,6 +234,7 @@ private:
   int status_{0};
   const particle* generated_{nullptr};
   XYZTVector p_;
+  XYZTVector vertex_;
 };
 
 } // namespace pcsim
