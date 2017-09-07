@@ -15,9 +15,24 @@ namespace pcsim {
 //     known
 //   - extra code in case we don't know the exact mass assignments of the
 //     penaquarks
+
+#if __cplusplus < 201402L
+// extra utility function needed pre-C++14
+// in C++14 and later we can just calculate this in the constexpr function and
+// store it as a variable
+constexpr int pdg_pentaquark_id_pcode(int parity) {
+  return (parity == -1) ? 2 : ((parity == 1) ? 1 : 0);
+}
+#endif
+
 constexpr int32_t pdg_pentaquark_id(int q1, int q2, int q3, int q4, int qbar,
                                     int twoJ, int parity = 0,
                                     int extracode = 0) {
+#if __cplusplus < 201402L
+  return extracode * 100000000 + pdg_pentaquark_id_pcode(parity) * 10000000 +
+         9 * 1000000 + q1 * 100000 + q2 * 10000 + q3 * 1000 + q4 * 100 +
+         qbar * 10 + twoJ + 1;
+#else
   int pcode = 0;
   if (parity == -1) {
     pcode = 2;
@@ -26,6 +41,7 @@ constexpr int32_t pdg_pentaquark_id(int q1, int q2, int q3, int q4, int qbar,
   }
   return extracode * 100000000 + pcode * 10000000 + 9 * 1000000 + q1 * 100000 +
          q2 * 10000 + q3 * 1000 + q4 * 100 + qbar * 10 + twoJ + 1;
+#endif
 }
 
 // add possibility for nuclear id
