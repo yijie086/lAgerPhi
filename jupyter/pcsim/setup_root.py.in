@@ -1,0 +1,50 @@
+import ROOT, os
+
+# check if we already loaded pcsim
+if not hasattr(ROOT, 'pcsim'):
+    print 'Loading PCSIM'
+    pcsim = {}
+
+    ## dependencies
+    pcsim['dependencies'] = ['libEG', 'libTreePlayer', 'libGenVector']
+    pcsim['dependencies'] += '@Boost_LIBRARIES@'.split(';')
+    for lib in pcsim['dependencies']:
+        ret = ROOT.gSystem.Load(lib)
+        if ret < 0:
+            raise ValueError('Failed to load library dependency: ' + lib)
+
+    ## pcsim components
+    ## 1. check if we have access to a global install
+    pcsim['incldir'] = '@INSTALL_INCLUDE_DIR@/..'
+    pcsim['libdir'] = '@INSTALL_LIB_DIR@'
+    pcsim['intree'] = False
+    if not os.path.exists(pcsim['incldir']) or not os.path.exists(pcsim['libdir']):
+        pcsim['intree'] = True
+        pcsim['incldir'] = '@CMAKE_SOURCE_DIR@'
+        pcsim['libdir'] = '@CMAKE_BINARY_DIR@'
+    ## 2. set the include path
+    if not os.path.exists(pcsim['incldir']):
+        raise ValueError('Failed to find pcsim include dir %s' % pcsim['incldir'])
+    ROOT.gROOT.ProcessLine('.include %s' % pcsim['incldir'])
+    ## 3. load the libraries
+    ## load pcsim (try local first, default to global)
+    pcsim['components'] = [s[6:] for s in '@TARGETS@'.split(';')]
+    for comp in pcsim['components']:
+        lib = pcsim['libdir']
+        if pcsim['intree']:
+            lib += '/pcsim/%s/libpcsim_%s' % (comp, comp)
+        else:
+            lib += '/libpcsim_%s' % (comp,)
+        ret = ROOT.gSystem.Load(lib)
+        if ret < 0:
+            raise ValueError('Failed to load %s' % (lib))
+
+    ## process one of the pcsim headers to check all is OK
+    ROOT.gROOT.ProcessLine('#include <pcsim/core/pdg.hh>')
+
+    if hasattr(ROOT, 'pcsim'):
+        print 'PCSIM successfully loaded'
+    else:
+        raise ValueError('Failed to load PCSIM')
+else:
+    print 'PCSIM already loaded'

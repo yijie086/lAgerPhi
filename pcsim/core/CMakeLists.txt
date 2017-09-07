@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.0)
+
 ################################################################################
 ## CMAKE Settings
 ################################################################################
@@ -30,7 +32,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 ################################################################################
 ## Compile and Link
 ################################################################################
-add_library(${LIBRARY} ${SOURCES})
+add_library(${LIBRARY} SHARED ${SOURCES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION}

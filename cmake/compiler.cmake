@@ -1,7 +1,10 @@
 ################################################################################
 ## global defines
 ################################################################################
-## NOTHING HERE
+## set the RPATH for OsX
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_MACOSX_RPATH 1)
+endif()
 
 ################################################################################
 ## CXX Compiler Settings 
@@ -28,3 +31,7 @@ else ()
   message ("Add the correct rules to cmake/compiler.cmake if other behavior is"
            "required.")
 endif ()
+## do not check for missing symbols when creating shared libraries with clang
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+endif()

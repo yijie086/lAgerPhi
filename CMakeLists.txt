@@ -24,10 +24,11 @@ include(cmake/compiler.cmake)
 set (TARGETS "")
 
 add_subdirectory(pcsim/core)
-add_subdirectory(pcsim/gen)
-add_subdirectory(pcsim/proc)
 add_subdirectory(pcsim/physics)
+add_subdirectory(pcsim/proc)
+add_subdirectory(pcsim/gen)
 add_subdirectory(program)
+add_subdirectory(jupyter)
 
 ################################################################################
 ## Prepare the project to be EXPORTed, generate configuration files

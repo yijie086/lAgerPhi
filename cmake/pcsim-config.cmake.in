@@ -18,10 +18,7 @@ if(NOT TARGET pcsim AND NOT pcsim_BINARY_DIR)
 endif()
  
 # These are IMPORTED targets created by pcsim-targets.cmake
-set(PCSIM_LIBRARIES 
-  "pcsim_core" 
-  "pcsim_gen" 
-  "pcsim_physics")
+set(PCSIM_LIBRARIES @TARGETS@)
 
 # Add the external libraries
 find_package(root REQUIRED)
