@@ -1,0 +1,40 @@
+import ROOT, os
+from pcsim.util import path
+
+'''Load the PCSIM libraries and their dependencies.'''
+
+# check if we already loaded pcsim
+if not hasattr(ROOT, 'pcsim'):
+    print '%s: Loading PCSIM library' % __name__
+    pcsim = {}
+
+    ## dependencies
+    dependencies = ['libEG', 'libTreePlayer', 'libGenVector']
+    dependencies += '@Boost_LIBRARIES@'.split(';')
+    for lib in dependencies:
+        ret = ROOT.gSystem.Load(lib)
+        if ret < 0:
+            raise IOError('%s: Failed to load library dependency: %s' %
+                          (__name__, lib))
+
+    ## include the main pcsim include directory
+    ROOT.gROOT.ProcessLine('.include %s' % path.include_path())
+
+    ## load the libraries
+    components = '@TARGETS@'.split(';')
+    for lib in components:
+        ret = ROOT.gSystem.Load(path.lib_path(lib))
+        if ret < 0:
+            raise IOError('%s: Failed to load PCSIM library: %s' % 
+                          (__name__, lib))
+
+    ## process one of the pcsim headers to check all is OK
+    ROOT.gROOT.ProcessLine('#include <pcsim/core/pdg.hh>')
+
+    if hasattr(ROOT, 'pcsim'):
+        print '%s: PCSIM successfully loaded' % __name__
+    else:
+        raise IOError('%s: Failed to load PCSIM' % __name__)
+else:
+    ### pcsim already loaded
+    pass
