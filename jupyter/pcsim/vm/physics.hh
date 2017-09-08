@@ -1,9 +1,11 @@
-#ifndef PHYSICS_LOADED
-#define PHYSICS_LOADED
+#ifndef VM_PHYSICS_LOADED
+#define VM_PHYSICS_LOADED
 
 #include <Math/Vector4D.h>
 #include <TMath.h>
 #include <cmath>
+
+namespace vm {
 
 // All masses are given in units of GeV
 
@@ -48,6 +50,8 @@ inline double epsilon(const double Q2, const double W, const double Ebeam) {
   const double tworhopp =
       (2. * Ebeam - nu) * (2. * Ebeam - nu) / (nu2 + Q2) + 1 - 4 * m2 / Q2;
   return 1 + (4 * m2 / Q2 - 2) / tworhopp;
+}
+
 }
 
 #endif

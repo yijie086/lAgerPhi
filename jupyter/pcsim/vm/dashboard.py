@@ -2,7 +2,7 @@
 import ipywidgets as widgets
 from scipy import sqrt
 from IPython.display import display
-from classdict import classdict 
+from pcsim.util import classdict 
 import json
 import os
 import subprocess

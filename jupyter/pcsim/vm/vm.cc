@@ -12,11 +12,12 @@
 #include <pcsim/physics/vm.hh>
 
 namespace vm {
+
 // epsilon as a function of Q2 (W and and beam energy are parameters)
 // x[0]: Q2
-// par[1]: W
-// par[2]: Ebeam
-TF1* epsilon_Q2(double Q2min, double Q2max) {
+// par[0]: W
+// par[1]: Ebeam
+TF1* epsilon_Q2(const double Q2min, const double Q2max) {
   return new TF1("epsilon_Q2_WE",
                  [](double* xx, double* par) {
                    const double Q2 = xx[0];
@@ -41,13 +42,14 @@ TF1* epsilon_Q2(double Q2min, double Q2max) {
 // par[1]: 3-gluon amplitude
 // par[2]: b
 // par[3]: VM mass
-// par[4]: s/W^2
+// par[4]: W
 TF1* dsigma_dt_vm_brodsky(const double tmin, const double tmax) {
   return new TF1("dsigma_dt_vm_brodsky",
                  [](double* xx, double* par) {
                    const double Mt = M_P;
                    const double t = -std::fabs(xx[0]);
-                   const double s = par[4];
+                   const double W = par[4];
+                   const double s = W * W;
                    const double Mv = par[3];
                    const double b = par[2];
                    const double c3g = par[1];
@@ -63,13 +65,14 @@ TF1* dsigma_dt_vm_brodsky(const double tmin, const double tmax) {
 // par[1]: 3-gluon amplitude
 // par[2]: b
 // par[3]: VM mass
-// par[4]: s/W^2
-TF1* dsigma_dexp_bt_vm_brodsky(double tmin, double tmax) {
+// par[4]: W
+TF1* dsigma_dexp_bt_vm_brodsky(const double tmin, const double tmax) {
   return new TF1("dsigma_dexp_bt_vm_brodsky",
                  [](double* xx, double* par) {
                    const double Mt = M_P;
                    const double t = -std::fabs(xx[0]);
-                   const double s = par[4];
+                   const double W = par[4];
+                   const double s = W * W;
                    const double Mv = par[3];
                    const double b = par[2];
                    const double c3g = par[1];
@@ -85,7 +88,7 @@ TF1* dsigma_dexp_bt_vm_brodsky(double tmin, double tmax) {
 // par[1]: 3-gluon Amplitude
 // par[2]: b
 // par[3]: VM mass
-TF1* sigma_vm_brodsky_W(double Wmin, double Wmax) {
+TF1* sigma_vm_brodsky_W(const double Wmin, const double Wmax) {
   return new TF1("sigma_vm_brodsky_W",
                  [](double* xx, double* par) {
                    const double s = xx[0] * xx[0];
@@ -261,7 +264,7 @@ TF1* dsigma_dt_vm_brodsky_Q2W(const double tmin, const double tmax) {
                (1. + pcsim::physics::R_vm_martynov(Q2, Mv, R_c, R_n) *
                          epsilon(Q2, W, Ebeam));
       },
-      (tmin < tmax) ? tmin : tmax, (tmin < tmax) ? tmax : tmin, 10);
+      std::min(tmin, tmax), std::max(tmin, tmax), 10);
 }
 
 // =============================================================================
@@ -326,7 +329,7 @@ TF1* ctheta_schc(const double cthmin = -1, const double cthmax = 1) {
 // par[2]: b
 // par[3]: VM mass
 // par[4]: Q2
-// par[5]: W (unused)
+// par[5]: W
 // par[6]: Ebeam
 // par[7]: dipole_n
 // par[8]: R_c
