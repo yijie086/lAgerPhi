@@ -10,6 +10,8 @@ find_package(ROOT REQUIRED)
 ## boost
 find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 
+configure_file(pcsim-jupyter.in
+    ${CMAKE_CURRENT_BINARY_DIR}/pcsim-jupyter)
 configure_file(pcsim/util/setup_root.py.in
     ${CMAKE_CURRENT_BINARY_DIR}/pcsim/util/setup_root.py)
 configure_file(pcsim/util/path.py.in
