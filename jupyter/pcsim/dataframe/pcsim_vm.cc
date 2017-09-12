@@ -8,7 +8,7 @@ namespace dataframe {
 
 class pcsim_vm : public custom_dataframe {
 public:
-  pcsim_vm(const std::string_view& fname)
+  pcsim_vm(std::string_view fname)
       : custom_dataframe{{"lp_gamma_event", fname}} {
     init();
   }
@@ -21,10 +21,11 @@ protected:
         df.Define("scat", get_vector, {"particles", "scat_index"})
             .Define("beam", get_vector, {"particles", "beam_index"})
             .Define("target", get_vector, {"particles", "target_index"})
+            .Define("photon", get_vector, {"particles", "photon_index"})
             .Define("recoil", get_vector, {"particles", "recoil_index"})
-            .Define("vm", get_vector, {"particles", "vm_index"})
-            .Define("lplus", get_first_child, {"particles", "vm_index"})
-            .Define("lminus", get_second_child, {"particles", "vm_index"});
+            .Define("leading", get_vector, {"particles", "leading_index"})
+            .Define("lplus", get_first_child, {"particles", "leading_index"})
+            .Define("lminus", get_second_child, {"particles", "leading_index"});
     return ndf;
   }
 

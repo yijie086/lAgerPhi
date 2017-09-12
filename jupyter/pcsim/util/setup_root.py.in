@@ -4,7 +4,7 @@ from pcsim.util import path
 '''Load the PCSIM libraries and their dependencies.'''
 
 # check if we already loaded pcsim
-if not hasattr(ROOT, 'pcsim'):
+def setup_root():
     print '%s: Loading PCSIM library' % __name__
     pcsim = {}
 
@@ -35,6 +35,3 @@ if not hasattr(ROOT, 'pcsim'):
         print '%s: PCSIM successfully loaded' % __name__
     else:
         raise IOError('%s: Failed to load PCSIM' % __name__)
-else:
-    ### pcsim already loaded
-    pass

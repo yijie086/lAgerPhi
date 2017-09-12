@@ -1,9 +1,12 @@
 ## /usr/bin/python
 
-'''utilty routines.'''
+'''utility routines.'''
 
 ## initialize PCSIM/ROOT
-import setup_root
+import ROOT
+if not hasattr(ROOT, "pcsim"):
+    from setup_root import setup_root
+    setup_root()
 
 ## import the sub-modules
 from tf1_wrap import *
