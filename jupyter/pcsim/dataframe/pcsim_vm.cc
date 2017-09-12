@@ -1,13 +1,50 @@
 #include "dataframe.hh"
-#include "vm.hh"
+#include <ROOT/TDataFrame.hxx>
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include <TParticle.h>
 
 namespace dataframe {
+
 class pcsim_vm : public custom_dataframe {
 public:
-  pcsim_vm(const std::string& fname) : custom_dataframe{fname, VM_TREE_NAME} {}
+  pcsim_vm(const std::string_view& fname)
+      : custom_dataframe{{"lp_gamma_event", fname}} {
+    init();
+  }
+  virtual ~pcsim_vm() {}
 
-  virtual custom_dataframe::parent_type defines() {
-    return bare().Define("Q4", "Q2*Q2");
+protected:
+  virtual col_interface_type custom_defines(TDataFrame& df) {
+    // vectors
+    auto ndf =
+        df.Define("scat", get_vector, {"particles", "scat_index"})
+            .Define("beam", get_vector, {"particles", "beam_index"})
+            .Define("target", get_vector, {"particles", "target_index"})
+            .Define("recoil", get_vector, {"particles", "recoil_index"})
+            .Define("vm", get_vector, {"particles", "vm_index"})
+            .Define("lplus", get_first_child, {"particles", "vm_index"})
+            .Define("lminus", get_second_child, {"particles", "vm_index"});
+    return ndf;
+  }
+
+  static TLorentzVector get_vector(const TClonesArray& particles,
+                                   const int16_t index) {
+    TLorentzVector v;
+    static_cast<TParticle*>(particles.At(index))->Momentum(v);
+    return v;
+  }
+  static TLorentzVector get_child(const TClonesArray& particles, int16_t index,
+                                  const int child_index) {
+    index =
+        static_cast<TParticle*>(particles.At(index))->GetDaughter(child_index);
+    return get_vector(particles, index);
+  }
+  static TLorentzVector get_first_child(const TClonesArray& particles, int16_t index) {
+    return get_child(particles, index, 0);
+  }
+  static TLorentzVector get_second_child(const TClonesArray& particles, int16_t index) {
+    return get_child(particles, index, 1);
   }
 };
 } // namespace dataframe

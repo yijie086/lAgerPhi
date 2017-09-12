@@ -1,1 +1,6 @@
 import pcsim.util.setup_root
+
+## compile the associated root macro that contains the actual VM info if needed
+ROOT.gROOT.ProcessLine('.L %s.cc+' % os.path.splitext(__file__)[0])
+
+from ROOT.dataframe import pcsim_vm
