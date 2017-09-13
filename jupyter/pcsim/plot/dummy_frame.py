@@ -7,20 +7,20 @@ class dummy_frame:
         'ytitle': lambda s, val: s.graph.GetYaxis().SetTitle(s, val),
         'ylim': lambda s, val: s.graph.GetYaxis().SetRangeUser(*val),
         'title': lambda s, val: s.graph.SetTitle(val),
-        'logx': lambda s, val: s.logx = val,
-        'logy': lambda s, val: s.logy = val}
+        'logx': lambda s, val: s.set_logx(val),
+        'logy': lambda s, val: s.set_logy(val)}
     def __init__(self, title='', href=None, xlim=(0., 1.), logx=False, logy=False, **kwargs):
-    '''Create a frame (dummy histogram).
+        '''Create a frame (dummy histogram).
 
-    Arguments:
-        Title: graph title (D: '')
-        href: reference histogram to start from (D: None)
-        xlim: x limits, ignored when using a reference histogram (D: 0., 1.)
-        logx: log scale in x? (D: False)
-        logy: log scale in y? (D: False)
-    kwargs:
-        see dummy_frame.config
-    '''
+        Arguments:
+            Title: graph title (D: '')
+            href: reference histogram to start from (D: None)
+            xlim: x limits, ignored when using a reference histogram (D: 0., 1.)
+            logx: log scale in x? (D: False)
+            logy: log scale in y? (D: False)
+        kwargs:
+            see dummy_frame.config
+        '''
         if reference is not None:
             self.graph = href.Clone()
             self.graph.Reset()
@@ -35,10 +35,10 @@ class dummy_frame:
         config(**kwargs)
 
     def config(self, **kwargs):
-    '''Configure the underlying histogram.
+        '''Configure the underlying histogram.
 
-    See dummy_frame.options for the available options.
-    '''
+        See dummy_frame.options for the available options.
+        '''
         for val in kwargs:
             if val in dummy_frame.options:
                 dummy_frame.options[val](self, kwargs[val])
@@ -48,3 +48,8 @@ class dummy_frame:
         ROOT.gPad.SetLogx(self.logx)
         ROOT.gPad.SetLogy(self.logy)
         self.graph.Draw()
+
+    def set_logx(self, val):
+        self.logx = val
+    def set_logy(self, val):
+        self.logy = val

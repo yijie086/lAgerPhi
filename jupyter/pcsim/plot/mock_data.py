@@ -14,18 +14,18 @@ class mock_data:
 
     def __init__(self, name, hacc, ftheo, scale=1., random=False, 
                  offset=1., minevt = 1.1, **kwargs):
-    '''Create mock data from a histogram of accepted events.
+        '''Create mock data from a histogram of accepted events.
 
-    parameters: 
-        * name: the histogram name
-        * hacc: histogram of accepted events
-        * ftheo: theory TF1 that describes our mock data
-        * scale: scale factor to be applied to hacc (D: 1.)
-        * random: use Poisson statistics for realistic mock data (D: False)
-        * offset: offset factor to be multiplied with the mock data (D: 1.)
-        * minevt: minimum number required to be considered a measurement (D: 1.1)
-    kwargs: additional options, see config() for mode info
-    '''
+        parameters: 
+            * name: the histogram name
+            * hacc: histogram of accepted events
+            * ftheo: theory TF1 that describes our mock data
+            * scale: scale factor to be applied to hacc (D: 1.)
+            * random: use Poisson statistics for realistic mock data (D: False)
+            * offset: offset factor to be multiplied with the mock data (D: 1.)
+            * minevt: minimum number required to be considered a measurement (D: 1.1)
+        kwargs: additional options, see config() for mode info
+        '''
         self.name = name
         self.graph = hacc.Clone()
         self.graph.SetName(name)
@@ -49,10 +49,10 @@ class mock_data:
             self.graph.SetBinError(i, dy)
 
     def config(self, **kwargs):
-    '''Configure the underlying histogram.
+        '''Configure the underlying histogram.
 
-    See mock_data.options for the available options.
-    '''
+        See mock_data.options for the available options.
+        '''
         for val in kwargs:
             if val in mock_data.options:
                 mock_data.options[val](self, kwargs[val])

@@ -1,3 +1,3 @@
 #!/usr/bin/python
 
-import util, vm, dataframe
+import util, vm, dataframe, plot
