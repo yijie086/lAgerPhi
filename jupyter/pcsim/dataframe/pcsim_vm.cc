@@ -26,6 +26,13 @@ protected:
             .Define("leading", get_vector, {"particles", "leading_index"})
             .Define("lplus", get_first_child, {"particles", "leading_index"})
             .Define("lminus", get_second_child, {"particles", "leading_index"});
+    // also add true particles - just aliases in this case
+    ndf = ndf.Define("scat_true", "scat")
+              .Define("photon_true", "photon")
+              .Define("recoil_true", "recoil")
+              .Define("leading_true", "leading")
+              .Define("lplus_true", "lplus")
+              .Define("lminus_true", "lminus");
     return ndf;
   }
 
