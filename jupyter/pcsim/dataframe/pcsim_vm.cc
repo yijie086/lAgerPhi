@@ -15,7 +15,7 @@ public:
   virtual ~pcsim_vm() {}
 
 protected:
-  virtual col_interface_type custom_defines(TDataFrame& df) {
+  virtual def_interface_type custom_defines(TDataFrame& df) {
     // vectors
     auto ndf =
         df.Define("scat", get_vector, {"particles", "scat_index"})

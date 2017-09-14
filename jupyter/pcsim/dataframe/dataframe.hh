@@ -9,7 +9,10 @@
 namespace dataframe {
 // shortcuts
 using ROOT::Experimental::TDataFrame;
-using col_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
+using def_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
+using fil_interface_type = decltype((TDataFrame{"", ""}).Filter("", ""));
+using histo1D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
+using histo2D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
 
 class dataframe_proxy {
 public:
@@ -23,16 +26,16 @@ private:
   TDataFrame df_;
 };
 
-class custom_dataframe : public dataframe_proxy, public col_interface_type {
+class custom_dataframe : public dataframe_proxy, public def_interface_type {
 public:
   // scale: constant scale factor to apply to each event
   custom_dataframe(const TDataFrame& df, const double scale = 1.)
       : dataframe_proxy{df}
-      , col_interface_type{bare_dataframe().Define("dummy", "index")}
+      , def_interface_type{bare_dataframe().Define("dummy", "index")}
       , scale_{scale} {}
   custom_dataframe(TDataFrame&& df, const double scale = 1.)
       : dataframe_proxy{std::move(df)}
-      , col_interface_type{bare_dataframe().Define("dummy", "index + 1")}
+      , def_interface_type{bare_dataframe().Define("dummy", "index + 1")}
       , scale_{scale} {}
 
 protected:
@@ -42,14 +45,43 @@ protected:
           return scale_;
         });
 
-    static_cast<col_interface_type&>(*this) = new_interface;
+    static_cast<def_interface_type&>(*this) = new_interface;
   }
-  virtual col_interface_type custom_defines(TDataFrame& df) = 0;
+  virtual def_interface_type custom_defines(TDataFrame& df) = 0;
 
 private:
   const double scale_;
 };
 
+template <class Interface>
+histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
+                          string_view wname = "") {
+  auto h2 = href;
+  if (wname.size() == 0) {
+    return df.Histo1D(std::move(h2), vname);
+  }
+  return df.Histo1D(std::move(h2), vname, wname);
+}
+#if 0
+inline histo1D_type make_histo1D(def_interface_type& df, const TH1F& href,
+                          const std::string& vname,
+                          const std::string& wname = "") {
+  auto h2 = href;
+  return df.Histo1D(std::move(h2), vname, wname);
+}
+inline histo1D_type make_histo1D(fil_interface_type& df, const TH1F& href,
+                          const std::string& vname,
+                          const std::string& wname = "") {
+  auto h2 = href;
+  return df.Histo1D(std::move(h2), vname, wname);
+}
+inline histo1D_type make_histo1D(TDataFrame& df, const TH1F& href,
+                          const std::string& vname,
+                          const std::string& wname = "") {
+  auto h2 = href;
+  return df.Histo1D(std::move(h2), vname, wname);
+}
+#endif
 }
 
 #endif
