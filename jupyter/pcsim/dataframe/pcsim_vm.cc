@@ -8,8 +8,8 @@ namespace dataframe {
 
 class pcsim_vm : public custom_dataframe {
 public:
-  pcsim_vm(std::string_view fname)
-      : custom_dataframe{{"lp_gamma_event", fname}} {
+  pcsim_vm(std::string_view fname, const double scale = 1.)
+      : custom_dataframe{{"lp_gamma_event", fname}, scale} {
     init();
   }
   virtual ~pcsim_vm() {}

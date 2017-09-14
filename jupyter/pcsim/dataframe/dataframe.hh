@@ -25,19 +25,29 @@ private:
 
 class custom_dataframe : public dataframe_proxy, public col_interface_type {
 public:
-  custom_dataframe(const TDataFrame& df)
+  // scale: constant scale factor to apply to each event
+  custom_dataframe(const TDataFrame& df, const double scale = 1.)
       : dataframe_proxy{df}
-      , col_interface_type{bare_dataframe().Define("dummy", "index")} {}
-  custom_dataframe(TDataFrame&& df)
+      , col_interface_type{bare_dataframe().Define("dummy", "index")}
+      , scale_{scale} {}
+  custom_dataframe(TDataFrame&& df, const double scale = 1.)
       : dataframe_proxy{std::move(df)}
-      , col_interface_type{bare_dataframe().Define("dummy", "index + 1")} {}
+      , col_interface_type{bare_dataframe().Define("dummy", "index + 1")}
+      , scale_{scale} {}
 
 protected:
   void init() {
-    auto new_interface = custom_defines(bare_dataframe());
+    auto new_interface =
+        custom_defines(bare_dataframe()).Define("scale", [=]() {
+          return scale_;
+        });
+
     static_cast<col_interface_type&>(*this) = new_interface;
   }
   virtual col_interface_type custom_defines(TDataFrame& df) = 0;
+
+private:
+  const double scale_;
 };
 
 }
