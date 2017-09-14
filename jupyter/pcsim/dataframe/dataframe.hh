@@ -62,26 +62,15 @@ histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
   }
   return df.Histo1D(std::move(h2), vname, wname);
 }
-#if 0
-inline histo1D_type make_histo1D(def_interface_type& df, const TH1F& href,
-                          const std::string& vname,
-                          const std::string& wname = "") {
+template <class Interface>
+histo2D_type make_histo2D(Interface& df, const TH2F& href, string_view v1name,
+                          string_view v2name, string_view wname = "") {
   auto h2 = href;
-  return df.Histo1D(std::move(h2), vname, wname);
+  if (wname.size() == 0) {
+    return df.Histo2D(std::move(h2), v1name, v2name);
+  }
+  return df.Histo1D(std::move(h2), v1name, v2name, wname);
 }
-inline histo1D_type make_histo1D(fil_interface_type& df, const TH1F& href,
-                          const std::string& vname,
-                          const std::string& wname = "") {
-  auto h2 = href;
-  return df.Histo1D(std::move(h2), vname, wname);
-}
-inline histo1D_type make_histo1D(TDataFrame& df, const TH1F& href,
-                          const std::string& vname,
-                          const std::string& wname = "") {
-  auto h2 = href;
-  return df.Histo1D(std::move(h2), vname, wname);
-}
-#endif
 }
 
 #endif
