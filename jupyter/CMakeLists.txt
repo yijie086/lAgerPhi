@@ -1,10 +1,17 @@
 ################################################################################
 ## External Libraries
 ################################################################################
-## ROOT
-find_package(ROOT REQUIRED)
-## boost
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+
+## LCIO2 (optional)
+find_package(podio QUIET)
+find_package(lcio2 QUIET)
+if(podio_FOUND AND lcio2_FOUND)
+  message("LCIO2/PODIO found")
+  set(have_lcio2 1)
+else()
+  message("No LCIO2/PODIO found, not building ANL routines")
+  set(have_lcio2 0)
+endif()
 
 ################################################################################
 ## Copy over python library components
@@ -17,8 +24,12 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pcsim
 ################################################################################
 configure_file(pcsim-jupyter.in
     ${CMAKE_CURRENT_BINARY_DIR}/pcsim-jupyter)
+configure_file(rootlogon.C.in
+    ${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C)
 configure_file(pcsim/util/setup_root.py.in
     ${CMAKE_CURRENT_BINARY_DIR}/pcsim/util/setup_root.py)
+configure_file(pcsim/util/setup_root.cc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/pcsim/util/setup_root.cc)
 configure_file(pcsim/util/path.py.in
     ${CMAKE_CURRENT_BINARY_DIR}/pcsim/util/path.py)
 

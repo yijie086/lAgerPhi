@@ -1,21 +1,45 @@
 import ROOT, os
 from pcsim.util import path
+import pcsim
 
 '''Load the PCSIM libraries and their dependencies.'''
 
 # check if we already loaded pcsim
 def setup_root():
     print '%s: Loading PCSIM library' % __name__
-    pcsim = {}
+    features = []
 
-    ## dependencies
-    dependencies = ['libEG', 'libTreePlayer', 'libGenVector']
+    ## PCSIM DEPENDENCIES
+    dependencies = []
+    includes = []
+    features = []
+
+    ## ROOT
+    dependencies += ['libEG', 'libGenVector']
+    features += ['ROOT']
+
+    ## Boost
     dependencies += '@Boost_LIBRARIES@'.split(';')
+    includes += '@Boost_INCLUDE_DIRS@'.split(';')
+    features = ['Boost']
+
+    ## also add LCIO2/podio if installed
+    have_lcio2 = @have_lcio2@
+    if have_lcio2:
+        dependencies += ['@podio_LIBRARY_DIR@/lib%s.so' % lib for lib in 'podio;lcio2'.split(';')]
+        includes += '@LCIO2_INCLUDE_DIRS@'.split(';')
+        features += ['lcio2']
+
+    ## load dependencies
     for lib in dependencies:
+        print "%s: Loading Library: %s" % (__name__, lib)
         ret = ROOT.gSystem.Load(lib)
         if ret < 0:
             raise IOError('%s: Failed to load library dependency: %s' %
                           (__name__, lib))
+    ## load includes
+    for inc in includes:
+        ROOT.gROOT.ProcessLine('.include %s' % inc)
 
     ## include the main pcsim include directory
     ROOT.gROOT.ProcessLine('.include %s' % path.include_path())
@@ -35,3 +59,6 @@ def setup_root():
         print '%s: PCSIM successfully loaded' % __name__
     else:
         raise IOError('%s: Failed to load PCSIM' % __name__)
+
+    ## export our features
+    pcsim.features = features
