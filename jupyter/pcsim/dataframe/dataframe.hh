@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <TTree.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
 namespace dataframe {
 // shortcuts
@@ -12,7 +14,7 @@ using ROOT::Experimental::TDataFrame;
 using def_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
 using fil_interface_type = decltype((TDataFrame{"", ""}).Filter("", ""));
 using histo1D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
-using histo2D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
+using histo2D_type = decltype((TDataFrame{"", ""}).Histo2D(TH2F()));
 
 class dataframe_proxy {
 public:
@@ -31,28 +33,28 @@ public:
   // scale: constant scale factor to apply to each event
   custom_dataframe(const TDataFrame& df, const double scale = 1.)
       : dataframe_proxy{df}
-      , def_interface_type{bare_dataframe().Define("dummy", "index")}
-      , scale_{scale} {}
+      , def_interface_type{
+            bare_dataframe().Define("scale", [=]() { return scale; })} {}
   custom_dataframe(TDataFrame&& df, const double scale = 1.)
       : dataframe_proxy{std::move(df)}
-      , def_interface_type{bare_dataframe().Define("dummy", "index + 1")}
-      , scale_{scale} {}
+      , def_interface_type{
+            bare_dataframe().Define("scale", [=]() { return scale; })} {}
+
+  def_interface_type& interface() {
+    return static_cast<def_interface_type&>(*this);
+  }
+  const def_interface_type& interface() const {
+    return static_cast<const def_interface_type&>(*this);
+  }
+
+  custom_dataframe& add_branch(const std::string& branch) {
+    init({branch});
+    return *this;
+  }
 
 protected:
-  void init() {
-    auto new_interface =
-        custom_defines(bare_dataframe()).Define("scale", [=]() {
-          return scale_;
-        });
-
-    static_cast<def_interface_type&>(*this) = new_interface;
-  }
-  virtual def_interface_type custom_defines(TDataFrame& df) = 0;
-
-private:
-  const double scale_;
+  virtual void init(const std::vector<std::string>& custom_branches) = 0;
 };
-
 template <class Interface>
 histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
                           string_view wname = "") {
@@ -69,7 +71,7 @@ histo2D_type make_histo2D(Interface& df, const TH2F& href, string_view v1name,
   if (wname.size() == 0) {
     return df.Histo2D(std::move(h2), v1name, v2name);
   }
-  return df.Histo1D(std::move(h2), v1name, v2name, wname);
+  return df.Histo2D(std::move(h2), v1name, v2name, wname);
 }
 }
 
