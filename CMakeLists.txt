@@ -3,7 +3,7 @@
 ################################################################################
 ## PROJECT: pcsim
 ################################################################################
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.8)
 project (pcsim)
 set (PCSIM_MAJOR_VERSION 2)
 set (PCSIM_MINOR_VERSION 0)

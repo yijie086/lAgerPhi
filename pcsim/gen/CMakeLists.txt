@@ -20,19 +20,14 @@ include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 ################################################################################
-## External Libraries
-################################################################################
-## ROOT
-find_package(ROOT REQUIRED)
-include_directories(${ROOT_INCLUDE_DIR})
-## boost
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-################################################################################
 ## Compile and Link
 ################################################################################
 add_library(${LIBRARY} SHARED ${SOURCES})
+target_link_libraries(${LIBRARY} 
+                      ${PROJECT_NAME}_core ${PROJECT_NAME}_physics
+                      ${PROJECT_NAME}_proc
+                      ${ROOT_GenVector_LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} 
+                      ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION})
