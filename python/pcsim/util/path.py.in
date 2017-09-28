@@ -52,14 +52,20 @@ def lib_path(lib):
         ## if we are intree, the library 'libcomp' can be found under
         ## ${CMAKE_BUILD_DIR}/${PROJECT_NAME}/comp/lib${PROJECT_NAME}_comp
         comp = lib[len(project_name) + 1:]
-        path = '%s/%s/%s/lib%s_%s' % (cmake_build[:-1], project_name, comp, project_name, comp)
+        path = '%s/%s/%s/lib%s' % (cmake_build[:-1], project_name, comp, lib)
     else:
         ## everything in the main lib dir
-        path = cmake_install_lib + lib
-    #if not os.path.exists(path + '*'):
-    #    raise IOError('%s: Unable to locate PCSIM library: %s*' % 
-    #                       (__name__, path))
+        path = cmake_install_lib + 'lib' + lib
     return path
+
+def setup_root_path():
+    '''Return the path for the setup_root.cc macro.'''
+    path = None
+    if intree:
+        path = '%s/%s/root/' % (cmake_build[:-1], project_name)
+    else:
+        path = '%s/%s/' % (cmake_install_lib[:-1], project_name)
+    return path + 'setup_root.cc'
 
 
 

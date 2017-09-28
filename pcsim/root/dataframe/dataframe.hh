@@ -1,5 +1,5 @@
-#ifndef JUPYTER_PCSIM_DATAFRAME_LOADED
-#define JUPYTER_PCSIM_DATAFRAME_LOADED
+#ifndef PCSIM_ROOT_DATAFRAME_DATAFRAME_LOADED
+#define PCSIM_ROOT_DATAFRAME_DATAFRAME_LOADED
 
 #include <ROOT/TDataFrame.hxx>
 #include <string>
@@ -8,7 +8,10 @@
 #include <TH1F.h>
 #include <TH2F.h>
 
+namespace pcsim {
+namespace root {
 namespace dataframe {
+
 // shortcuts
 using ROOT::Experimental::TDataFrame;
 using def_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
@@ -16,6 +19,7 @@ using fil_interface_type = decltype((TDataFrame{"", ""}).Filter("", ""));
 using histo1D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
 using histo2D_type = decltype((TDataFrame{"", ""}).Histo2D(TH2F()));
 
+// utility class
 class dataframe_proxy {
 public:
   dataframe_proxy(const TDataFrame& df) : df_{df} {}
@@ -28,6 +32,8 @@ private:
   TDataFrame df_;
 };
 
+// a custom dataframe that automizes some of the defines/filters that we always
+// want to apply to a dataset to present a more uniform interface
 class custom_dataframe : public dataframe_proxy, public def_interface_type {
 public:
   // scale: constant scale factor to apply to each event
@@ -46,15 +52,12 @@ public:
   const def_interface_type& interface() const {
     return static_cast<const def_interface_type&>(*this);
   }
-
-  custom_dataframe& add_branch(const std::string& branch) {
-    init({branch});
-    return *this;
-  }
-
-protected:
-  virtual void init(const std::vector<std::string>& custom_branches) = 0;
 };
+
+
+// utility function to make a histogram starting from a template histogram. This
+// is only neccesary for PyROOT, as the current python bindings do not work
+// (9/26/2017)
 template <class Interface>
 histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
                           string_view wname = "") {
@@ -73,6 +76,9 @@ histo2D_type make_histo2D(Interface& df, const TH2F& href, string_view v1name,
   }
   return df.Histo2D(std::move(h2), v1name, v2name, wname);
 }
-}
+
+} // namespace dataframe
+} // namespace root
+} // namespace pcsim
 
 #endif

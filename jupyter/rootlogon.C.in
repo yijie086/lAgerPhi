@@ -1,3 +1,0 @@
-{
-  gROOT->ProcessLine(".x @CMAKE_BINARY_DIR@/jupyter/pcsim/util/setup_root.cc");
-}

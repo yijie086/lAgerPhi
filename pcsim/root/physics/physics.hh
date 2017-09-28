@@ -1,29 +1,42 @@
-#ifndef VM_PHYSICS_LOADED
-#define VM_PHYSICS_LOADED
+#ifndef PCSIM_ROOT_PHYSICS_PHYSICS_LOADED
+#define PCSIM_ROOT_PHYSICS_PHYSICS_LOADED
+
+// Generic physics utility functions and constants
 
 #include <Math/Vector4D.h>
 #include <TMath.h>
 #include <cmath>
+#include <pcsim/core/pdg.hh>
 
-namespace vm {
+namespace pcsim {
+namespace root {
+namespace physics {
+
+// particle shortcuts
+namespace particle {
+const TParticlePDG& ELECTRON = *pdg_particle(pdg_id::e_minus);
+const TParticlePDG& PROTON = *pdg_particle(pdg_id::p);
+const TParticlePDG& JPSI = *pdg_particle(pdg_id::J_psi);
+const TParticlePDG& UPSILON = *pdg_particle(pdg_id::upsilon);
+} // namespace particle
 
 // All masses are given in units of GeV
 
 // MASSES
-constexpr const double M_EL = .0005109989461;
-constexpr const double M_P = .938272;
-constexpr const double M_JPSI = 3.096916;
-constexpr const double M_UPSILON = 9.46030;
+const double M_EL = particle::ELECTRON.Mass();
+const double M_P = particle::PROTON.Mass();
+const double M_JPSI = particle::JPSI.Mass();
+const double M_UPSILON = particle::UPSILON.Mass();
 
 // MASSES SQUARED
-constexpr const double M2_EL = M_EL * M_EL;
-constexpr const double M2_P = M_P * M_P;
-constexpr const double M2_JPSI = M_JPSI * M_JPSI;
-constexpr const double M2_UPSILON = M_UPSILON * M_UPSILON;
+const double M2_EL = M_EL * M_EL;
+const double M2_P = M_P * M_P;
+const double M2_JPSI = M_JPSI * M_JPSI;
+const double M2_UPSILON = M_UPSILON * M_UPSILON;
 
 // THRESHOLD IN W
-constexpr const double THRESHOLD_JPSI = M_P + M_JPSI;
-constexpr const double THRESHOLD_UPSILON = M_P + M_UPSILON;
+const double THRESHOLD_JPSI = M_P + M_JPSI;
+const double THRESHOLD_UPSILON = M_P + M_UPSILON;
 
 // utility functions
 //
@@ -52,6 +65,8 @@ inline double epsilon(const double Q2, const double W, const double Ebeam) {
   return 1 + (4 * m2 / Q2 - 2) / tworhopp;
 }
 
-}
+} // namespace physics
+} // namespace root
+} // namespace pcsim
 
 #endif

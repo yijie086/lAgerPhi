@@ -1,3 +1,8 @@
+import ROOT, pcsim.util
+ROOT.gROOT.ProcessLine('#include <pcsim/core/interval.hh>')
+
+range_type = ROOT.pcsim.interval(ROOT.double)
+
 ## wrap around the TF1s for more intuitive usage
 class tf1_wrap:
     '''A simple tf1 wrapper that allows for a more pythonic TF1 construction.'''
@@ -21,6 +26,6 @@ class tf1_wrap:
         known_pars = self.pardef()
         for par in kwargs:
             if not par in known_pars:
-                raise KeyError('%s: Unkown parameter name: ' % (self.__name__, key))
+                raise KeyError('%s: Unkown parameter name: ' % (self.__class__, key))
             val = kwargs[par]
             self.f.SetParameter(known_pars[par], val)

@@ -1,0 +1,62 @@
+#!/usr/bin/python
+
+import os, subprocess, sys
+from optparse import OptionParser
+
+project_name = '@PROJECT_NAME@'
+current_path = os.path.abspath(os.path.dirname(__file__))
+cmake_build = os.path.abspath('@CMAKE_BINARY_DIR@') + '/'
+cmake_install_lib = os.path.abspath('@INSTALL_LIB_DIR@') + '/'
+
+## are we intree?
+intree = (current_path.find(cmake_build) is 0)
+
+## get the correct setup_root.C script
+setup_root = None
+if intree:
+    setup_root = cmake_build + project_name + "/root/setup_root.cc"
+else:
+    setup_root = cmake_install_lib + project_name + "/setup_root.cc"
+
+if not os.path.exists(setup_root):
+    raise IOError("%s: file not found: %s" % (__file__, setup_root))
+
+## let's parse our command line options
+usage = 'usage: %prog [options] [-f data.root] [script1.C ... scriptN.C]'
+parser = OptionParser(usage=usage)
+parser.add_option('-b', action='store_true', dest='batch', 
+                  help='Run in batch mode without graphics')
+parser.add_option('-n', action='store_true', dest='clean',
+                  help='Do not execute logon and logoff macros as specified in .rootrc')
+parser.add_option('-q', action='store_true', dest='exit',
+                  help='Exit after processing command line macro files')
+parser.add_option('-x', action='store_true', dest='exit_on_except',
+                  help='Exit on exception')
+parser.add_option('-e', dest='execute', metavar="'COMMAND'", default=None,
+                  help='execute the command passed between single quotes (optional)')
+parser.add_option('-f', dest='file', metavar='FILE', default=None,
+                  help='ROOT Data file (optional)')
+parser.add_option('-v', action='store_true', dest='verbose',
+                  help='Be verbose')
+(options, args) = parser.parse_args()
+
+exec_command = ["root -l -e '.x %s'" % setup_root]
+if options.batch:
+  exec_command += ['-b']
+if options.clean:
+  exec_command += ['-n']
+if options.exit:
+  exec_command += ['-q']
+if options.exit_on_except:
+  exec_command += ['-x']
+if options.execute is not None:
+  exec_command += ['-e %s'] % options.execute
+if options.file is not None:
+  exec_command += ['file:%s' % options.file]
+## append the macros
+exec_command += args
+exec_str = ' '.join(exec_command)
+#exec_str = "root -l -e '.x %s' -x %s+" % (setup_root, sys.argv[1])
+if options.verbose:
+  print "Running command: %s" % exec_str
+os.system(exec_str)
