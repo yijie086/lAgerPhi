@@ -44,9 +44,13 @@ framework::framework(int argc, char* argv[],
   LOG_INFO("pcsim", "Starting pcsim framework");
   LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
 
-  // get our run info and number of events to be generated
+  // get our run info and luminosity/number of events to be generated
   const int run = get_option<int>("run");
-  const int events = get_option<int>("events");
+  auto lumi = conf_.get_optional<double>("lumi");
+  int events = -1;
+  if (!lumi) {
+    events = get_option<int>("events");
+  }
 
   // output file name
 
@@ -61,16 +65,26 @@ framework::framework(int argc, char* argv[],
 
   // add generator name and acceptance simulation
   output_ += "." + conf_.get<std::string>("generator/type");
-  output_ += "." + conf_.get<std::string>("detector/type");
+
+  auto detector = conf_.get<std::string>("detector/type");
+  if (detector.size() > 0 && detector != "none") {
+    output_ += "." + conf_.get<std::string>("detector/type");
+  } else {
+    output_ += ".4pi";
+  }
   
   // add optional tag
   auto tag = conf_.get_optional<std::string>("tag");
   if (tag && tag->size()) {
     output_ += "." + *tag;
   }
-  // add the run info and number of generated events
+  // add the run info and lumi or number of generated events
   char info[1024];
-  sprintf(info, ".run%05i-%i", run, events);
+  if (lumi) {
+    sprintf(info, ".run%05i-lumi%f", run, *lumi);
+  } else {
+    sprintf(info, ".run%05i-%i", run, events);
+  }
   output_ += info;
 
   // communicate file name to user
@@ -80,6 +94,10 @@ framework::framework(int argc, char* argv[],
   ptree settings;
   conf_.save(settings);
   write_json(output_ + ".json", settings);
+
+  // redirect logger to use the log file
+  log_file_.open(output_ + ".log");
+  global::logger.set_output(log_file_);
 
   } catch (const framework_help& h) {
     std::cerr << h.what() << std::endl;
@@ -99,6 +117,11 @@ framework::framework(int argc, char* argv[],
     LOG_CRITICAL("std::exception", "Please contact developer for support.");
     throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
+
+framework::~framework() {
+  // redirect output stream back to the standard output
+  global::logger.set_output(std::cout);
+}
 
 int framework::run() const {
   try{
@@ -122,6 +145,7 @@ int framework::run() const {
     throw pcsim::exception("Unhandled standard exception", "std::exception");
   }
 }
+
 } // ns pcsim
 
 // =============================================================================

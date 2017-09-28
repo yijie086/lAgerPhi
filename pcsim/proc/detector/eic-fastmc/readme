@@ -1,0 +1,54 @@
+= Intro ===============================================
+eic_fastmc consists of three components, "acceptance,resolution,particle identification"
+all three components are independent in code
+"region" obtained from acceptance can be used as input for resolution and particle identification
+
+It takes input
+1. pid in PDG format(not implemented yet),
+2. vertex P (GeV)
+3. vertex Theta (deg)
+4. vertex Phi (deg)
+5. vertex E (GeV)
+and return output
+1. region accepted (0-8) or not accepted in any region (-1)
+2. acceptance value (0-1)
+3. resolution of dP/P(%), dTheta(deg), dPhi(deg), dz (cm)
+4. Gaussian smeared P(GeV),Theta(deg),Phi(deg),E(GeV)
+5.  probability of identifying this particle (0-1)
+
+Use it as a class with info below
+==================================================
+#include "eic_fastmc.h"
+eic_fastmc(const char detector[],const char version[],const char ebeam[],const char ibeam[],const char solenoid[],bool debug=false);  
+int get_eic_fastmc(const int pid,const double * kin,int *region,double *acc,double *res,double *kin_smeared,double *pident,bool debug=false);
+==================================================
+Note to use "debug=true" to see more info
+
+run example in root
+.x test_eic_fastmc.C+ (test eic_fastmc)
+.x test_all.C+ (test all three components individually)
+
+read in a lund file, apply eic_fastmc, output another file
+eic_fastmc_lund.C
+
+
+= "detector region" ==============================================
+
+We organize result in different detector regions (total 9)
+
+region=0      ele downstream, dipole1side (temp for low E tagger) 
+region=1      ele downstream, dipole3back (temp for high E tagger) 
+region=2      central, barrel    
+region=3      central, ionside
+region=4      central, eleside outer
+region=5      central, eleside inner
+region=6      ion downtream, ec_iondownstream
+region=7      ion forward, dipole2back (temp for some forward detector)
+region=8      ion forward, dipole3back (temp for some forward detector)
+
+= log =============================================
+
+Initial checkin, Zhiwen Zhao, 2016/7
+
+
+

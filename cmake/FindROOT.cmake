@@ -56,8 +56,8 @@ else()
     OUTPUT_STRIP_TRAILING_WHITESPACE)
     
 
-  ## SJJ: add -lEG to the root libraries
-  set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lEG -lTreePlayer)
+  ## SJJ: add -lEG and -lGenVector to the root libraries
+  set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lEG -lTreePlayer -lGenVector)
   #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof)
   #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed -lXMLParser -lPhysics)
   set(ROOT_LIBRARY_DIR ${ROOTSYS}/lib)

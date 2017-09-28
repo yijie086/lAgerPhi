@@ -47,6 +47,7 @@ public:
 
   // setup the analysis framework
   framework(int argc, char* argv[], pcsim_function_type pcsim_function);
+  ~framework();
   // run the analyzis framework
   int run() const;
 
@@ -68,6 +69,7 @@ private:
   boost::program_options::variables_map args_;
   configuration conf_;
   std::string output_;
+  std::ofstream log_file_;
   pcsim_function_type pcsim_function_;
 
 };

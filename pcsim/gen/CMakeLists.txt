@@ -8,8 +8,10 @@ set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 ################################################################################
 ## Sources and install headers
 ################################################################################
-file (GLOB SOURCES "*.cc")
+file (GLOB SOURCES "*.cc" "beam/*.cc" "lp_gamma/*.cc")
 file (GLOB HEADERS "*.hh")
+file (GLOB BEAM_HEADERS "beam/*.hh")
+file (GLOB LP_GAMMA_HEADERS "lp_gamma/*.hh")
 
 ################################################################################
 ## Include directories
@@ -20,7 +22,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## External Libraries
 ################################################################################
-find_package(root REQUIRED)
+## ROOT
+find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
 ## boost
 find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
@@ -32,8 +35,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(${LIBRARY} ${SOURCES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
-  SOVERSION ${PCSIM_SOVERSION}
-  PUBLIC_HEADER "${HEADERS}")
+  SOVERSION ${PCSIM_SOVERSION})
 
 ################################################################################
 ## Export and Install
@@ -42,5 +44,17 @@ install(TARGETS ${LIBRARY}
   EXPORT ${PROJECT_NAME}-targets
   RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
   LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}" COMPONENT dev)
+  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
+  
+install(FILES 
+  ${HEADERS} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}" 
+  COMPONENT dev)
+install(FILES 
+  ${BEAM_HEADERS} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/beam" 
+  COMPONENT dev)
+install(FILES 
+  ${LP_GAMMA_HEADERS} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/lp_gamma" 
+  COMPONENT dev)

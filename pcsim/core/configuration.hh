@@ -133,7 +133,7 @@ public:
   template <class T>
   T get(const string_path& key, const T& default_value,
         const translation_map<T>& tr);
-  // same getters, but in vector version
+  // same getters, but in (STL) vector version
   // 1. optional version
   template <class T>
   optional<std::vector<T>> get_optional_vector(const string_path& key) const;
@@ -146,6 +146,31 @@ public:
   template <class T>
   std::vector<T> get_vector(const string_path& key,
                             const translation_map<T>& tr) const;
+
+  // special physics vector versions
+  // 1. optional versions
+  template <class Vector3>
+  optional<Vector3> get_optional_vector3(const string_path& key) const;
+  template <class Vector3>
+  optional<Vector3>
+  get_optional_vector3(const string_path& key,
+                       const translation_map<double>& tr) const;
+  template <class Vector4>
+  optional<Vector4> get_optional_vector4(const string_path& key) const;
+  template <class Vector4>
+  optional<Vector4>
+  get_optional_vector4(const string_path& key,
+                       const translation_map<double>& tr) const;
+  // 2. throwing versions
+  template <class Vector3> Vector3 get_vector3(const string_path& key) const;
+  template <class Vector3>
+  Vector3 get_vector3(const string_path& key,
+                      const translation_map<double>& tr) const;
+  template <class Vector4> Vector4 get_vector4(const string_path& key) const;
+  template <class Vector4>
+  Vector4 get_vector4(const string_path& key,
+                      const translation_map<double>& tr) const;
+
   // special version to create bit pattern of a vector of
   // bit patterns
   // 1. optional versions
@@ -170,6 +195,7 @@ public:
   template <class T>
   interval<T> get_range(const string_path& key,
                         const translation_map<T>& tr) const;
+
 
   // Helper functions to construct exceptions
   configuration_path_error path_error(const string_path& path) const;
@@ -396,6 +422,92 @@ std::vector<T> configuration::get_vector(const string_path& key,
     throw key_error(key);
   }
   return *s;
+}
+// and 3-Vector version
+template <class Vector3>
+optional<Vector3>
+configuration::get_optional_vector3(const string_path& key) const {
+  auto range = get_optional_vector<double>(key);
+  if (range) {
+    if (range->size() != 3) {
+      throw translation_error(key, stringify(*range));
+    }
+    return {{(*range)[0], (*range)[1], (*range)[2]}};
+  }
+  return {};
+}
+template <class Vector3>
+optional<Vector3>
+configuration::get_optional_vector3(const string_path& key,
+                                    const translation_map<double>& tr) const {
+  auto range = get_optional_vector(key, tr);
+  if (range) {
+    if (range->size() != 3) {
+      throw translation_error(key, stringify(*range));
+    }
+    return {{(*range)[0], (*range)[1], (*range)[2]}};
+  }
+  return {};
+}
+template <class Vector3>
+Vector3 configuration::get_vector3(const string_path& key) const {
+  auto range = get_optional_vector3<Vector3>(key);
+  if (!range) {
+    throw key_error(key);
+  }
+  return *range;
+}
+template <class Vector3>
+Vector3 configuration::get_vector3(const string_path& key,
+                                   const translation_map<double>& tr) const {
+  auto range = get_optional_vector3<Vector3>(key, tr);
+  if (!range) {
+    throw key_error(key);
+  }
+  return *range;
+}
+// and 4-Vector version
+template <class Vector4>
+optional<Vector4>
+configuration::get_optional_vector4(const string_path& key) const {
+  auto range = get_optional_vector<double>(key);
+  if (range) {
+    if (range->size() != 4) {
+      throw translation_error(key, stringify(*range));
+    }
+    return {{(*range)[0], (*range)[1], (*range)[2], (*range)[3]}};
+  }
+  return {};
+}
+template <class Vector4>
+optional<Vector4>
+configuration::get_optional_vector4(const string_path& key,
+                                    const translation_map<double>& tr) const {
+  auto range = get_optional_vector(key, tr);
+  if (range) {
+    if (range->size() != 4) {
+      throw translation_error(key, stringify(*range));
+    }
+    return {{(*range)[0], (*range)[1], (*range)[2], (*range)[3]}};
+  }
+  return {};
+}
+template <class Vector4>
+Vector4 configuration::get_vector4(const string_path& key) const {
+  auto range = get_optional_vector4<Vector4>(key);
+  if (!range) {
+    throw key_error(key);
+  }
+  return *range;
+}
+template <class Vector4>
+Vector4 configuration::get_vector4(const string_path& key,
+                                   const translation_map<double>& tr) const {
+  auto range = get_optional_vector4<Vector4>(key, tr);
+  if (!range) {
+    throw key_error(key);
+  }
+  return *range;
 }
 // and bitpattern versiosn
 template <class T>

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 
 // =============================================================================
 // A simple console progress meter
@@ -17,27 +18,36 @@ public:
       : max_{max}
       , index_{start_index}
       , precision_{precision > max ? max : precision} {
-    std::cerr << "\nProcessing " << max_ << " events..." << std::endl;
+    std::cerr << "\nProcessing... " << std::endl;
     update();
   }
-  void update(size_t i = 1) {
-    index_ += i;
+  void update(size_t i) {
+    index_ = i;
     if (index_ > max_) {
       index_ = max_;
     }
     // update when needed
-    if (!index_ || !(index_ % (max_ / precision_))) {
-      double cnt = index_ * precision_ / max_;
-      cnt /= (precision_ / 100.);
+    // commented out because of FPE, need to fix this TODO
+//    if (!index_ || !(index_ % (max_ / precision_) || !(index_ % 1000))) {
+    if (!(index_ % 100)) {
+      const double cnt = (index_ > 50) ? (100. * index_) / max_ : 0.;
       char msg[15];
       sprintf(msg, "  %3.2f%%\r", cnt);
       std::cerr << msg << std::flush;
     }
   }
+  void update(size_t i, const size_t max) {
+    max_ = max;
+    update(i);
+  }
+  void update() {
+    index_ += 1;
+    update(index_);
+  }
   ~progress_meter() { std::cerr << "      Done!" << std::endl; }
 
 private:
-  const size_t max_;
+  size_t max_;
   size_t index_;
   const size_t precision_;
 };
