@@ -40,10 +40,15 @@ endif()
 ################################################################################
 configure_file(setup_root.cc.in
     ${CMAKE_CURRENT_BINARY_DIR}/setup_root.cc)
+set(CONFIG_ROOT ${CMAKE_CURRENT_BINARY_DIR}/setup_root.cc)
+
 configure_file(pcsim-root.in 
     ${CMAKE_CURRENT_BINARY_DIR}/pcsim-root)
+set(CONFIG_EXE ${CMAKE_CURRENT_BINARY_DIR}/pcsim-root)
+
 configure_file(config.hh.in
     ${CMAKE_CURRENT_BINARY_DIR}/config.hh)
+set(CONFIG_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/config.hh")
 
 ################################################################################
 ## Compile and Link
@@ -67,15 +72,24 @@ install(TARGETS ${LIBRARY}
   LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
   ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
   
+install(FILES
+  ${CONFIG_EXE}
+  DESTINATION "${INSTALL_BIN_DIR}"
+  COMPONENT bin)
+install(FILES
+  ${CONFIG_ROOT} 
+  DESTINATION "${INSTALL_LIB_DIR}/${PROJECT_NAME}"
+  COMPONENT lib)
+
 install(FILES 
-  ${HEADERS} 
+  ${CONFIG_HEADERS} 
   DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}" 
   COMPONENT dev)
 install(FILES 
   ${DATAFRAME_HEADERS} 
-  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/beam" 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/dataframe" 
   COMPONENT dev)
 install(FILES 
   ${PHYSICS_HEADERS} 
-  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/lp_gamma" 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/physics" 
   COMPONENT dev)
