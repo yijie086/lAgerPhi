@@ -1,0 +1,3 @@
+#!/bin/bash
+
+PYTHONPATH="@CMAKE_BINARY_DIR@/python:@INSTALL_LIB_DIR@/@PROJECT_NAME@:$PYTHONPATH" python $@

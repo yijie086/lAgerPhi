@@ -3,7 +3,7 @@
 ################################################################################
 ## PROJECT: pcsim
 ################################################################################
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.8)
 project (pcsim)
 set (PCSIM_MAJOR_VERSION 2)
 set (PCSIM_MINOR_VERSION 0)
@@ -24,10 +24,12 @@ include(cmake/compiler.cmake)
 set (TARGETS "")
 
 add_subdirectory(pcsim/core)
-add_subdirectory(pcsim/gen)
-add_subdirectory(pcsim/proc)
 add_subdirectory(pcsim/physics)
+add_subdirectory(pcsim/proc)
+add_subdirectory(pcsim/gen)
+add_subdirectory(pcsim/root)
 add_subdirectory(program)
+add_subdirectory(python)
 
 ################################################################################
 ## Prepare the project to be EXPORTed, generate configuration files

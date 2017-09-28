@@ -1,0 +1,167 @@
+#include <TPython.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <vector>
+
+namespace pcsim {
+namespace root {
+namespace setup_root {
+
+class path {
+public:
+  path() {
+    // yes, that's really how I decided to do this...
+    TPython::Exec("import os");
+
+    // get info from cmake
+    project_name = "@PROJECT_NAME@";
+    cmake_build = (const char*)TPython::Eval(
+        "os.path.abspath('@CMAKE_BINARY_DIR@') + '/'");
+    cmake_source = (const char*)TPython::Eval(
+        "os.path.abspath('@CMAKE_SOURCE_DIR@') + '/'");
+    cmake_install_bin = (const char*)TPython::Eval(
+        "os.path.abspath('@INSTALL_BIN_DIR@') + '/'");
+    cmake_install_lib = (const char*)TPython::Eval(
+        "os.path.abspath('@INSTALL_LIB_DIR@') + '/'");
+    cmake_install_inc = (const char*)TPython::Eval(
+        "os.path.abspath('@INSTALL_INCLUDE_DIR@/..') + '/'");
+
+    // get the local directory
+    local_dir = (const char*)TPython::Eval("os.path.abspath('" __FILE__ "')");
+
+    // are we in the local build tree?
+    if (local_dir.find(cmake_build) == std::string::npos) {
+      intree = false;
+    } else {
+      intree = true;
+    }
+  }
+
+  // return the main include path
+  std::string include_path() const {
+    std::string path;
+    if (intree) {
+      path = cmake_source;
+    } else {
+      path = cmake_install_inc;
+    }
+    return path;
+  }
+  // return the path for the requested PCSIM library.
+  std::string lib_path(const std::string lib) const {
+    std::string path;
+    if (intree) {
+      // we are intree, the library "libcomp" can be found under
+      // ${CMAKE_BUILD_DIR}/${PROJECT_NAME}/comp/lib${PROJECT_NAME}_comp
+      std::string comp = lib.substr(project_name.size() + 1, -1);
+      path = cmake_build + project_name + "/" + comp + "/lib" + lib;
+    } else {
+      path = cmake_install_lib + "lib" + lib;
+    }
+    return path;
+  }
+
+  std::string project_name;
+  std::string cmake_build;
+  std::string cmake_source;
+  std::string cmake_install_bin;
+  std::string cmake_install_lib;
+  std::string cmake_install_inc;
+  std::string local_dir;
+  bool intree;
+};
+
+std::vector<std::string> split_string(const std::string& s,
+                                      const char delim = ';') {
+  std::vector<std::string> container;
+  std::stringstream ss{s};
+  std::string token;
+  while (std::getline(ss, token, delim)) {
+    container.push_back(token);
+  }
+  return container;
+}
+
+} // namespace setup_root
+} // namespace root
+} // namespace pcsim
+
+void setup_root() {
+  std::cout << "setup_root: loading PCSIM library" << std::endl;
+
+  // dependencies
+  std::vector<std::string> dependencies;
+  std::vector<std::string> includes;
+
+  // additional root libraries
+  dependencies.push_back("libEG");
+  dependencies.push_back("libGenVector");
+  dependencies.push_back("libTreePlayer");
+
+  // Boost
+  auto boost_dep = pcsim::root::setup_root::split_string("@Boost_LIBRARIES@");
+  auto boost_inc =
+      pcsim::root::setup_root::split_string("@Boost_INCLUDE_DIRS@");
+  for (const auto& lib : boost_dep) {
+    dependencies.push_back(lib);
+  }
+  for (const auto& inc : boost_inc) {
+    includes.push_back(inc);
+  }
+
+  // add LCIO2/podio if installed
+  const int have_lcio2 = @SUPPORT_ANL@;
+  if (have_lcio2) {
+    dependencies.push_back("@podio_LIBRARY_DIR@/libpodio.so");
+    dependencies.push_back("@podio_LIBRARY_DIR@/liblcio2.so");
+    includes.push_back("@LCIO2_INCLUDE_DIRS@");
+  }
+
+  // load the library dependencies
+  for (const auto& lib : dependencies) {
+    std::cout << "setup_root: Loading library: " << lib << std::endl;
+    int ret = gSystem->Load(lib.c_str());
+    if (ret < 0) {
+      std::cerr << "ERROR: setup_root: failed to load library: " << lib
+                << std::endl;
+      throw ret;
+    }
+  }
+
+  // load includes
+  for (const auto& inc : includes) {
+    std::cout << "setup_root: Adding include path: " << inc << std::endl;
+    gROOT->ProcessLine((".include " + inc).c_str());
+  }
+
+  // create our path helper
+  pcsim::root::setup_root::path path_helper;
+
+  // include the main PCSIM include directory
+  const auto incpath = path_helper.include_path();
+  std::cout << "setup_root: Adding include path: " << incpath << std::endl;
+  gROOT->ProcessLine((".include " + incpath).c_str());
+
+  // load the PCSIM libraries
+  auto components = pcsim::root::setup_root::split_string("@TARGETS@;pcsim_root");
+  for (const auto& lib : components) {
+    const auto libpath = path_helper.lib_path(lib);
+    std::cout << "setup_root: Loading library: " << libpath << std::endl;
+    int ret = gSystem->Load(libpath.c_str());
+    if (ret < 0) {
+      std::cerr << "ERROR: setup_root: failed to load library: " << lib
+                << std::endl;
+      throw ret;
+    }
+  }
+
+  // process one of the pcsim headers to check all is well
+  gROOT->ProcessLine("#include <pcsim/core/pdg.hh>");
+
+  // that's all!
+}

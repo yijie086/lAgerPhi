@@ -1,0 +1,72 @@
+## /usr/bin/python
+import os
+
+'''Get the paths for the library, check if we are using the build tree.'''
+
+## get info from cmake
+project_name = '@PROJECT_NAME@'
+cmake_build = os.path.abspath('@CMAKE_BINARY_DIR@') + '/'
+cmake_source = os.path.abspath('@CMAKE_SOURCE_DIR@') + '/'
+cmake_install_bin = os.path.abspath('@INSTALL_BIN_DIR@') + '/'
+cmake_install_lib = os.path.abspath('@INSTALL_LIB_DIR@') + '/'
+cmake_install_inc = os.path.abspath('@INSTALL_INCLUDE_DIR@/..') + '/'
+
+## get the current directery
+local_dir = os.path.abspath(__file__)
+
+## are we in the build tree?
+intree = (local_dir.find(cmake_build) is 0)
+
+def bin_path(program = ''):
+    '''Return the pcsim bin path.'''
+    path = ''
+    if intree:
+        path = cmake_build + 'program/' + program
+    else:
+        path = cmake_install_bin + program
+    if not os.path.exists(path):
+        if len(program):
+            raise IOError('%s: Unable to locate PCSIM binary directory: %s' %
+                            (__name__, path))
+        else:
+            raise IOError('%s: Unable to locate PCSIM file: %s' % 
+                            (__name__, path))
+    return path
+
+def include_path():
+    '''Rereturnturn the main include path.'''
+    path = None
+    if intree:
+        path = cmake_source
+    else:
+        path = cmake_install_inc
+    if not os.path.exists(path):
+        raise IOError('%s: Unable to locate PCSIM include directory: %s' %
+                            (__name__, path))
+    return path
+
+def lib_path(lib):
+    '''Return the path for the requested PCSIM library.'''
+    path = None
+    if intree:
+        ## if we are intree, the library 'libcomp' can be found under
+        ## ${CMAKE_BUILD_DIR}/${PROJECT_NAME}/comp/lib${PROJECT_NAME}_comp
+        comp = lib[len(project_name) + 1:]
+        path = '%s/%s/%s/lib%s' % (cmake_build[:-1], project_name, comp, lib)
+    else:
+        ## everything in the main lib dir
+        path = cmake_install_lib + 'lib' + lib
+    return path
+
+def setup_root_path():
+    '''Return the path for the setup_root.cc macro.'''
+    path = None
+    if intree:
+        path = '%s/%s/root/' % (cmake_build[:-1], project_name)
+    else:
+        path = '%s/%s/' % (cmake_install_lib[:-1], project_name)
+    return path + 'setup_root.cc'
+
+
+
+

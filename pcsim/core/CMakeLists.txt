@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.0)
+
 ################################################################################
 ## CMAKE Settings
 ################################################################################
@@ -18,19 +20,10 @@ include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 ################################################################################
-## External Libraries
-################################################################################
-## ROOT
-find_package(ROOT REQUIRED)
-include_directories(${ROOT_INCLUDE_DIR})
-## boost
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-################################################################################
 ## Compile and Link
 ################################################################################
-add_library(${LIBRARY} ${SOURCES})
+add_library(${LIBRARY} SHARED ${SOURCES})
+target_link_libraries(${LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION}
