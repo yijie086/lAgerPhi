@@ -1,0 +1,6 @@
+#ifndef PCSIM_ROOT_CONFIG_LOADED
+#define PCSIM_ROOT_CONFIG_LOADED
+
+#cmakedefine SUPPORT_ANL
+
+#endif

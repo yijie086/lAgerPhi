@@ -59,8 +59,8 @@ public:
 // is only neccesary for PyROOT, as the current python bindings do not work
 // (9/26/2017)
 template <class Interface>
-histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
-                          string_view wname = "") {
+histo1D_type make_histo1D(Interface& df, const TH1F& href,
+                          std::string_view vname, std::string_view wname = "") {
   auto h2 = href;
   if (wname.size() == 0) {
     return df.Histo1D(std::move(h2), vname);
@@ -68,8 +68,9 @@ histo1D_type make_histo1D(Interface& df, const TH1F& href, string_view vname,
   return df.Histo1D(std::move(h2), vname, wname);
 }
 template <class Interface>
-histo2D_type make_histo2D(Interface& df, const TH2F& href, string_view v1name,
-                          string_view v2name, string_view wname = "") {
+histo2D_type make_histo2D(Interface& df, const TH2F& href,
+                          std::string_view v1name, std::string_view v2name,
+                          std::string_view wname = "") {
   auto h2 = href;
   if (wname.size() == 0) {
     return df.Histo2D(std::move(h2), v1name, v2name);

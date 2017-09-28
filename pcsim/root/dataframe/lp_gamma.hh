@@ -3,6 +3,7 @@
 
 #include "dataframe.hh"
 
+#include <Math/Vector4D.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TParticle.h>
@@ -15,23 +16,26 @@ namespace dataframe {
 
 class lp_gamma : public custom_dataframe {
 public:
+  using vector_type = ROOT::Math::XYZTVector;
+
   lp_gamma(std::string_view fname, const double scale = 1.)
       : custom_dataframe{{"lp_gamma_event", fname}, scale} {}
+  lp_gamma(const std::vector<std::string>& fnames, const double scale = 1.)
+      : custom_dataframe{{"lp_gamma_event", fnames}, scale} {}
 
-protected:
   // utility functions to get certain 4-vectors from the event
-  static TLorentzVector get_vector(const TClonesArray& particles,
-                                   const int16_t index) {
+  static vector_type vector(const TClonesArray& particles,
+                            const int16_t index) {
     TLorentzVector v;
     static_cast<TParticle*>(particles.At(index))->Momentum(v);
-    return v;
+    return {v.X(), v.Y(), v.Z(), v.T()};
   }
   template <int ChildIndex>
-  static TLorenzVector get_child_vector(const TClonesArray& particles,
-                                        const int16_t parent_index) {
+  static vector_type child_vector(const TClonesArray& particles,
+                                  const int16_t parent_index) {
     const int16_t index = static_cast<TParticle*>(particles.At(parent_index))
                               ->GetDaughter(ChildIndex);
-    return get_vector(particles, index);
+    return vector(particles, index);
   }
 };
 } // namespace dataframe

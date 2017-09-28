@@ -16,7 +16,8 @@ file (GLOB PHYSICS_HEADERS "physics/*.hh")
 ## Include directories
 ################################################################################
 include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+#include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_BINARY_DIR}")
 
 ################################################################################
 ## External Libraries
@@ -28,10 +29,21 @@ find_package(lcio2 QUIET)
 if(podio_FOUND AND lcio2_FOUND)
   message("LCIO2/PODIO found, including ANL ROOT bindings")
   set(SUPPORT_ANL 1)
+  include_directories(${LCIO2_INCLUDE_DIRS})
 else()
   message("No LCIO2/PODIO found, not building ANL ROOT support")
   set(SUPPORT_ANL 0)
 endif()
+
+################################################################################
+## Configure files
+################################################################################
+configure_file(setup_root.cc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/setup_root.cc)
+configure_file(pcsim-root.in 
+    ${CMAKE_CURRENT_BINARY_DIR}/pcsim-root)
+configure_file(config.hh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.hh)
 
 ################################################################################
 ## Compile and Link
@@ -67,8 +79,3 @@ install(FILES
   ${PHYSICS_HEADERS} 
   DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/lp_gamma" 
   COMPONENT dev)
-
-configure_file(setup_root.cc.in
-    ${CMAKE_CURRENT_BINARY_DIR}/setup_root.cc)
-configure_file(pcsim-root.in 
-    ${CMAKE_CURRENT_BINARY_DIR}/pcsim-root)
