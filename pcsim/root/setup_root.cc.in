@@ -32,8 +32,7 @@ public:
         "os.path.abspath('@INSTALL_INCLUDE_DIR@/..') + '/'");
 
     // get the local directory
-    local_dir = (const char*)TPython::Eval(
-        "os.path.abspath('@CMAKE_CURRENT_BINARY_DIR@/setup_root.cc')");
+    local_dir = (const char*)TPython::Eval("os.path.abspath('" __FILE__ "')");
 
     // are we in the local build tree?
     if (local_dir.find(cmake_build) == std::string::npos) {
@@ -151,8 +150,8 @@ void setup_root() {
   // load the PCSIM libraries
   auto components = pcsim::root::setup_root::split_string("@TARGETS@;pcsim_root");
   for (const auto& lib : components) {
-    std::cout << "setup_root: Loading library: " << lib << std::endl;
     const auto libpath = path_helper.lib_path(lib);
+    std::cout << "setup_root: Loading library: " << libpath << std::endl;
     int ret = gSystem->Load(libpath.c_str());
     if (ret < 0) {
       std::cerr << "ERROR: setup_root: failed to load library: " << lib
