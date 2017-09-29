@@ -257,7 +257,8 @@ inline particle::particle(const pdg_id id, const status_code status)
     , charge_{static_cast<int>(pdg_->Charge() / 3)}
     , width_{pdg_->Width()}
     , status_{status}
-    , mass_{pdg_->Mass()} {}
+    , mass_{pdg_->Mass()}
+    , p_{0, 0, 0, mass_} {}
 // particle with a given momentum 3-vector
 inline particle::particle(const pdg_id id, const XYZVector& p3,
                           const status_code status)

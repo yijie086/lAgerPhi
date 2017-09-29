@@ -1,5 +1,6 @@
 #include "photon_gen.hh"
 #include <TF1.h>
+#include <TF2.h>
 #include <TSpline.h>
 #include <cmath>
 #include <pcsim/core/assert.hh>
@@ -227,10 +228,6 @@ photon vphoton::generate(const primary& lepton, const primary& target) {
 
 // =======================================================================================
 // calculate an upper limit for the flux for the requested kinematic limits
-//
-// the max is reached for Q2 = Q2min and y = ymin
-// ==> note: these values are obtained when using the functional form
-// differential in logQ2 and logy!
 // =======================================================================================
 double vphoton::calc_max_flux(const configuration& cf) const {
   const particle beam{static_cast<pdg_id>(cf.get<int>("beam/particle_type")),
@@ -240,9 +237,14 @@ double vphoton::calc_max_flux(const configuration& cf) const {
       static_cast<pdg_id>(cf.get<int>("target/particle_type")),
       cf.get_vector3<particle::XYZVector>("target/dir"),
       cf.get<double>("target/energy")};
-  const double Q2 = Q2_range_.min;
-  const double y = y_range_.min;
-  return flux(Q2, y, beam, target);
+  TF2 fflux("flux",
+           [=](double* Q2y, double* par = 0x0) {
+             return this->flux(Q2y[0], Q2y[1], beam, target);
+           },
+           Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);
+  double Q2, y;
+  fflux.GetMaximumXY(Q2, y);
+  return flux(Q2, y, beam, target) * 1.01;
 }
 
 // =======================================================================================
