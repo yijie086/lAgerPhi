@@ -122,6 +122,12 @@ void setup_root() {
     includes.push_back("@LCIO2_INCLUDE_DIRS@");
   }
 
+  // load includes
+  for (const auto& inc : includes) {
+    std::cout << "setup_root: Adding include path: " << inc << std::endl;
+    gROOT->ProcessLine((".include " + inc).c_str());
+  }
+
   // load the library dependencies
   for (const auto& lib : dependencies) {
     std::cout << "setup_root: Loading library: " << lib << std::endl;
@@ -131,12 +137,6 @@ void setup_root() {
                 << std::endl;
       throw ret;
     }
-  }
-
-  // load includes
-  for (const auto& inc : includes) {
-    std::cout << "setup_root: Adding include path: " << inc << std::endl;
-    gROOT->ProcessLine((".include " + inc).c_str());
   }
 
   // create our path helper
