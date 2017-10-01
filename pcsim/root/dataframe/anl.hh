@@ -19,12 +19,14 @@ namespace dataframe {
 
 class anl : public custom_dataframe {
 public:
-  using particles_type = std::vector<lcio2::ReconstructedParticleData>;
-  using particle_crefs_type = std::vector<
-      std::reference_wrapper<const lcio2::ReconstructedParticleData>>;
-  using mc_particles_type = std::vector<lcio2::MCParticleData>;
+  using particle_type = lcio2::ReconstructedParticleData;
+  using particles_type = std::vector<particle_type>;
+  using particle_crefs_type =
+      std::vector<std::reference_wrapper<const particle_type>>;
+  using mc_particle_type = lcio2::MCParticleData;
+  using mc_particles_type = std::vector<mc_particle_type>;
   using mc_particle_crefs_type =
-      std::vector<std::reference_wrapper<const lcio2::MCParticleData>>;
+      std::vector<std::reference_wrapper<const mc_particle_type>>;
   using vector_type = ROOT::Math::PxPyPzMVector;
 
   anl(const std::string_view& fname, const double scale = 1.)
@@ -39,8 +41,9 @@ public:
     return {v3[0], v3[1], v3[2], m};
   }
   static size_t pid_count(const particles_type& parts, const int pid) {
-    return std::count_if(parts.begin(), parts.end(),
-                         [=](const auto& part) { return part.type == pid; });
+    return std::count_if(
+        parts.begin(), parts.end(),
+        [=](const particle_type& part) { return part.type == pid; });
   }
   static particle_crefs_type select_pid(const particles_type& parts,
                                         const int pid) {
