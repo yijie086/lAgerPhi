@@ -118,6 +118,7 @@ void setup_root() {
   const int have_lcio2 = @SUPPORT_ANL@;
   if (have_lcio2) {
     dependencies.push_back("@podio_LIBRARY_DIR@/libpodio.so");
+    dependencies.push_back("@podio_LIBRARY_DIR@/libpodioDict.so");
     dependencies.push_back("@podio_LIBRARY_DIR@/liblcio2.so");
     includes.push_back("@LCIO2_INCLUDE_DIRS@");
   }
