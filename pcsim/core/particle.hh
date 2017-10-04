@@ -49,7 +49,6 @@ public:
   particle(const pdg_id id = pdg_id::unknown,
            const status_code status = status_code::FINAL);
   // particle with a given momentum 3-vector
-  particle(const pdg_id id, const XYZVector& p3);
   particle(const pdg_id id, const XYZVector& p3,
            const status_code status = status_code::FINAL);
 
