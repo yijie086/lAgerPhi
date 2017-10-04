@@ -90,9 +90,9 @@ public:
              const options_type& default_opts = {});
   
   // draw this plot
-  void draw();
-  void print();
-  void write();
+  void draw(const std::string& drawopt = "");
+  void print(const std::string& drawopt = "");
+  void write(const std::string& drawopt = "");
 
 private:
   void init_histos();
@@ -218,7 +218,8 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
 }
 
 // draw this plot
-template <class HistoProxy> void plot_proxy<HistoProxy>::draw() {
+template <class HistoProxy>
+void plot_proxy<HistoProxy>::draw(const std::string& drawopt) {
   if (c_) {
     // already drawn
     return;
@@ -229,21 +230,23 @@ template <class HistoProxy> void plot_proxy<HistoProxy>::draw() {
   }
   init_canvas();
   init_histos();
-  std::string drawopt = "";
+  std::string extra_drawopt = "";
   for (auto& h : histos_) {
-    h.draw(drawopt);
-    drawopt = "same";
+    h.draw(drawopt + extra_drawopt);
+    extra_drawopt = "same";
   }
   if (histos_.size() > 1) {
     c_->BuildLegend();
   }
 }
-template <class HistoProxy> void plot_proxy<HistoProxy>::print() {
-  draw();
+template <class HistoProxy>
+void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
+  draw(drawopt);
   c_->Print((histos_[0].name() + ".pdf").c_str());
 }
-template <class HistoProxy> void plot_proxy<HistoProxy>::write() {
-  draw();
+template <class HistoProxy>
+void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
+  draw(drawopt);
   for (auto& h : histos_) {
     h.write();
   }

@@ -79,7 +79,7 @@ void histogrammer::print() {
     plot.print();
   }
   for (auto& plot : plots2D_) {
-    plot.print();
+    plot.print("colz");
   }
 }
 
