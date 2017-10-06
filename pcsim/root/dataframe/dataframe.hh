@@ -36,6 +36,11 @@ private:
 // want to apply to a dataset to present a more uniform interface
 class custom_dataframe : public dataframe_proxy, public def_interface_type {
 public:
+  using column_names_type = ROOT::Experimental::TDFDetail::ColumnNames_t;
+  template <class Particle>
+  using particle_crefs_type =
+      std::vector<std::reference_wrapper<const Particle>>;
+
   // scale: constant scale factor to apply to each event
   custom_dataframe(const TDataFrame& df, const double scale = 1.)
       : dataframe_proxy{df}

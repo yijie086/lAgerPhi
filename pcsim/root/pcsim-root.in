@@ -7,6 +7,7 @@ project_name = '@PROJECT_NAME@'
 current_path = os.path.abspath(os.path.dirname(__file__))
 cmake_build = os.path.abspath('@CMAKE_BINARY_DIR@') + '/'
 cmake_install_lib = os.path.abspath('@INSTALL_LIB_DIR@') + '/'
+root_exe = '@ROOT_EXECUTABLE@'
 
 ## are we intree?
 intree = (current_path.find(cmake_build) is 0)
@@ -40,7 +41,7 @@ parser.add_option('-v', action='store_true', dest='verbose',
                   help='Be verbose')
 (options, args) = parser.parse_args()
 
-exec_command = ["root -l -e '.x %s'" % setup_root]
+exec_command = ["%s -l -e '.x %s'" % (root_exe, setup_root)]
 if options.batch:
   exec_command += ['-b']
 if options.clean:
@@ -56,7 +57,6 @@ if options.file is not None:
 ## append the macros
 exec_command += args
 exec_str = ' '.join(exec_command)
-#exec_str = "root -l -e '.x %s' -x %s+" % (setup_root, sys.argv[1])
 if options.verbose:
   print "Running command: %s" % exec_str
 os.system(exec_str)
