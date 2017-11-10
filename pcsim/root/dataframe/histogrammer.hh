@@ -41,6 +41,8 @@ private:
 extern const std::vector<histo_style> STYLE;
 // =============================================================================
 // HISTOGRAMMER_IMPL: CONFIGURABLE
+//
+// TODO: confusing, this is not pcsim::configurable!
 // =============================================================================
 class configurable {
 public:
@@ -207,6 +209,10 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
                                    const options_type& opts,
                                    const options_type& default_opts)
     : configurable{opts, default_opts}, histos_{h} {
+  // ensure dir is always set
+  if (options().count("dir") == 0) {
+    set_defaults({{"dir", "./"}});
+  }
   options_type histo_defaults = {};
   if (options().count("histo")) {
     histo_defaults = boost::any_cast<options_type>(options().at("histo"));
@@ -242,7 +248,11 @@ void plot_proxy<HistoProxy>::draw(const std::string& drawopt) {
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
   draw(drawopt);
-  c_->Print((histos_[0].name() + ".pdf").c_str());
+  std::string dir{boost::any_cast<std::string>(options().at("dir"))};
+  if (dir.back() != '/') {
+    dir += '/';
+  }
+  c_->Print((dir + histos_[0].name() + ".pdf").c_str());
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
@@ -293,6 +303,8 @@ template <class HistoProxy> void plot_proxy<HistoProxy>::init_canvas() {
     } else if (key == "histo") {
       // magical histo options passed to all histograms in plot, do nothing
       // here.
+    } else if (key == "dir") {
+      // magical keyword that stores the (optional) directory for the plots
     } else {
       LOG_WARNING("histogrammer", "Unknown plot option: " + key);
     }
