@@ -2,6 +2,7 @@
 #define PCSIM_ROOT_DATAFRAME_HISTOGRAMMER_LOADED
 
 #include <TCanvas.h>
+#include <TFile.h>
 #include <TStyle.h>
 #include <boost/any.hpp>
 #include <map>
@@ -115,7 +116,8 @@ public:
   using plot2D_type = histogrammer_impl::plot_proxy<histo2D_type>;
   using options_type = options_type;
 
-  histogrammer(const options_type& opts = {});
+  histogrammer(const options_type& opts = {},
+               std::shared_ptr<TFile> file = nullptr);
   ~histogrammer() { print(); }
 
   // 1D plots
@@ -126,9 +128,10 @@ public:
   void add(const histo2D_type& histo, options_type plot_opts = {});
 
   void print();
-  // void write(); TODO
+  void write();
 
 private:
+  std::shared_ptr<TFile> ofile_;
   std::vector<plot1D_type> plots1D_;
   std::vector<plot2D_type> plots2D_;
 };
@@ -266,7 +269,7 @@ void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
 template <class HistoProxy> void plot_proxy<HistoProxy>::init_histos() {
   for (auto& h : histos_) {
     h.init();
-    }
+  }
 }
 template <class HistoProxy> void plot_proxy<HistoProxy>::init_canvas() {
   c_ = std::make_shared<TCanvas>("c", "c", 600, 600);

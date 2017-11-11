@@ -1,4 +1,5 @@
 #include "histogrammer.hh"
+#include <TH1.h>
 
 namespace pcsim {
 namespace root {
@@ -55,8 +56,12 @@ void configurable::set_defaults(const options_type& default_opts) {
 // =============================================================================
 // HISTOGRAMMER
 // =============================================================================
-histogrammer::histogrammer(const options_type& opts)
-    : histogrammer_impl::configurable{opts} {}
+histogrammer::histogrammer(const options_type& opts,
+                           std::shared_ptr<TFile> ofile)
+    : histogrammer_impl::configurable{opts}, ofile_{std::move(ofile)} {
+  // disable auto-histogram storage so we can micro-manage this instead
+  TH1::AddDirectory(kFALSE);
+}
 void histogrammer::add(const histogrammer::histo1D_type& histo,
                        const options_type& plot_opts) {
   add(std::vector<histo1D_type>({histo}), plot_opts);
@@ -81,6 +86,32 @@ void histogrammer::print() {
   for (auto& plot : plots2D_) {
     plot.print("colz");
   }
+}
+void histogrammer::write() {
+  // ensure if we have an active ROOT file
+  if (!ofile_ || !ofile_->IsOpen()) {
+    // if not --> do nothing
+    return;
+  }
+
+  ofile_->cd();
+
+  // check if we need to use a subdirectory
+  if (options().count("dir") == 0) {
+    auto dir = ofile_->mkdir(
+        boost::any_cast<std::string>(options().at("dir")).c_str());
+    dir->cd();
+  }
+  // invoke write on all 1D and 2D plots
+  for (auto& plot : plots1D_) {
+    plot.write();
+  }
+  for (auto& plot : plots2D_) {
+    plot.write();
+  }
+
+  // return back to top level file
+  ofile_->cd();
 }
 
 } // namespace dataframe
