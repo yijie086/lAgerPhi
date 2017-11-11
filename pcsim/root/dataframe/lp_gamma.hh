@@ -48,7 +48,7 @@ public:
     return vector(*static_cast<particle_type*>(parts.At(index)));
   }
   template <int16_t index>
-  ROOT::Math::XYZTVector vector(const particles_type& parts) {
+  static ROOT::Math::XYZTVector vector(const particles_type& parts) {
     return vector(parts, index);
   }
   static ROOT::Math::XYZTVector vector(const particle_type& part) {
