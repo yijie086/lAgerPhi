@@ -57,8 +57,11 @@ void configurable::set_defaults(const options_type& default_opts) {
 // HISTOGRAMMER
 // =============================================================================
 histogrammer::histogrammer(const options_type& opts,
-                           std::shared_ptr<TFile> ofile)
-    : histogrammer_impl::configurable{opts}, ofile_{std::move(ofile)} {
+                           std::shared_ptr<TFile> ofile,
+                           const std::string& tfile_dir)
+    : histogrammer_impl::configurable{opts}
+    , ofile_{std::move(ofile)}
+    , tfile_dir_{tfile_dir} {
   // disable auto-histogram storage so we can micro-manage this instead
   TH1::AddDirectory(kFALSE);
 }
@@ -97,7 +100,7 @@ void histogrammer::write() {
   ofile_->cd();
 
   // check if we need to use a subdirectory
-  if (options().count("dir") == 0) {
+  if (tfile_dir_.size() > 0) {
     auto dir = ofile_->mkdir(
         boost::any_cast<std::string>(options().at("dir")).c_str());
     dir->cd();

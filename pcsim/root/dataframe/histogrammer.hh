@@ -117,7 +117,8 @@ public:
   using options_type = options_type;
 
   histogrammer(const options_type& opts = {},
-               std::shared_ptr<TFile> file = nullptr);
+               std::shared_ptr<TFile> file = nullptr,
+               const std::string& tfile_dir = "");
   ~histogrammer() { print(); }
 
   // 1D plots
@@ -132,6 +133,7 @@ public:
 
 private:
   std::shared_ptr<TFile> ofile_;
+  const std::string tfile_dir_;
   std::vector<plot1D_type> plots1D_;
   std::vector<plot2D_type> plots2D_;
 };
