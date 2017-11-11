@@ -65,6 +65,10 @@ histogrammer::histogrammer(const options_type& opts,
   // disable auto-histogram storage so we can micro-manage this instead
   TH1::AddDirectory(kFALSE);
 }
+histogrammer::~histogrammer() {
+  print();
+  write();
+}
 void histogrammer::add(const histogrammer::histo1D_type& histo,
                        const options_type& plot_opts) {
   add(std::vector<histo1D_type>({histo}), plot_opts);

@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TStyle.h>
 #include <boost/any.hpp>
+#include <boost/filesystem.hpp>
 #include <map>
 #include <memory>
 #include <pcsim/core/interval.hh>
@@ -119,7 +120,8 @@ public:
   histogrammer(const options_type& opts = {},
                std::shared_ptr<TFile> file = nullptr,
                const std::string& tfile_dir = "");
-  ~histogrammer() { print(); }
+  // print and save to file
+  ~histogrammer();
 
   // 1D plots
   void add(const histo1D_type& histo, const options_type& plot_opts = {});
@@ -256,6 +258,10 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
   std::string dir{boost::any_cast<std::string>(options().at("dir"))};
   if (dir.back() != '/') {
     dir += '/';
+  }
+  // create directory if needed
+  if (!boost::filesystem::is_directory(dir)) {
+    boost::filesystem::create_directories(dir);
   }
   c_->Print((dir + histos_[0].name() + ".pdf").c_str());
 }
