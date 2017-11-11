@@ -162,7 +162,7 @@ histo_proxy<Histo>::histo_proxy(const Histo& h, const options_type& opts)
     : configurable{opts}, histo_{h} {
   // ensure histo has a name
   if (std::string("") == name()) {
-    histo_->SetName(generic_histo_name());
+    histo_->SetName(generic_histo_name().c_str());
   }
 }
 
