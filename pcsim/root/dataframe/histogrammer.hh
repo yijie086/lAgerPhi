@@ -272,7 +272,7 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
     boost::filesystem::create_directories(dir);
   }
   const auto c_name = boost::any_cast<std::string>(options().at("name"));
-  c_->Print((c_name + ".pdf").c_str());
+  c_->Print((dir + c_name + ".pdf").c_str());
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
