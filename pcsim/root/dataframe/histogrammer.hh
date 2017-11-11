@@ -57,6 +57,8 @@ public:
   const options_type& options() const { return options_; }
 
 private:
+  void convert_char2string();
+
   options_type options_;
 };
 
@@ -220,6 +222,11 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
   if (options().count("dir") == 0) {
     set_defaults({{"dir", "./"}});
   }
+  if (options().count("name") == 0) {
+    // TODO not thread safe
+    static int fig_cnt = 0;
+    set_defaults({{"name", "figure_" + std::to_string(++fig_cnt)}});
+  }
   options_type histo_defaults = {};
   if (options().count("histo")) {
     histo_defaults = boost::any_cast<options_type>(options().at("histo"));
@@ -280,7 +287,9 @@ template <class HistoProxy> void plot_proxy<HistoProxy>::init_histos() {
   }
 }
 template <class HistoProxy> void plot_proxy<HistoProxy>::init_canvas() {
-  c_ = std::make_shared<TCanvas>("c", "c", 600, 600);
+  const auto c_name =
+      boost::any_cast<std::string>(options().at("name")).c_str();
+  c_ = std::make_shared<TCanvas>(c_name, c_name, 600, 600);
   for (const auto& opt : options()) {
     const options_type::key_type& key = opt.first;
     const options_type::mapped_type& value = opt.second;
@@ -316,6 +325,8 @@ template <class HistoProxy> void plot_proxy<HistoProxy>::init_canvas() {
       // here.
     } else if (key == "dir") {
       // magical keyword that stores the (optional) directory for the plots
+    } else if (key == "name") {
+      // magical keywoard that stores the plot (canvas) name
     } else {
       LOG_WARNING("histogrammer", "Unknown plot option: " + key);
     }

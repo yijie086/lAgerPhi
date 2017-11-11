@@ -42,12 +42,27 @@ configurable::configurable(const options_type& opts,
                            const options_type& default_opts)
     : options_{opts} {
   set_defaults(default_opts);
+  // ensure we don't have any const char* stored
+  convert_char2string();
 }
 // add settings from the default if not already set
 void configurable::set_defaults(const options_type& default_opts) {
   for (const auto& setting : default_opts) {
     if (!options_.count(setting.first)) {
       options_[setting.first] = setting.second;
+    }
+  }
+  // ensure we don't have any const char* stored
+  convert_char2string();
+}
+// convert const char* to std::string
+void configurable::convert_char2string() {
+  for (const auto& setting : options_) {
+    try {
+      auto a = boost::any_cast<const char*>(setting.second);
+      options_[setting.first] = std::string(a);
+    } catch (...) {
+      ; // not a const char, so no action needed
     }
   }
 }
@@ -105,8 +120,7 @@ void histogrammer::write() {
 
   // check if we need to use a subdirectory
   if (tfile_dir_.size() > 0) {
-    auto dir = ofile_->mkdir(
-        boost::any_cast<std::string>(options().at("dir")).c_str());
+    auto dir = ofile_->mkdir(tfile_dir_.c_str());
     dir->cd();
   }
   // invoke write on all 1D and 2D plots
