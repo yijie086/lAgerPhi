@@ -58,6 +58,7 @@ public:
 
 protected:
   std::string generic_figure_name() const;
+  std::string generic_histo_name() const;
 
 private:
   void convert_char2string();
@@ -158,7 +159,12 @@ namespace dataframe {
 namespace histogrammer_impl {
 template <class Histo>
 histo_proxy<Histo>::histo_proxy(const Histo& h, const options_type& opts)
-    : configurable{opts}, histo_{h} {}
+    : configurable{opts}, histo_{h} {
+  // ensure histo has a name
+  if (std::string("") == name()) {
+    h->SetName(generic_histo_name());
+  }
+}
 
 // initialize the histogram
 template <class Histo> void histo_proxy<Histo>::init() {
@@ -225,8 +231,14 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
   if (options().count("dir") == 0) {
     set_defaults({{"dir", "./"}});
   }
+  // ensure name is always set, defaults to generic figure name, or histo in
+  // case of 1 histo
   if (options().count("name") == 0) {
-    set_defaults({{"name", generic_figure_name()}});
+    if (histos_.size() == 1) {
+      set_defaults({{"name", histos_[0].name()}});
+    } else {
+      set_defaults({{"name", generic_figure_name()}});
+    }
   }
   options_type histo_defaults = {};
   if (options().count("histo")) {

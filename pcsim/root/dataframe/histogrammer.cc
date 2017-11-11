@@ -55,6 +55,11 @@ void configurable::set_defaults(const options_type& default_opts) {
   // ensure we don't have any const char* stored
   convert_char2string();
 }
+// generate a generic histo name (not thread safe)
+std::string configurable::generic_histo_name() const {
+  static int cnt = 0;
+  return "histo_" + std::to_string(++cnt);
+}
 // generate a generic figure name (not thread safe)
 std::string configurable::generic_figure_name() const {
   static int cnt = 0;
