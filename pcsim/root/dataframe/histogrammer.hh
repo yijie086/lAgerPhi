@@ -56,6 +56,9 @@ public:
   // get our options
   const options_type& options() const { return options_; }
 
+protected:
+  std::string generic_figure_name() const;
+
 private:
   void convert_char2string();
 
@@ -223,9 +226,7 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
     set_defaults({{"dir", "./"}});
   }
   if (options().count("name") == 0) {
-    // TODO not thread safe
-    static int fig_cnt = 0;
-    set_defaults({{"name", "figure_" + std::to_string(++fig_cnt)}});
+    set_defaults({{"name", generic_figure_name()}});
   }
   options_type histo_defaults = {};
   if (options().count("histo")) {
@@ -270,7 +271,8 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
   if (!boost::filesystem::is_directory(dir)) {
     boost::filesystem::create_directories(dir);
   }
-  c_->Print((dir + histos_[0].name() + ".pdf").c_str());
+  const auto c_name = boost::any_cast<std::string>(options().at("name"));
+  c_->Print((c_name + ".pdf").c_str());
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {

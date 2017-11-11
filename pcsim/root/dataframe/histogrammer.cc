@@ -55,6 +55,11 @@ void configurable::set_defaults(const options_type& default_opts) {
   // ensure we don't have any const char* stored
   convert_char2string();
 }
+// generate a generic figure name (not thread safe)
+std::string configurable::generic_figure_name() const {
+  static int cnt = 0;
+  return "figure_" + std::to_string(++cnt);
+}
 // convert const char* to std::string
 void configurable::convert_char2string() {
   for (const auto& setting : options_) {
