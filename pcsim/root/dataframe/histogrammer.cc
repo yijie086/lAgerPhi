@@ -28,6 +28,9 @@ void histo_style::apply(histo1D_type& h) const {
 void histo_style::apply(histo2D_type& h) const {
   h->SetContour(contour_); // for 2D colz histos
 }
+void histo_style::apply(histo3D_type& h) const {
+  // do nothing for 3D histos
+}
 const std::vector<histo_style> STYLE = {
     {kBlack, 0},     {kBlue + 1, 1},   {kGreen + 2, 2}, {kRed + 1, 3},
     {kViolet, 4},    {kOrange + 1, 5}, {kBlack, 2},     {kBlue + 1, 3},
@@ -111,6 +114,11 @@ void histogrammer::add(const histogrammer::histo2D_type& histo,
   plots2D_.push_back(
       {std::vector<histo2D_type>({histo}), plot_opts, options()});
 }
+void histogrammer::add(const histogrammer::histo3D_type& histo,
+                       options_type plot_opts) {
+  plots3D_.push_back(
+      {std::vector<histo3D_type>({histo}), plot_opts, options()});
+}
 void histogrammer::print() {
   for (auto& plot : plots1D_) {
     plot.print();
@@ -118,6 +126,7 @@ void histogrammer::print() {
   for (auto& plot : plots2D_) {
     plot.print("colz");
   }
+  // we don't attemnt to draw 3D histos
 }
 void histogrammer::write() {
   // ensure if we have an active ROOT file
@@ -138,6 +147,9 @@ void histogrammer::write() {
     plot.write();
   }
   for (auto& plot : plots2D_) {
+    plot.write();
+  }
+  for (auto& plot : plots3D_) {
     plot.write();
   }
 

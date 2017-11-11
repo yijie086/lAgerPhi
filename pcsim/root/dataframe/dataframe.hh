@@ -18,6 +18,7 @@ using def_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
 using fil_interface_type = decltype((TDataFrame{"", ""}).Filter("", ""));
 using histo1D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
 using histo2D_type = decltype((TDataFrame{"", ""}).Histo2D(TH2F()));
+using histo3D_type = decltype((TDataFrame{"", ""}).Histo3D(TH3F()));
 
 // utility class
 class dataframe_proxy {

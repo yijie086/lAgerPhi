@@ -30,6 +30,7 @@ public:
   histo_style(int color, int lstyle, int lwidth = 2);
   void apply(histo1D_type& h) const;
   void apply(histo2D_type& h) const;
+  void apply(histo3D_type& h) const;
 
 private:
   int lcolor_;
@@ -119,8 +120,10 @@ class histogrammer : public histogrammer_impl::configurable {
 public:
   using histo1D_type = histogrammer_impl::histo_proxy<dataframe::histo1D_type>;
   using histo2D_type = histogrammer_impl::histo_proxy<dataframe::histo2D_type>;
+  using histo3D_type = histogrammer_impl::histo_proxy<dataframe::histo3D_type>;
   using plot1D_type = histogrammer_impl::plot_proxy<histo1D_type>;
   using plot2D_type = histogrammer_impl::plot_proxy<histo2D_type>;
+  using plot3D_type = histogrammer_impl::plot_proxy<histo3D_type>;
   using options_type = options_type;
 
   histogrammer(const options_type& opts = {},
@@ -135,6 +138,8 @@ public:
            const options_type& plot_opts = {});
   // 2D plots
   void add(const histo2D_type& histo, options_type plot_opts = {});
+  // 3D "plots"
+  void add(const histo3D_type& histo, options_type plot_opts = {});
 
   void print();
   void write();
@@ -144,6 +149,7 @@ private:
   const std::string tfile_dir_;
   std::vector<plot1D_type> plots1D_;
   std::vector<plot2D_type> plots2D_;
+  std::vector<plot3D_type> plots3D_;
 };
 
 } // namespace dataframe
@@ -288,11 +294,13 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
-  draw(drawopt);
+  if (c_) {
+    c_->Write();
+    draw(drawopt);
+  }
   for (auto& h : histos_) {
     h.write();
   }
-  c_->Write();
 }
 
 template <class HistoProxy> void plot_proxy<HistoProxy>::init_histos() {
