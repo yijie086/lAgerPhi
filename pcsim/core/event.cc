@@ -1,4 +1,5 @@
 #include "event.hh"
+#include <cstring>
 #include <pcsim/core/logger.hh>
 
 // =============================================================================
@@ -6,8 +7,10 @@
 // =============================================================================
 
 namespace pcsim {
-event_out::event_out(std::shared_ptr<TFile> f, const std::string& name)
+event_out::event_out(std::shared_ptr<TFile> f, std::ofstream& olund,
+                     const std::string& name)
     : file_{f}
+    , olund_{olund}
     , parts_{"TParticle", PARTICLE_BUFFER_SIZE}
     , rc_parts_{"TParticle", PARTICLE_BUFFER_SIZE} {
   LOG_INFO("event_out", "Initializing ROOT output stream");
@@ -47,8 +50,35 @@ void event_out::push(const event& e) {
   // increment the index for the next event, and clear the particle buffer
   index_ += 1;
   clear();
+
+  // write LUND record
+  write_lund(e);
+
   // that's all
 }
+
+void event_out::write_lund(const event& e) {
+  char buf[2048];
+  // write the first line of the event record
+  snprintf(buf, 2048, "%5zu %5i %5i %5f %5f %5i %5f %5i %5i %8.6e\n",
+           e.count_final_state(), 1, 1, 0., 0., 11, e.beam().energy(), 0,
+           e.process(), e.total_cross_section());
+  olund_ << buf;
+  for (const auto& part : e) {
+    if (!part.final_state()) {
+      continue;
+    }
+    snprintf(buf, 2048,
+             "%5i %5f  %5i %5i %5i %5i %8.6e %8.6e %8.6e %8.6e %8.6e %8.6e "
+             "%8.6e %8.6e\n",
+             part.index(), part.lifetime(), 1, part.type<int>(),
+             part.parent_first(), part.daughter_begin(), part.p().x(),
+             part.p().y(), part.p().z(), part.energy(), part.mass(),
+             part.vertex().x(), part.vertex().y(), part.vertex().z());
+    olund_ << buf;
+  }
+}
+
 void event_out::clear() {
   n_part_ = 0;
   rc_n_part_ = 0;
