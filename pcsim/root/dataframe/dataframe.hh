@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 #include <TTree.h>
-#include <TH1F.h>
-#include <TH2F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 
 namespace pcsim {
 namespace root {
@@ -17,8 +17,8 @@ using ROOT::Experimental::TDataFrame;
 using def_interface_type = decltype((TDataFrame{"", ""}).Define("", ""));
 using fil_interface_type = decltype((TDataFrame{"", ""}).Filter("", ""));
 using histo1D_type = decltype((TDataFrame{"", ""}).Histo1D(""));
-using histo2D_type = decltype((TDataFrame{"", ""}).Histo2D(TH2F()));
-using histo3D_type = decltype((TDataFrame{"", ""}).Histo3D(TH3F()));
+using histo2D_type = decltype((TDataFrame{"", ""}).Histo2D(TH2D()));
+using histo3D_type = decltype((TDataFrame{"", ""}).Histo3D(TH3D()));
 
 // utility class
 class dataframe_proxy {
