@@ -21,15 +21,15 @@ public:
     // get info from cmake
     project_name = "@PROJECT_NAME@";
     cmake_build = (const char*)TPython::Eval(
-        "os.path.abspath('@CMAKE_BINARY_DIR@') + '/'");
+        "os.path.abspath(os.path.realpath('@CMAKE_BINARY_DIR@')) + '/'");
     cmake_source = (const char*)TPython::Eval(
-        "os.path.abspath('@CMAKE_SOURCE_DIR@') + '/'");
+        "os.path.abspath(os.path.realpath('@CMAKE_SOURCE_DIR@')) + '/'");
     cmake_install_bin = (const char*)TPython::Eval(
-        "os.path.abspath('@INSTALL_BIN_DIR@') + '/'");
+        "os.path.abspath(os.path.realpath('@INSTALL_BIN_DIR@')) + '/'");
     cmake_install_lib = (const char*)TPython::Eval(
-        "os.path.abspath('@INSTALL_LIB_DIR@') + '/'");
+        "os.path.abspath(os.path.realpath('@INSTALL_LIB_DIR@')) + '/'");
     cmake_install_inc = (const char*)TPython::Eval(
-        "os.path.abspath('@INSTALL_INCLUDE_DIR@/..') + '/'");
+        "os.path.abspath(os.path.realpath('@INSTALL_INCLUDE_DIR@/..')) + '/'");
 
     // get the local directory
     local_dir = (const char*)TPython::Eval("os.path.abspath('" __FILE__ "')");
