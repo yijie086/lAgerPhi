@@ -310,7 +310,7 @@ template <class HistoProxy> void plot_proxy<HistoProxy>::init_histos() {
 }
 template <class HistoProxy> void plot_proxy<HistoProxy>::init_canvas() {
   const auto c_name =
-      boost::any_cast<std::string>(options().at("name")).c_str();
+      ("plot_" + boost::any_cast<std::string>(options().at("name"))).c_str();
   c_ = std::make_shared<TCanvas>(c_name, c_name, 600, 600);
   for (const auto& opt : options()) {
     const options_type::key_type& key = opt.first;

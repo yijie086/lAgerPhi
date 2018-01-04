@@ -29,17 +29,19 @@ class mock_data:
         self.name = name
         self.graph = hacc.Clone()
         self.graph.SetName(name)
-        config(**kwargs)
+        self.config(**kwargs)
         ## calculate the actual mock data
         for i in range(1, hacc.GetNbinsX() + 1):
             x = hacc.GetBinCenter(i)
             y = ftheo.Eval(x)
             dy = 0.
             N = hacc.GetBinContent(i) * scale
+            Nold = N
             if random:
                 N = mock_data.rng.Poisson(N)
             ## do we have a reasonable amount of events
             if (N > 1.1):
+                y *= N / Nold
                 dy = y / ROOT.TMath.Sqrt(N)
                 y *= offset
             else:
