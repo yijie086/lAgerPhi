@@ -106,6 +106,9 @@ public:
   void write(const std::string& drawopt = "");
 
 private:
+  // init routines will be the first ones to dereference histos, which will
+  // initiate the loop of the TDataFrame
+  void init();
   void init_histos();
   void init_canvas();
   std::vector<HistoProxy> histos_;
@@ -165,15 +168,14 @@ namespace dataframe {
 namespace histogrammer_impl {
 template <class Histo>
 histo_proxy<Histo>::histo_proxy(const Histo& h, const options_type& opts)
-    : configurable{opts}, histo_{h} {
+    : configurable{opts}, histo_{h} {}
+
+// initialize the histogram
+template <class Histo> void histo_proxy<Histo>::init() {
   // ensure histo has a name
   if (std::string("") == name()) {
     histo_->SetName(generic_histo_name().c_str());
   }
-}
-
-// initialize the histogram
-template <class Histo> void histo_proxy<Histo>::init() {
   for (const auto& opt : options()) {
     const options_type::key_type& key = opt.first;
     const options_type::mapped_type& value = opt.second;
@@ -232,7 +234,9 @@ template <class HistoProxy>
 plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
                                    const options_type& opts,
                                    const options_type& default_opts)
-    : configurable{opts, default_opts}, histos_{h} {
+    : configurable{opts, default_opts}, histos_{h} {}
+
+template <class HistoProxy> void plot_proxy<HistoProxy>::init() {
   // ensure dir is always set
   if (options().count("dir") == 0) {
     set_defaults({{"dir", "./"}});
@@ -254,6 +258,8 @@ plot_proxy<HistoProxy>::plot_proxy(const std::vector<HistoProxy>& h,
     histos_[i].set_style(i);
     histos_[i].set_defaults(histo_defaults);
   }
+  init_histos();
+  init_canvas();
 }
 
 // draw this plot
@@ -267,8 +273,7 @@ void plot_proxy<HistoProxy>::draw(const std::string& drawopt) {
     LOG_WARNING("histogrammer", "Attempting to draw empty figure");
     return;
   }
-  init_canvas();
-  init_histos();
+  init();
   std::string extra_drawopt = "";
   for (auto& h : histos_) {
     h.draw(drawopt + extra_drawopt);
@@ -294,10 +299,8 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
-  if (c_) {
-    c_->Write();
-    draw(drawopt);
-  }
+  draw(drawopt);
+  c_->Write();
   for (auto& h : histos_) {
     h.write();
   }

@@ -121,7 +121,7 @@ void histogrammer::add(const histogrammer::histo3D_type& histo,
 }
 void histogrammer::print() {
   for (auto& plot : plots1D_) {
-    plot.print();
+    plot.print("hist");
   }
   for (auto& plot : plots2D_) {
     plot.print("colz");
@@ -144,10 +144,10 @@ void histogrammer::write() {
   }
   // invoke write on all 1D and 2D plots
   for (auto& plot : plots1D_) {
-    plot.write();
+    plot.write("hist");
   }
   for (auto& plot : plots2D_) {
-    plot.write();
+    plot.write("colz");
   }
   for (auto& plot : plots3D_) {
     plot.write();
