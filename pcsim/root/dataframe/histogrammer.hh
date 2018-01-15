@@ -299,8 +299,10 @@ void plot_proxy<HistoProxy>::print(const std::string& drawopt) {
 }
 template <class HistoProxy>
 void plot_proxy<HistoProxy>::write(const std::string& drawopt) {
-  draw(drawopt);
-  c_->Write();
+  if (drawopt != "nodraw") {
+    draw(drawopt);
+    c_->Write();
+  }
   for (auto& h : histos_) {
     h.write();
   }

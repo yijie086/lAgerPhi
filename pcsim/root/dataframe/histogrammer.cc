@@ -150,7 +150,7 @@ void histogrammer::write() {
     plot.write("colz");
   }
   for (auto& plot : plots3D_) {
-    plot.write();
+    plot.write("nodraw");
   }
 
   // return back to top level file
