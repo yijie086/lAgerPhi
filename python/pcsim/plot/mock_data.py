@@ -27,6 +27,8 @@ class mock_data:
         kwargs: additional options, see config() for mode info
         '''
         self.name = name
+        self.hacc = hacc.Clone()
+        self.hacc.SetName('%s-acc' % name)
         self.graph = hacc.Clone()
         self.graph.SetName(name)
         self.config(**kwargs)
@@ -47,8 +49,10 @@ class mock_data:
             else:
                 y = 0.
                 dy = 0.
+                N = 0.
             self.graph.SetBinContent(i, y)
             self.graph.SetBinError(i, dy)
+            self.hacc.SetBinContent(i, N)
 
     def config(self, **kwargs):
         '''Configure the underlying histogram.
@@ -57,6 +61,6 @@ class mock_data:
         '''
         for val in kwargs:
             if val in mock_data.options:
-                mock_data.options[val](self, kwargs[val])
+                mock_data.options[val]((self, kwargs[val]))
             else:
                 print "%s: unknown option: %s" % (__name__, val)
