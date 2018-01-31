@@ -77,8 +77,8 @@ TF1* sigma_vm_brodsky_W(const range_type& Wlim) {
                    // constant as a function of t. Hence, we only need to
                    // evaluate the function once, and multiply with the
                    // exp(bt)-range
-                   const double delta_t = tl.min - tl.max;
-                   double xs[1] = {tl.min};
+                   const double delta_t = tl.max - tl.min;
+                   //double xs[1] = {tl.max};
                    const double integral =
                        pcsim::physics::dsigma_dexp_bt_vm_brodsky(s, M_P, Mv, b,
                                                                  c2g, c3g) *
