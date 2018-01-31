@@ -1,13 +1,15 @@
 import ROOT
-import numpy
+import numpy as np
 
 class wd_graph:
     options = {
-        'color': lambda (s, val) : s.config(mcolor=val, lcolor=val),
-        'mcolor': lambda (s, val) : s.graph.SetMarkerColor(val),
-        'lcolor': lambda (s, val) : s.graph.SetLineColor(val),
-        'lwidth': lambda (s, val) : s.graph.SetLineWidth(val),
-        }
+        'color': lambda s, val : s.config(mcolor=val, lcolor=val),
+        'mcolor': lambda s, val : s.graph.SetMarkerColor(val),
+        'mstyle': lambda s, val : s.graph.SetMarkerStyle(val),
+        'lcolor': lambda s, val : s.graph.SetLineColor(val),
+        'lwidth': lambda s, val : s.graph.SetLineWidth(val),
+        'name': lambda s, val : setattr(s, 'name', val)
+    }
 
     def __init__(self, x, y, ex=None, ey=None, **kwargs):
         '''Create a graph from existing data.
@@ -21,18 +23,18 @@ class wd_graph:
         '''
         self.x = np.array(x)
         self.y = np.array(y)
-        self.ex = init_errors(ex)
-        self.ey = init_errors(ey)
+        self.ex = self.init_errors(ex)
+        self.ey = self.init_errors(ey)
         self.graph = ROOT.TGraphAsymmErrors(
             len(self.x),
             self.x, self.y, 
-            self.ex['min'], self.ex['max'], 
-            self.ey['min'], self.ey['max'])
-        config(**kwargs)
+            np.array(self.ex['min']), np.array(self.ex['max']), 
+            np.array(self.ey['min']), np.array(self.ey['max']))
+        self.config(**kwargs)
     
     def init_errors(self, e):
         if e is None:
-            return {'min': zeros(len(self.x)), 'max': zeros(len(self.x))}
+            return {'min': np.zeros(len(self.x)), 'max': np.zeros(len(self.x))}
         elif not isinstance(e, dict):
             return {'min': np.array(e), 'max': np.array(e)}
         return e

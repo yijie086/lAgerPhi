@@ -3,8 +3,8 @@ import ROOT
 class dummy_frame:
     dummy_cnt = 0
     options = {
-        'xtitle': lambda s, val: s.graph.GetXaxis().SetTitle(s, val),
-        'ytitle': lambda s, val: s.graph.GetYaxis().SetTitle(s, val),
+        'xtitle': lambda s, val: s.graph.GetXaxis().SetTitle(val),
+        'ytitle': lambda s, val: s.graph.GetYaxis().SetTitle(val),
         'ylim': lambda s, val: s.graph.GetYaxis().SetRangeUser(*val),
         'title': lambda s, val: s.graph.SetTitle(val),
         'logx': lambda s, val: s.set_logx(val),
@@ -21,18 +21,18 @@ class dummy_frame:
         kwargs:
             see dummy_frame.config
         '''
-        if reference is not None:
+        if href is not None:
             self.graph = href.Clone()
             self.graph.Reset()
         else:
-            self.graph = ROOT.TH1F('dummy_%i' % dummy_cnt, title, 1000, *xlim)
-            dummy_cnt += 1
+            self.graph = ROOT.TH1F('dummy_%i' % dummy_frame.dummy_cnt, title, 1000, *xlim)
+            dummy_frame.dummy_cnt += 1
         self.graph.SetLineColor(ROOT.kWhite)
         self.graph.GetXaxis().CenterTitle()
         self.graph.GetYaxis().CenterTitle()
         self.logx = logx
         self.logy = logy
-        config(**kwargs)
+        self.config(**kwargs)
 
     def config(self, **kwargs):
         '''Configure the underlying histogram.
