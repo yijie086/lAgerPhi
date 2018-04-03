@@ -39,9 +39,14 @@ parser.add_option('-f', dest='file', metavar='FILE', default=None,
                   help='ROOT Data file (optional)')
 parser.add_option('-v', action='store_true', dest='verbose',
                   help='Be verbose')
+parser.add_option('--notebook', action='store_true', dest='notebook', help='Start jupyter')
+
 (options, args) = parser.parse_args()
 
 exec_command = ["%s -l -e '.x %s'" % (root_exe, setup_root)]
+
+if options.notebook:
+  exec_command += ['--notebook']
 if options.batch:
   exec_command += ['-b']
 if options.clean:

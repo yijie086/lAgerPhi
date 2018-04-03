@@ -4,7 +4,7 @@ import ROOT
 def fix_palette(histo):
     ## dummy draw to initiate the palette
     ROOT.gPad.SetRightMargin(.15)
-    histo.draw('colz')
+    histo.Draw('colz')
     palette = histo.GetListOfFunctions().FindObject('palette')
     palette.SetX1NDC(.86)
     palette.SetX2NDC(.9)
