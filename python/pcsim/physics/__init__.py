@@ -1,2 +1,2 @@
-from physics import *
-from vm import *
+from .physics import *
+from .vm import *

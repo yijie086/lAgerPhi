@@ -43,7 +43,7 @@ class dummy_frame:
             if val in dummy_frame.options:
                 dummy_frame.options[val](self, kwargs[val])
             else:
-                print "%s: unknown option: %s" % (__name__, val)
+                print("%s: unknown option: %s" % (__name__, val))
     def Draw(self):
         ROOT.gPad.SetLogx(self.logx)
         ROOT.gPad.SetLogy(self.logy)

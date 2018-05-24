@@ -556,7 +556,7 @@ def run_mc(dummy):
         jsgen['R_vm_c'] = gen.brodsky.R.param.factor.value
         jsgen['R_vm_n'] = gen.brodsky.R.param.power.value
         jsgen['dipole_n'] = gen.brodsky.dipole.param.power.value
-    print config
+    print(config)
 
     fconf = open('config.json', 'w')
     json.dump(config, fconf, indent=4, sort_keys=True)

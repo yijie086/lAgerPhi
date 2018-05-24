@@ -29,6 +29,11 @@ class sigma_vm_brodsky_W(tf1_wrap):
         return vm_impl.sigma_vm_brodsky_W(range_type(lim[0], lim[1]))
     def pardef(self):
         return {'c2g' : 0, 'c3g' : 1, 'b' : 2, 'Mv' : 3}
+class sigma_vm_brodsky_E(tf1_wrap):
+    def factory(self, lim):
+        return vm_impl.sigma_vm_brodsky_E(range_type(lim[0], lim[1]))
+    def pardef(self):
+        return {'c2g' : 0, 'c3g' : 1, 'b' : 2, 'Mv' : 3}
 class R_vm_martynov(tf1_wrap):
     def factory(self, lim):
         return vm_impl.R_vm_martynov(range_type(lim[0], lim[1]))

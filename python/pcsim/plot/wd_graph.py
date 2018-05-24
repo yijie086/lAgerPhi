@@ -8,7 +8,8 @@ class wd_graph:
         'mstyle': lambda s, val : s.graph.SetMarkerStyle(val),
         'lcolor': lambda s, val : s.graph.SetLineColor(val),
         'lwidth': lambda s, val : s.graph.SetLineWidth(val),
-        'name': lambda s, val : setattr(s, 'name', val)
+        'name': lambda s, val : setattr(s, 'name', val),
+        'msize': lambda s, val : s.graph.SetMarkerSize(val)
     }
 
     def __init__(self, x, y, ex=None, ey=None, **kwargs):
@@ -49,4 +50,4 @@ class wd_graph:
             if val in wd_graph.options:
                 wd_graph.options[val](self, kwargs[val])
             else:
-                print "%s: unknown option: %s" % (__name__, val)
+                print("%s: unknown option: %s" % (__name__, val))

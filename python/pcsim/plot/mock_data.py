@@ -2,13 +2,13 @@ import ROOT
 
 class mock_data:
     options = {
-        'xtitle': lambda (s, val) : s.graph.GetXaxis().SetTitle(val),
-        'ytitle': lambda (s, val) : s.graph.GetYaxis().SetTitle(val),
-        'color': lambda (s, val) : s.config(mcolor=val, lcolor=val),
-        'mcolor': lambda (s, val) : s.graph.SetMarkerColor(val),
-        'lcolor': lambda (s, val) : s.graph.SetLineColor(val),
-        'lwidth': lambda (s, val) : s.graph.SetLineWidth(val),
-        'title': lambda (s, val) : s.graph.SetTitle(val)
+        'xtitle': lambda s_val : s_val[0].graph.GetXaxis().SetTitle(s_val[1]),
+        'ytitle': lambda s_val1 : s_val1[0].graph.GetYaxis().SetTitle(s_val1[1]),
+        'color': lambda s_val2 : s_val2[0].config(mcolor=s_val2[1], lcolor=s_val2[1]),
+        'mcolor': lambda s_val3 : s_val3[0].graph.SetMarkerColor(s_val3[1]),
+        'lcolor': lambda s_val4 : s_val4[0].graph.SetLineColor(s_val4[1]),
+        'lwidth': lambda s_val5 : s_val5[0].graph.SetLineWidth(s_val5[1]),
+        'title': lambda s_val6 : s_val6[0].graph.SetTitle(s_val6[1])
     }
     rng = ROOT.TRandom3(0)
 
@@ -63,4 +63,4 @@ class mock_data:
             if val in mock_data.options:
                 mock_data.options[val]((self, kwargs[val]))
             else:
-                print "%s: unknown option: %s" % (__name__, val)
+                print("%s: unknown option: %s" % (__name__, val))

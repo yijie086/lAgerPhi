@@ -62,6 +62,16 @@ TF1* dsigma_dexp_bt_vm_brodsky(const range_type& tlim);
 // par[3]: VM mass
 TF1* sigma_vm_brodsky_W(const range_type& Wlim);
 
+// t-integrated cross section as a function of Egamma
+//
+// TF1 parameters *x and *par
+// x[0]: E
+// par[0]: 2-gluon Amplitude
+// par[1]: 3-gluon Amplitude
+// par[2]: b
+// par[3]: VM mass
+TF1* sigma_vm_brodsky_E(const range_type& Elim);
+
 // =============================================================================
 // R VM parameterization
 //

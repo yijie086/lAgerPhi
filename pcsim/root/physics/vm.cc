@@ -87,6 +87,32 @@ TF1* sigma_vm_brodsky_W(const range_type& Wlim) {
                  },
                  Wlim.min, Wlim.max, 4.);
 }
+TF1* sigma_vm_brodsky_E(const range_type& Elim) {
+  return new TF1("sigma_vm_brodsky_W",
+                 [](double* xx, double* par) {
+                   const double s = M_P * M_P + 2 * M_P * xx[0];
+                   const double Mv = par[3];
+                   const double b = par[2];
+                   const double c3g = par[1];
+                   const double c2g = par[0];
+                   // get the t-range, transform to exp(bt)
+                   auto tl = pcsim::physics::t_range(s, 0., M_P, Mv, M_P);
+                   tl.min = std::exp(b * tl.min);
+                   tl.max = std::exp(b * tl.max);
+                   // We integrate the dsigma/dexp(bt) formula, which is
+                   // constant as a function of t. Hence, we only need to
+                   // evaluate the function once, and multiply with the
+                   // exp(bt)-range
+                   const double delta_t = tl.max - tl.min;
+                   //double xs[1] = {tl.max};
+                   const double integral =
+                       pcsim::physics::dsigma_dexp_bt_vm_brodsky(s, M_P, Mv, b,
+                                                                 c2g, c3g) *
+                       delta_t;
+                   return integral;
+                 },
+                 Elim.min, Elim.max, 4.);
+}
 TF1* R_vm_martynov(const range_type& Q2lim) {
   return new TF1("R_vm_martynov",
                  [](double* xx, double* par) {

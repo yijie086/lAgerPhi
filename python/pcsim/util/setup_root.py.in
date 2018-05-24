@@ -7,7 +7,7 @@ def root_loaded():
     return (hasattr(ROOT, 'pcsim_loaded') and ROOT.pcsim_loaded  is 1)
 
 def setup_root():
-    print '%s: Loading PCSIM python/ROOT bindings' % __name__
+    print('%s: Loading PCSIM python/ROOT bindings' % __name__)
 
     ROOT.gROOT.ProcessLine('.x %s' % path.setup_root_path())
 
@@ -17,7 +17,7 @@ def setup_root():
     ROOT.gROOT.ProcessLine('int pcsim_loaded = 1;')
 
     if root_loaded():
-        print '%s: PCSIM python/ROOT successfully loaded' % __name__
+        print('%s: PCSIM python/ROOT successfully loaded' % __name__)
     else:
         raise IOError('%s: Failed to load PCSIM python/ROOT' % __name__)
       

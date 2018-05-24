@@ -20,7 +20,7 @@ def make_binning(vmin, vmax, nbins, use_log=False):
         vmax = np.log(vmax)
         step = (vmax-vmin) / nbins
     edges = []
-    for i in xrange(0, nbins + 1):
+    for i in range(0, nbins + 1):
         edges.append(vmin + step * i)
     if use_log:
         edges = np.exp(edges)
