@@ -8,8 +8,9 @@ set (TARGETS ${TARGETS} ${LIBRARY} PARENT_SCOPE)
 ################################################################################
 ## Sources and install headers
 ################################################################################
-file (GLOB SOURCES "dataframe/*.cc" "physics/*.cc")
-file (GLOB DATAFRAME_HEADERS "dataframe/*.hh")
+#file (GLOB SOURCES "dataframe/*.cc" "physics/*.cc")
+#file (GLOB DATAFRAME_HEADERS "dataframe/*.hh")
+file (GLOB SOURCES "physics/*.cc")
 file (GLOB PHYSICS_HEADERS "physics/*.hh")
 
 ################################################################################
@@ -85,10 +86,10 @@ install(FILES
   ${CONFIG_HEADERS} 
   DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}" 
   COMPONENT dev)
-install(FILES 
-  ${DATAFRAME_HEADERS} 
-  DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/dataframe" 
-  COMPONENT dev)
+#install(FILES 
+# ${DATAFRAME_HEADERS} 
+# DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/dataframe" 
+# COMPONENT dev)
 install(FILES 
   ${PHYSICS_HEADERS} 
   DESTINATION "${INSTALL_INCLUDE_DIR}/${SUBDIR}/physics" 
