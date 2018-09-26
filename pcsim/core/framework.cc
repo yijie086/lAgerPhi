@@ -1,10 +1,11 @@
 #include "framework.hh"
+#include "version.hh"
 
-#include <exception>
 #include <cstdlib>
+#include <exception>
 
-#include <pcsim/core/exception.hh>
 #include <pcsim/core/configuration.hh>
+#include <pcsim/core/exception.hh>
 #include <pcsim/core/logger.hh>
 #include <pcsim/core/stringify.hh>
 
@@ -23,7 +24,7 @@ void file_exists(const std::string& file) {
     throw pcsim::framework_file_error{file};
   }
 }
-} // ns unnamed
+} // namespace
 
 namespace pcsim {
 // =============================================================================
@@ -33,13 +34,15 @@ namespace pcsim {
 framework::framework(int argc, char* argv[],
                      pcsim_function_type pcsim_function) try
     // suppress ROOT signal handler
-    : dummy_{root_suppress_signals()}
-    // parse the command line
-    , args_{parse_arguments(argc, argv)}
-    // configuration
-    , conf_{get_settings(), "mc"}
-    // framework function
-    ,pcsim_function_{pcsim_function} {
+    : dummy_ {
+  root_suppress_signals()
+}
+// parse the command line
+, args_{parse_arguments(argc, argv)} // configuration
+,
+    conf_{get_settings(), "mc"} // framework function
+,
+    pcsim_function_{pcsim_function} {
   // talk to the user
   LOG_INFO("pcsim", "Starting pcsim framework");
   LOG_INFO("pcsim", "Configuration file: " + args_["conf"].as<std::string>());
@@ -72,7 +75,7 @@ framework::framework(int argc, char* argv[],
   } else {
     output_ += ".4pi";
   }
-  
+
   // add optional tag
   auto tag = conf_.get_optional<std::string>("tag");
   if (tag && tag->size()) {
@@ -96,27 +99,34 @@ framework::framework(int argc, char* argv[],
   write_json(output_ + ".json", settings);
 
   // redirect logger to use the log file
+  LOG_INFO("pcsim", "Redirecting logger to: " + output_ + ".log");
   log_file_.open(output_ + ".log");
   global::logger.set_output(log_file_);
 
-  } catch (const framework_help& h) {
-    std::cerr << h.what() << std::endl;
-    exit(0);
-  } catch (const pcsim::exception& e) {
-    LOG_ERROR(e.type(), e.what());
-    LOG_ERROR(e.type(), "Run with -h for help.");
-    throw e;
-  } catch (const boost::exception& e) {
-    LOG_CRITICAL("boost::exception", boost::diagnostic_information(e));
-    LOG_CRITICAL("boost::exception", "Unhandled boost exception");
-    LOG_CRITICAL("boost::exception", "Please contact developer for support.");
-    throw pcsim::exception("Unhandled boost exception", "boost::exception");
-  } catch (const std::exception& e) {
-    LOG_CRITICAL("std::exception", e.what());
-    LOG_CRITICAL("std::exception", "Unhandled standard exception");
-    LOG_CRITICAL("std::exception", "Please contact developer for support.");
-    throw pcsim::exception("Unhandled standard exception", "std::exception");
-  }
+  // Communicate PCsim commit hash for this run
+  LOG_INFO("pcsim", "PCSIM version: " + get_pcsim_version());
+}
+catch (const framework_help& h) {
+  std::cerr << h.what() << std::endl;
+  exit(0);
+}
+catch (const pcsim::exception& e) {
+  LOG_ERROR(e.type(), e.what());
+  LOG_ERROR(e.type(), "Run with -h for help.");
+  throw e;
+}
+catch (const boost::exception& e) {
+  LOG_CRITICAL("boost::exception", boost::diagnostic_information(e));
+  LOG_CRITICAL("boost::exception", "Unhandled boost exception");
+  LOG_CRITICAL("boost::exception", "Please contact developer for support.");
+  throw pcsim::exception("Unhandled boost exception", "boost::exception");
+}
+catch (const std::exception& e) {
+  LOG_CRITICAL("std::exception", e.what());
+  LOG_CRITICAL("std::exception", "Unhandled standard exception");
+  LOG_CRITICAL("std::exception", "Please contact developer for support.");
+  throw pcsim::exception("Unhandled standard exception", "std::exception");
+}
 
 framework::~framework() {
   // redirect output stream back to the standard output
@@ -124,7 +134,7 @@ framework::~framework() {
 }
 
 int framework::run() const {
-  try{
+  try {
     LOG_INFO("pcsim", "Starting event generator...");
     int ret = pcsim_function_(conf_, output_);
     LOG_INFO("pcsim", "Finished.");
@@ -146,10 +156,10 @@ int framework::run() const {
   }
 }
 
-} // ns pcsim
+} // namespace pcsim
 
 // =============================================================================
-// framework private utility functions 
+// framework private utility functions
 // =============================================================================
 namespace pcsim {
 // =============================================================================
@@ -165,8 +175,9 @@ po::variables_map framework::parse_arguments(int argc, char* argv[]) const {
         "Configuration JSON file")("run,r", po::value<int>(),
                                    "Run number (also the random seed)")(
         "events,e", po::value<int>(), "Number of events to generate")(
-        "verb,v", po::value<unsigned>()->default_value(
-                      static_cast<unsigned>(log_level::INFO)),
+        "verb,v",
+        po::value<unsigned>()->default_value(
+            static_cast<unsigned>(log_level::INFO)),
         "Verbosity level (0 -> 7; 0: silent, 4: default, 5: debug)")(
         "out,o", po::value<std::string>()->required(), "Output file name root");
     po::options_description opts_flags;
@@ -229,7 +240,7 @@ int framework::root_suppress_signals() const {
   gSystem->ResetSignal(kSigWindowChanged);
   return 0;
 }
-} // ns pcsim
+} // namespace pcsim
 
 // =============================================================================
 // Implementation: Exceptions
@@ -246,8 +257,7 @@ framework_help::framework_help(const std::string& program,
 std::string framework_help::message(const std::string& program,
                                     const po::options_description& opts) const {
   std::stringstream ss;
-  ss << "\nUsage: " << program << " [options]\n" << opts
-     << "\n";
+  ss << "\nUsage: " << program << " [options]\n" << opts << "\n";
   return ss.str();
 }
-} // ns pcsim
+} // namespace pcsim

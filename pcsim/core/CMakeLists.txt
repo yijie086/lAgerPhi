@@ -18,6 +18,16 @@ file (GLOB HEADERS "*.hh")
 ################################################################################
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+
+################################################################################
+## Configure file
+################################################################################
+#PCSIM commit version
+execute_process(COMMAND git describe 
+  OUTPUT_VARIABLE PCSIM_GIT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+configure_file(version.hh.in ${CMAKE_CURRENT_BINARY_DIR}/version.hh)
+set(HEADERS ${HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/version.hh)
 
 ################################################################################
 ## Compile and Link
