@@ -3,6 +3,7 @@ image: whit2333/root_base:latest
 build:
   script:
      - cp containers/singularity/Singularity .
+     - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh Singularity
 
       # step 1. build the container!
