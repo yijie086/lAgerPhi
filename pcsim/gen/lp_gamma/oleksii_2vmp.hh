@@ -34,24 +34,29 @@ public:
                std::shared_ptr<TRandom> r);
   virtual lp_gamma_event generate(const lp_gamma_data&);
   virtual double max_cross_section() const { return max_; }
-  virtual double phase_space() const { return max_t_range_.width(); }
+  virtual double phase_space() const { return max_exp_b0t_range_.width(); }
 
 private:
+  double calc_min_b() const;
   double calc_max_b(const configuration& cf) const;
+  interval<double> calc_max_b_range(const configuration& cf) const;
   double calc_max_xsec(const configuration& cf) const;
   interval<double> calc_max_t_range(const configuration& cf) const;
 
   // kinematics range
   interval<double> t_range(const double W2, const double Q2,
                            const double Mt) const;
+  // kinematics range
+  interval<double> exp_bt_range(const double W2, const double Q2,
+                                const double Mt) const;
 
   // cross section component evaluation
-  double dsigma_dt(const double W2, const double t, const double b) const;
+  double dsigma_dexp_b0t(const double W2, const double t, const double b) const;
   double R(const double Q2) const;
   double dipole(const double Q2) const;
 
   // jacobian (equal to unity)
-  double jacobian() const;
+  double jacobian(const double t) const;
 
   // threshold squared for these particular particles (correctly handels the
   // case of particles with non-zero width)
@@ -77,8 +82,9 @@ private:
   const double dipole_n_; // n-parameter for dipole factor
 
   // t-range and cross setion maxima
-  const double max_b_; // upper limit to b parameter
+  const interval<double> max_b_range_; // upper limit to b parameter
   const interval<double> max_t_range_;
+  const interval<double> max_exp_b0t_range_;
   const double max_;
 };
 

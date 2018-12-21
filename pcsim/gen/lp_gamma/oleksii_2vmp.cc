@@ -82,7 +82,7 @@ public:
       , C_in_{id == pdg_id::upsilon ? kC_in_upsilon : kC_in_jpsi}
       , Mv_{id == pdg_id::upsilon ? kMu : kMj}
       , fv_{id == pdg_id::upsilon ? kfu : kfj}
-      , w_{gsl_integration_workspace_alloc(1024)} {
+      , w_{gsl_integration_workspace_alloc(2048)} {
     F_.function = [](double nup, void* param) {
       if (!param) {
         return 0.;
@@ -148,7 +148,7 @@ private:
     double result, error;
     IntegrandParam param{nu, this};
     F_.params = &param;
-    gsl_integration_qagiu(&F_, v_el_, 0, 1e-7, 1024, w_, &result, &error);
+    gsl_integration_qagiu(&F_, v_el_, 0, 1e-5, 2048, w_, &result, &error);
     return result + ImT_nu(nu) / nu *
                         std::log(std::fabs((v_el_ + nu) / (v_el_ - nu))) /
                         (2 * nu);
@@ -218,14 +218,17 @@ oleksii_2vmp::oleksii_2vmp(const configuration& cf, const string_path& path,
     , R_vm_c_{cf.get<double>(path / "R_vm_c")}
     , R_vm_n_{cf.get<double>(path / "R_vm_n")}
     , dipole_n_{cf.get<double>(path / "dipole_n")}
-    , max_b_{calc_max_b(cf)}
+    , max_b_range_{calc_max_b_range(cf)}
     , max_t_range_{calc_max_t_range(cf)}
+    , max_exp_b0t_range_{exp(max_b_range_.max * max_t_range_.min), 1.}
     , max_{calc_max_xsec(cf)} {
   LOG_INFO("oleksii_2vmp", "t range [GeV^2]: [" +
                                std::to_string(max_t_range_.min) + ", " +
                                std::to_string(max_t_range_.max) + "]");
-  LOG_INFO("oleksii_2vmp",
-           "b parameter upper limit [1/GeV^2]: " + std::to_string(max_b_));
+  LOG_INFO("oleksii_2vmp", "b parameter lower limit [1/GeV^2]: " +
+                               std::to_string(max_b_range_.min));
+  LOG_INFO("oleksii_2vmp", "b parameter upper limit [1/GeV^2]: " +
+                               std::to_string(max_b_range_.max));
   LOG_INFO("oleksii_2vmp", "subtraction constant T0: " + std::to_string(T0_));
   LOG_INFO("oleksii_2vmp", "R_vm c-parameter: " + std::to_string(R_vm_c_));
   LOG_INFO("oleksii_2vmp",
@@ -254,8 +257,10 @@ lp_gamma_event oleksii_2vmp::generate(const lp_gamma_data& initial) {
   }
 
   // generate a phase space point
+  const double t =
+      std::log(rng()->Uniform(max_exp_b0t_range_.min, max_exp_b0t_range_.max)) /
+      max_b_range_.min;
   const double b = slope_->B(gamma.W(), gamma.Q2());
-  const double t = rng()->Uniform(max_t_range_.min, max_t_range_.max);
 
   LOG_JUNK("oleksii_2vmp",
            "t: " + std::to_string(t) + ", b: " + std::to_string(b));
@@ -271,7 +276,7 @@ lp_gamma_event oleksii_2vmp::generate(const lp_gamma_data& initial) {
   // evaluate the cross section
   const double xs_R = R(gamma.Q2());
   const double xs_dipole = dipole(gamma.Q2());
-  const double xs_photo = dsigma_dt(gamma.W2(), t, b);
+  const double xs_photo = dsigma_dexp_b0t(gamma.W2(), t, b);
   const double xs = (1 + gamma.epsilon() * xs_R) * xs_dipole * xs_photo;
 
   LOG_JUNK("oleksii_2vmp",
@@ -283,6 +288,9 @@ lp_gamma_event oleksii_2vmp::generate(const lp_gamma_data& initial) {
   return make_event(initial, t, b, vm, recoil, xs, xs_R);
 }
 
+interval<double> oleksii_2vmp::calc_max_b_range(const configuration& cf) const {
+  return {calc_min_b(), calc_max_b(cf)};
+}
 double oleksii_2vmp::calc_max_b(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
@@ -296,13 +304,19 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
-  const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
-                                          (photon.p() + target.p()).M2())
-                                   : (photon.p() + target.p()).M2();
+  const double Wmax =
+      opt_W_range ? fmin(opt_W_range->max, (photon.p() + target.p()).M())
+                  : (photon.p() + target.p()).M();
   // get our b
-  const double result = slope_->B(W2max, 0);
+  const double result = slope_->B(Wmax, 0);
   std::cout << result << std::endl;
   return result;
+}
+// Get smallest possible b value (in case of no binding && at threshold)
+double oleksii_2vmp::calc_min_b() const {
+  oleksii_2vmp_amplitude nb_ampl{vm_.type(), 0};
+  oleksii_2vmp_slope nb_slope{nb_ampl};
+  return nb_slope.B((vm_.mass() + kMp) * 1.05, 0);
 }
 
 // =============================================================================
@@ -312,16 +326,6 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
 //
 // max cross section as defined by the beam/target and phase-space settings
 //
-// The cross section is maximum when
-//  * W2 is maximum.
-//  * t=0
-//  * no Q2 requirement:
-//    - irrelevant for photo-production
-//    - for lepto-production, the (1 + epsilon * R) * dipole factor does not
-//      change the value for the fully differential cross section maximum at
-//      Q2min
-//  * note that we can be certain about these statements, as the program will
-//    exit with an error if the cross section maximum were ever violated
 // =============================================================================
 double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
@@ -339,8 +343,13 @@ double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
   const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
-  // max at t=tmin
-  return dsigma_dt(W2max, max_t_range_.max, max_b_);
+  // possible max at t=tmin and max W (where b is maximum)
+  const double max = dsigma_dexp_b0t(W2max, max_t_range_.max, max_b_range_.min);
+  // other possible maximum near minimum b
+  // return max * 4; // need pretty generous padding to not exceed this
+  // "maximum"
+  //                // (there are higher maxima near lower W where b is smaller)
+  return max;
 }
 
 // =============================================================================
@@ -388,8 +397,7 @@ interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
       W2max, 0, target.mass(), vm_.pole_mass() - vm_.width() * 4.,
       recoil_.pole_mass() - recoil_.width() * 4);
   const auto tlim = interval<double>(tlim1.min, tlim2.max);
-  // restrict t-range somewhat so we don't waste all our time at high t...
-  return {-10., tlim.max};
+  return tlim;
 }
 // =============================================================================
 // oleksii_2vmp::dsigma_dt()
@@ -399,16 +407,22 @@ interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
 //
 // Utility functions to calculate the cross section components
 // =============================================================================
-double oleksii_2vmp::dsigma_dt(const double W2, const double t,
-                               const double b) const {
+double oleksii_2vmp::dsigma_dexp_b0t(const double W2, const double t,
+                                     const double b) const {
   // xsec at t=0
   const double t0 = ampl_->dsdt_t0(sqrt(W2));
   // form factor
   const double ff = exp(b * t);
-  return t0 * ff;
+  // jacobian for dt -> d(b0t)
+  double jacobian = 1 / max_b_range_.min;
+  // jacobian for d(b0t) -> d(exp_b0t)
+  jacobian *= exp(-max_b_range_.min * t);
+  return t0 * ff * jacobian;
 }
 
-double oleksii_2vmp::jacobian() const { return 1.; }
+double oleksii_2vmp::jacobian(const double t) const {
+  return max_b_range_.min * exp(max_b_range_.min * t);
+}
 double oleksii_2vmp::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_.mass(), R_vm_c_, R_vm_n_);
 }
@@ -441,7 +455,7 @@ lp_gamma_event oleksii_2vmp::make_event(const lp_gamma_data& initial,
 
   lp_gamma_event e{initial, xs, 1., R};
 
-  e.update_jacobian(jacobian());
+  e.update_jacobian(jacobian(t));
 
   // utility shortcuts
   const double W2 = gamma.W2();
