@@ -102,7 +102,7 @@ public:
     if (nu > v_el_) {
       ImT += C_el_ * pow(1 - v_el_ / nu, kb_el) * pow(nu / v_el_, ka_el);
     }
-    if (nu > v_el_) {
+    if (nu > v_in_) {
       ImT += C_in_ * pow(1 - v_in_ / nu, kb_in) * pow(nu / v_in_, ka_in);
     }
     return ImT;
@@ -184,15 +184,17 @@ public:
   double B0(const double W) const {
     const double sigma = ampl_.sigma_el(W);
     if (sigma > 0) {
-      return ampl_.dsdt_t0(W) / sigma;
+      const double result = ampl_.dsdt_t0(W) / sigma;
+      return result;
     }
     return 0;
   }
   double B(const double W, const double Q2) const {
     equation_.SetParameters(W, Q2);
-    brf_.SetFunction(fwrap_, 0, 10);
+    brf_.SetFunction(fwrap_, 1e-7, 10);
     brf_.Solve();
-    return brf_.Root();
+    const double result = brf_.Root();
+    return result;
   }
 
 private:
@@ -211,6 +213,7 @@ oleksii_2vmp::oleksii_2vmp(const configuration& cf, const string_path& path,
     , recoil_{pdg_id::p}
     , vm_{static_cast<pdg_id>(cf.get<int>(path / "vm_type"))}
     , ampl_{new oleksii_2vmp_amplitude(vm_.type(), cf.get<double>(path / "T0"))}
+    , slope_{new oleksii_2vmp_slope(*ampl_)}
     , T0_{cf.get<double>(path / "T0")}
     , R_vm_c_{cf.get<double>(path / "R_vm_c")}
     , R_vm_n_{cf.get<double>(path / "R_vm_n")}
@@ -218,7 +221,6 @@ oleksii_2vmp::oleksii_2vmp(const configuration& cf, const string_path& path,
     , max_b_{calc_max_b(cf)}
     , max_t_range_{calc_max_t_range(cf)}
     , max_{calc_max_xsec(cf)} {
-  slope_ = new oleksii_2vmp_slope(*ampl_);
   LOG_INFO("oleksii_2vmp", "t range [GeV^2]: [" +
                                std::to_string(max_t_range_.min) + ", " +
                                std::to_string(max_t_range_.max) + "]");
@@ -298,7 +300,9 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
   // get our b
-  return slope_->B(W2max, 0);
+  const double result = slope_->B(W2max, 0);
+  std::cout << result << std::endl;
+  return result;
 }
 
 // =============================================================================
@@ -335,8 +339,8 @@ double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
   const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
-  // max at t=0
-  return dsigma_dt(W2max, 0, max_b_);
+  // max at t=tmin
+  return dsigma_dt(W2max, max_t_range_.max, max_b_);
 }
 
 // =============================================================================
@@ -384,7 +388,8 @@ interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
       W2max, 0, target.mass(), vm_.pole_mass() - vm_.width() * 4.,
       recoil_.pole_mass() - recoil_.width() * 4);
   const auto tlim = interval<double>(tlim1.min, tlim2.max);
-  return tlim;
+  // restrict t-range somewhat so we don't waste all our time at high t...
+  return {-10., tlim.max};
 }
 // =============================================================================
 // oleksii_2vmp::dsigma_dt()
