@@ -33,6 +33,7 @@ add_custom_target(python_bindings ALL
   COMMAND python -c "import pcsim"
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   COMMENT "Building python/ROOT bindings")
+add_dependencies(python_bindings pcsim_core pcsim_physics pcsim_proc pcsim_gen)
 
 ################################################################################
 ## Export and Install
