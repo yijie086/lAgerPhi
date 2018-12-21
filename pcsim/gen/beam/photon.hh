@@ -39,6 +39,7 @@ public:
   }
 
   double epsilon() const { return epsilon_; }
+  double W() const { return sqrt(W2_); }
   double W2() const { return W2_; }
   double Q2() const { return Q2_; }
   double nu() const { return nu_; }
