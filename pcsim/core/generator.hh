@@ -33,7 +33,7 @@ private:
 // =============================================================================
 // Base class for all generators
 //
-// Owns a shared pointer to the random generator. 
+// Owns a shared pointer to the random generator.
 // =============================================================================
 template <class Data, class... Input> class generator {
 public:
@@ -86,7 +86,7 @@ private:
 // Generator input: initial reaction information
 // Generator output: a valid event
 //
-// Note: 
+// Note:
 //    * Event should derive from the event class (in core/event.hh)
 //    * InitialData should derive from generator_data
 // =============================================================================
@@ -119,8 +119,7 @@ factory<process_generator<Event, InitialData>, const configuration&,
 //
 // Note: Event should derive from the event class (in core/event.hh)
 // =============================================================================
-template <class Event>
-class event_processor : public generator<void> {
+template <class Event> class event_processor : public generator<void> {
 public:
   using event_type = Event;
   using base_type = generator<void>;
@@ -135,8 +134,6 @@ private:
   virtual double phase_space() const { return -1.; }
 };
 
-
-
 // =============================================================================
 // Base class for event generators that handle the following steps:
 //    * generate initial state
@@ -145,14 +142,14 @@ private:
 //    * event building for each process
 // Keeps track of the generated cross section
 //
-// Usage: 
+// Usage:
 //    * the user should derive from this class, and provide a definition of the
-//      virtual member functions 
+//      virtual member functions
 //        - InitialData generate_initial();
 //        - void build_event(Event&);
 //      the rest of the generation process will be handled automatically
 //
-// Note: 
+// Note:
 //    * Event should derive from the event class (in core/event.hh)
 //    * InitialData should derive from generator_data
 // =============================================================================
@@ -227,10 +224,7 @@ public:
           if (this->rng()->Uniform(0, initial_max_ * process.max) <
               event.cross_section()) {
             LOG_JUNK(process.name, "Event accepted!");
-            n_tot_events_ += 1;
-            event.update_mc(n_tot_events_, process.id, cross_section(),
-                            initial);
-
+            event.update_process(process.id);
             event_list.push_back(event);
           } else {
             LOG_JUNK(process.name, "Event rejected.");
@@ -242,11 +236,16 @@ public:
         LOG_JUNK("generator", "Processing event (process " +
                                   std::to_string(event.process()) + ")");
         build_event(event);
-        if (event.weight() == 1 ||
-            this->rng()->Uniform(0., 1.) <= event.weight()) {
+        if (event.weight() > 0) {
           LOG_JUNK("generator",
                    "Event accepted after event builder step (weight: " +
                        std::to_string(event.weight()) + ", reset to 1)");
+          // events are weighted with the partial branching ratio, also add
+          // account for events we did not consider when only doing a limited
+          // set of decay channels
+          n_tot_events_ += 1 / event.weight();
+          event.update_stat(static_cast<size_t>(n_tot_events_),
+                            cross_section());
           event.reset_weight();
           good_event_list.push_back(event);
         } else {
@@ -275,8 +274,8 @@ public:
   // n_tot_events is the sum of all the generated events in all subprocesses,
   // hence we obtain sigma_tot = sum_i sigma_i = sum_i G_i * V1/T1
   double cross_section() const {
-    // return a safe upper boundary in case we don't have enough events yet to have
-    // some kind of reasonable estimate
+    // return a safe upper boundary in case we don't have enough events yet to
+    // have some kind of reasonable estimate
     if (n_tot_events_ < 50) {
       return volume_ * process_list_.size();
     }
@@ -307,7 +306,8 @@ protected:
   // max_cross_section variables with the event generator
   template <class InitialGen>
   void register_initial(const std::shared_ptr<InitialGen>& gen) {
-    LOG_DEBUG("event_generator", "Registering phase space and cross section max");
+    LOG_DEBUG("event_generator",
+              "Registering phase space and cross section max");
     tassert(gen, "Requested generator is a null pointer");
     initial_ps_ *= gen->phase_space();
     initial_max_ *= gen->max_cross_section();
@@ -331,9 +331,7 @@ private:
   virtual double phase_space() const { return -1; }
 
   // update the total generation volume
-  void update_volume() {
-    volume_ = initial_ps_ * initial_max_ * proc_volume_;
-  }
+  void update_volume() { volume_ = initial_ps_ * initial_max_ * proc_volume_; }
 
   // initialize the process list
   // the factory will construct a new process generator for each of the
@@ -407,8 +405,8 @@ private:
   double proc_volume_{-1.}; // largest generation volume in process_list
   double volume_{1.};       // total volume
 
-  double n_trials_{0.};     // global trial counter
-  int64_t n_tot_events_{0}; // total number of events
+  double n_trials_{0.};                    // global trial counter
+  double n_tot_events_{0};                 // total number of events
   std::vector<process_info> process_list_; // process dependent info
 
   int64_t n_requested_{-1}; // number of requested events

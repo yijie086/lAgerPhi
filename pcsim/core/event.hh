@@ -38,7 +38,7 @@ public:
   double process_cross_section() const { return process_cross_section_; }
   double weight() const { return weight_; }
   int process() const { return process_; }
-  
+
   // event CM energy (from beam/target)
   double s() const;
 
@@ -46,8 +46,8 @@ public:
   // section, also apply jacobians if necessary to go to a more sane
   // differential form, in case we generated in some clever unintuitive phase
   // space)
-  void update_mc(const size_t evgen, const int proc, const double txs,
-                 const generator_data& initial);
+  void update_stat(const size_t evgen, const double txs);
+  void update_process(const int proc);
   // update weight and process number
   void update_weight(const double w) { weight_ *= w; }
   void reset_weight(const double w = 1.) { weight_ = w; }
@@ -106,7 +106,7 @@ public:
   const detected_particle& detected(const int index) const;
 
   int add_detected(const detected_particle& dp);
-  
+
 private:
   size_t evgen_{1}; // total number of generated events including this event
   double total_cross_section_{0.};   // estimated total integrated cross section
@@ -226,15 +226,13 @@ inline int event::add_daughter(const std::pair<particle, particle>& daughters,
   return first;
 }
 
-inline void event::update_mc(const size_t evgen, const int proc,
-                             const double txs, const generator_data& initial) {
+inline void event::update_stat(const size_t evgen, const double txs) {
   evgen_ = evgen;
-  process_ = proc;
   total_cross_section_ = txs;
   update_cross_section(jacobian());
-  process_cross_section_ =
-      cross_section() / initial.cross_section() / initial.jacobian();
+  process_cross_section_ = 0.; // not used anymore
 }
+inline void event::update_process(const int proc) { process_ = proc; }
 inline const detected_particle& event::detected(const int index) const {
   return detected_[index];
 }
