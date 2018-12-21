@@ -1,10 +1,6 @@
 ################################################################################
 ## global defines
 ################################################################################
-## set the RPATH for OsX
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(CMAKE_MACOSX_RPATH 1)
-endif()
 
 ################################################################################
 ## CXX Compiler Settings 
@@ -45,9 +41,14 @@ if(EXISTS $ENV{ROOTSYS}/cmake/ROOTConfig.cmake)
 else()
   list(APPEND CMAKE_MODULE_PATH $ENV{ROOTSYS}/etc/cmake)
 endif()
-find_package(ROOT COMPONENTS GenVector EG REQUIRED)
+find_package(ROOT COMPONENTS GenVector EG MathMore REQUIRED)
 include_directories(${ROOT_INCLUDE_DIRS})
 
 ## boost
 find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
+
+## gsl
+find_package(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIR})

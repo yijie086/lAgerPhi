@@ -26,7 +26,11 @@ add_library(${LIBRARY} SHARED ${SOURCES})
 target_link_libraries(${LIBRARY} 
                       ${PROJECT_NAME}_core ${PROJECT_NAME}_physics
                       ${PROJECT_NAME}_proc
-                      ${ROOT_GenVector_LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} 
+                      ${ROOT_GenVector_LIBRARY} 
+                      ${ROOT_EG_LIBRARY}
+                      ${ROOT_MathMore_LIBRARY}
+                      ${ROOT_Gsl_LIBRARY} ${ROOT_LIBRARIES}
+                      ${GSL_LIBRARIES}
                       ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
