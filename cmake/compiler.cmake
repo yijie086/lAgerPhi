@@ -1,6 +1,19 @@
 ################################################################################
+## setup
+################################################################################
+include(${PROJECT_SOURCE_DIR}/cmake/rpath.cmake)
+
+
+################################################################################
 ## global defines
 ################################################################################
+
+## set the RPATH for OsX
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  init_rpath_macos()
+  add_to_rpath_macos(${INSTALL_LIB_DIR})
+endif()
+
 
 ################################################################################
 ## CXX Compiler Settings 
@@ -52,3 +65,12 @@ include_directories(${Boost_INCLUDE_DIRS})
 ## gsl
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIR})
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  add_to_rpath_macos("${ROOT_LIBRARY_DIR}")
+  add_to_rpath_macos("${Boost_LIBRARY_DIRS}")
+  add_to_rpath_macos("${GSL_LIBDIR}")
+endif()
+
+#include (cmake/debug.cmake)
+ 

@@ -2,6 +2,7 @@
 ## CMAKE Settings
 ################################################################################
 
+
 ## function to build our programs
 function (BUILD_PROGRAM EXE)
   ## program name
