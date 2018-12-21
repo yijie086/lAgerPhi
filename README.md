@@ -28,14 +28,14 @@ during normal operation.
 ## Electron beam ('beam') settings
 ```json
 "beam": {
-   "dir"   : "Electron beam direction (e.g. [0, 0, -1]),
+   "dir"   : "Electron beam direction (e.g. [0, 0, -1])",
    "energy": "Electron beam energy in GeV"
 }
 ```
 ## Proton beam ('target') settings
 ```json
 "target": {
-   "dir"   : "Electron beam direction (e.g. [0, 0, 1]),
+   "dir"   : "Electron beam direction (e.g. [0, 0, 1])",
    "energy": "Electron beam energy in GeV"
 }
 ```
