@@ -43,11 +43,10 @@ during normal operation.
 Do not change for electro-production (defaults should always work).
 ## Process generator 
 ### Oleksii's model for VM production
-```
+```json
 "process_1": {
     "type": "oleksii_2vmp",
     "vm_type": "J/psi (443) or Upsilon (553)",
     "T0": "Subtraction constant, related to binding. Vary between 0: no binding, 4: best fit and 8: strong binding"
 }
-```
 ```
