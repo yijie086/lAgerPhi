@@ -5,7 +5,6 @@ build:
      - cp containers/singularity/Singularity .
      - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh Singularity
-
       # step 1. build the container!
       # You can add any other sregistry push commands here, and specify a client
       # (and make sure your define the encrypted environment credentials in gitlab
