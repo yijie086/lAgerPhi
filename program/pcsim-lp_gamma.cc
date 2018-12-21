@@ -13,9 +13,10 @@
 #include <pcsim/gen/beam/primary_gen.hh>
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
-#include <pcsim/proc/detector/solid.hh>
+#include <pcsim/gen/lp_gamma/oleksii_2vmp.hh>
 #include <pcsim/proc/detector/jleic.hh>
 #include <pcsim/proc/detector/null.hh>
+#include <pcsim/proc/detector/solid.hh>
 // TODO
 
 using namespace pcsim;
@@ -33,6 +34,8 @@ int run_mc(const configuration& cf, const std::string& output) {
   // TODO fix this
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::brodsky_2vmX,
                     "brodsky_2vmX");
+  FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::oleksii_2vmp,
+                    "oleksii_2vmp");
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::gaussian_qpq,
                     "gaussian_1qpq");
   FACTORY_REGISTER2(beam::primary_generator, beam::beam, "primary");
