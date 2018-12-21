@@ -30,4 +30,4 @@ cd /tmp && \
     cd singularity && \
     ./autogen.sh && \
     ./configure --prefix=/usr/local && \
-    make && make install
+    make -j8 && make install
