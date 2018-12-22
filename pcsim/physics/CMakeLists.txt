@@ -21,6 +21,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ## Compile and Link
 ################################################################################
 add_library(${LIBRARY} SHARED ${SOURCES})
+target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 target_link_libraries(${LIBRARY} 
                       ${PROJECT_NAME}_core 
                       ${ROOT_GenVector_LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} 

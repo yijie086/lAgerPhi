@@ -5,6 +5,8 @@ build:
      - cp containers/singularity/Singularity .
      - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh Singularity
+     - cp containers/singularity/Singularity.broadwell .
+     - /bin/bash .gitlabci/build.sh Singularity.broadwell
       # step 1. build the container!
       # You can add any other sregistry push commands here, and specify a client
       # (and make sure your define the encrypted environment credentials in gitlab
@@ -32,3 +34,6 @@ build:
       paths:
         - build/Singularity.simg
         - build/Singularity
+        - build/Singularity.broadwell.simg
+        - build/Singularity.broadwell
+

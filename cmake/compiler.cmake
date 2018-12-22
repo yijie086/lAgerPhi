@@ -26,7 +26,7 @@ get_filename_component(CXX_COMPILER_NAME ${CMAKE_CXX_COMPILER} NAME)
 if (CXX_COMPILER_NAME MATCHES "c\\+\\+.*" OR 
     CXX_COMPILER_NAME MATCHES "g\\+\\+.*" OR 
     CXX_COMPILER_NAME MATCHES "clang\\+\\+.*")
-  set (CXX_EXTRA_FLAGS "-fomit-frame-pointer -std=c++14 -fpermissive")
+  set (CXX_EXTRA_FLAGS "-fomit-frame-pointer -fpermissive")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_EXTRA_FLAGS}")
   set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_EXTRA_FLAGS}")
   set (CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_EXTRA_FLAGS}")
@@ -74,3 +74,21 @@ endif()
 
 #include (cmake/debug.cmake)
  
+if( ${COMPILE_FOR_BROADWELL} ) 
+ # http://www.prace-ri.eu/best-practice-guide-haswellbroadwell-january-2017/#id-1.4.2.6
+ # From Table 13. found in the link above
+ set(PROJECT_EXTRA_C_FLAGS       -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+ set(PROJECT_EXTRA_CXX_FLAGS     -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+ set(PROJECT_EXTRA_FORTRAN_FLAGS -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+ message("PROJECT_EXTRA_CXX_FLAGS : ${PROJECT_EXTRA_CXX_FLAGS}")
+elseif( ${COMPILE_FOR_HASWELL} )
+#same as broadwell
+ set(PROJECT_EXTRA_C_FLAGS       -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+ set(PROJECT_EXTRA_CXX_FLAGS     -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+ set(PROJECT_EXTRA_FORTRAN_FLAGS -march=haswell -O3 -mfma -malign-data=cacheline -finline-functions)
+
+elseif( ${COMPILE_FOR_KNL} )
+  # TODO 
+  # http://www.prace-ri.eu/best-practice-guide-knights-landing-january-2017/
+endif() 
+

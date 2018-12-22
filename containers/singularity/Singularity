@@ -8,8 +8,9 @@ From: docker://whit2333/root_base:latest
   Maintainer "Whitney Armstrong"
   Version v1.0
 
-%environment
+%environment -c /bin/bash
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
+  source /usr/local/bin/thisroot.sh
 
 %post -c /bin/bash
   echo "Hello from post"

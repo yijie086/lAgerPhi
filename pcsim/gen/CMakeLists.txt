@@ -32,6 +32,7 @@ target_link_libraries(${LIBRARY}
                       ${ROOT_Gsl_LIBRARY} ${ROOT_LIBRARIES}
                       ${GSL_LIBRARIES}
                       ${Boost_LIBRARIES})
+target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION})

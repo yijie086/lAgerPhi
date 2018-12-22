@@ -34,6 +34,7 @@ add_definitions(-DSOLID_ACCEPTANCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/detector/s
 ## Compile and Link
 ################################################################################
 add_library(${LIBRARY} SHARED ${SOURCES})
+target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 target_link_libraries(${LIBRARY} 
                       ${PROJECT_NAME}_core ${PROJECT_NAME}_physics
                       ${ROOT_GenVector_LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} 
