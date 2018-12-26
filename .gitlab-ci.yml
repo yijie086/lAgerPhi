@@ -1,4 +1,4 @@
-image: eicweb.phy.anl.gov:4567/whit/image_recipes/ubuntu_dind:latest
+image: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
 #image: whit2333/root_base:latest
 
 singularity-build:
