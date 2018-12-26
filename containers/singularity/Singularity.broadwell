@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: docker://whit2333/root_base:latest
+From: whit/image_recipes/root_base_broadwell:latest
 
 %help
   Help me. I'm in the container.
