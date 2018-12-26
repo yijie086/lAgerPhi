@@ -13,6 +13,8 @@ function (BUILD_PROGRAM EXE PROG)
     pcsim_core pcsim_physics pcsim_proc pcsim_gen
     pcsim_core pcsim_physics pcsim_proc pcsim_gen
   ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+#target_compile_options(${PROG} PUBLIC "$<$<CONFIG:DEBUG>:${MY_DEBUG_OPTIONS}>")
+  target_compile_options(${PROG} PUBLIC "$<$<CONFIG:RELEASE>:${PROJECT_EXTRA_CXX_FLAGS}>")
   ## install instructions
   install(TARGETS ${PROG}
     EXPORT ${PROJECT_NAME}-targets

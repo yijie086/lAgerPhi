@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: docker://whit/image_recipes/root_base:latest
+From: whit/image_recipes/root_base_broadwell:latest
 
 %help
   Help me. I'm in the container.
@@ -8,9 +8,8 @@ From: docker://whit/image_recipes/root_base:latest
   Maintainer "Whitney Armstrong"
   Version v1.0
 
-%environment -c /bin/bash
+%environment
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
-  source /usr/local/bin/thisroot.sh
 
 %post -c /bin/bash
   echo "Hello from post"
@@ -18,7 +17,7 @@ From: docker://whit/image_recipes/root_base:latest
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
   git clone https://gitlab+deploy-token-1:FaNA-Yg4s7hpjvWPZnq8@eicweb.phy.anl.gov/upsilon/Pcsim.git 
   mkdir Pcsim/build && cd Pcsim/build 
-  cmake ../. 
+  cmake ../. -DCOMPILE_FOR_BROADWELL:BOOL=ON
   make -j20
   make install
 

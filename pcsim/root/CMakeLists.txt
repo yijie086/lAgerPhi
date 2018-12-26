@@ -55,6 +55,7 @@ set(CONFIG_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/config.hh")
 ## Compile and Link
 ################################################################################
 add_library(${LIBRARY} SHARED ${SOURCES})
+target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 target_link_libraries(${LIBRARY} 
                       ${PROJECT_NAME}_core ${PROJECT_NAME}_physics
                       ${PROJECT_NAME}_proc

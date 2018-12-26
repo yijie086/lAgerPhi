@@ -35,6 +35,7 @@ set(HEADERS ${HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/version.hh)
 add_library(${LIBRARY} SHARED ${SOURCES})
 target_link_libraries(${LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_features(${LIBRARY} PUBLIC cxx_std_17)
+target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 
   SOVERSION ${PCSIM_SOVERSION}
