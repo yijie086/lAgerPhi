@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: docker://whit/image_recipes/root_base:latest
+From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
 
 %help
   Help me. I'm in the container.

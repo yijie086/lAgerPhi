@@ -1,8 +1,10 @@
-image: whit2333/root_base:latest
+image: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
+#image: whit2333/root_base:latest
+#
 
 singularity-build:
   script:
-     - docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
+    #- docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
      - cp containers/singularity/Singularity .
      - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh Singularity
@@ -32,7 +34,7 @@ singularity-build:
 
 singularity-broadwell:
   script:
-     - docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
+    #- docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
      - /bin/bash .gitlabci/setup.sh
      - cp containers/singularity/Singularity.broadwell .
      - /bin/bash .gitlabci/build.sh Singularity.broadwell
