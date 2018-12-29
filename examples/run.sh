@@ -81,7 +81,6 @@ fi
 
 tempfile=$(mktemp)
 ./config_gen.py > $tempfile
-
 pcsim -c $tempfile -o ${OUTPUT_DIR} -r1
 rm "$tempfile"
 
