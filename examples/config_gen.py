@@ -16,7 +16,7 @@ def main():
     parser.add_argument('-i', action="store", dest="input_file", help="input json file. Which sets default values. Other commandline options override these configuration settings.")
     parser.add_argument('--e-beam-energy', action="store", dest="e_energy", help="electron beam energy in GeV")
     parser.add_argument('--ion-beam-energy', action="store", dest="ion_energy", help="ion beam energy in GeV")
-
+    parser.add_argument('--lumi', action="store", dest="lumi", help="integrated luminosity in units of pb")
 
     args = parser.parse_args()
 
@@ -26,6 +26,8 @@ def main():
 
     with open(in_file) as f:
         data = json.load(f) 
+
+    data["mc"]["lumi"] = 1.0
  
     if args.e_energy is not None:
         #print(str("electron beam energy is  {} ").format(args.e_energy))
@@ -34,10 +36,14 @@ def main():
     if args.ion_energy is not None:
         #print(str("electron beam energy is  {} ").format(args.e_energy))
         data["mc"]["generator"]["target"]["energy"]   = float(args.ion_energy)
+
+    if args.lumi is not None:
+        #print(str("electron beam energy is  {} ").format(args.e_energy))
+        #data["mc"]["generator"]["target"]["energy"]   = float(args.ion_energy)
+        data["mc"]["lumi"] = float(args.lumi)
     
     #data["mc"]["generator"]["beam"]["energy"]   = 8.0
     #data["mc"]["generator"]["target"]["energy"] = 120.0
-    data["mc"]["lumi"] = 10.0
     
     print json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
 
