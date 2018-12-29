@@ -20,7 +20,7 @@ def main():
 
     args = parser.parse_args()
 
-    in_file = 'upsilon-ep-e10p100.json'
+    in_file = '/home/whit/projects/Pcsim/examples/upsilon-ep-e10p100.json'
     #if args.input_file is not None:
     #    in_file =  args.input_file
 
@@ -37,7 +37,7 @@ def main():
     
     #data["mc"]["generator"]["beam"]["energy"]   = 8.0
     #data["mc"]["generator"]["target"]["energy"] = 120.0
-    data["mc"]["lumi"] = 1.0
+    data["mc"]["lumi"] = 10.0
     
     print json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
 
