@@ -6,6 +6,7 @@ include $(cnf)
 export $(shell sed 's/=.*//' $(cnf))
 
 APP_NAME    = pcsim
+REPO_NAME   = Pcsim
 REPO        = $(REG_USER)
 TAG_VERSION = latest
 
@@ -121,3 +122,13 @@ login: ## Auto login to AWS-ECR unsing aws-cli
 version: ## Output the current version
 	@echo $(VERSION)
 	
+
+clean:
+	docker rmi $(APP_NAME) || true
+	docker rmi $(REPO)/$(APP_NAME) || true
+	docker rmi $(REPO)/$(APP_NAME):$(TAG_VERSION) || true
+	docker rmi $(REPO)/$(APP_NAME):$(VERSION) || true
+	docker rmi $(REG_NAME)/$(REPO)/$(APP_NAME):latest || true  
+	docker rmi $(REG_NAME)/$(REPO)/$(APP_NAME):$(TAG_VERSION) || true  
+	docker rmi $(REG_NAME)/$(REPO)/$(APP_NAME) || true  
+

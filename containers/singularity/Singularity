@@ -10,17 +10,21 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
 
 %environment -c /bin/bash
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   source /usr/local/bin/thisroot.sh
 
 %post -c /bin/bash
   echo "Hello from post"
   source /usr/local/bin/thisroot.sh
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  cd /tmp
   git clone https://gitlab+deploy-token-1:FaNA-Yg4s7hpjvWPZnq8@eicweb.phy.anl.gov/upsilon/Pcsim.git 
   mkdir Pcsim/build && cd Pcsim/build 
   cmake ../. 
   make -j20
   make install
+  rm -r /tmp/Pcsim
 
 
 %runscript
