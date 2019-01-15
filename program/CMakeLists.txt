@@ -30,4 +30,4 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## Build all programs
 ################################################################################
-BUILD_PROGRAM(pcsim-lp_gamma)
+BUILD_PROGRAM(pcsim)
