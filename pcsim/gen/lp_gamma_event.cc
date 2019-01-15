@@ -5,9 +5,10 @@ namespace pcsim {
 // =============================================================================
 // IMPLEMENTATION: event_out
 // =============================================================================
-lp_gamma_out::lp_gamma_out(std::shared_ptr<TFile> f, std::ofstream& olund,
+lp_gamma_out::lp_gamma_out(std::shared_ptr<TFile> f,
+                           std::unique_ptr<std::ofstream> olund,
                            const std::string& name)
-    : event_out{f, olund, name} {
+    : event_out{f, std::move(olund), name} {
   create_branches();
 }
 

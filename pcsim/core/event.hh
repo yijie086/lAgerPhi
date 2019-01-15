@@ -39,7 +39,7 @@ public:
   double process_cross_section() const { return process_cross_section_; }
   double weight() const { return weight_; }
   int process() const { return process_; }
-  
+
   // event CM energy (from beam/target)
   double s() const;
 
@@ -121,7 +121,7 @@ public:
   const detected_particle& detected(const int index) const;
 
   int add_detected(const detected_particle& dp);
-  
+
 private:
   size_t evgen_{1}; // total number of generated events including this event
   double total_cross_section_{0.};   // estimated total integrated cross section
@@ -158,7 +158,7 @@ class event_out {
 public:
   constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
 
-  event_out(std::shared_ptr<TFile> f, std::ofstream& olund,
+  event_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
             const std::string& name);
   ~event_out() { tree_->AutoSave(); }
 
@@ -189,7 +189,7 @@ private:
   // file and tree
   std::shared_ptr<TFile> file_;
   TTree* tree_; // raw pointer because the TFile will have ownership of the tree
-  std::ofstream& olund_; // LUND output stream
+  std::unique_ptr<std::ofstream> olund_; // LUND output stream
 
   // event data
   int32_t index_{0};

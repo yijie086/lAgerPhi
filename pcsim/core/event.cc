@@ -7,10 +7,11 @@
 // =============================================================================
 
 namespace pcsim {
-event_out::event_out(std::shared_ptr<TFile> f, std::ofstream& olund,
+event_out::event_out(std::shared_ptr<TFile> f,
+                     std::unique_ptr<std::ofstream> olund,
                      const std::string& name)
     : file_{f}
-    , olund_{olund}
+    , olund_{std::move(olund)}
     , parts_{"TParticle", PARTICLE_BUFFER_SIZE}
     , rc_parts_{"TParticle", PARTICLE_BUFFER_SIZE} {
   LOG_INFO("event_out", "Initializing ROOT output stream");
@@ -51,8 +52,10 @@ void event_out::push(const event& e) {
   index_ += 1;
   clear();
 
-  // write LUND record
-  write_lund(e);
+  // write LUND record if wanted
+  if (olund_) {
+    write_lund(e);
+  }
 
   // that's all
 }
@@ -63,7 +66,7 @@ void event_out::write_lund(const event& e) {
   snprintf(buf, 2048, "%5zu %5i %5i %5f %5f %5i %5f %5i %5i %8.6e\n",
            e.count_final_state(), 1, 1, 0., 0., 11, e.beam().energy(), 0,
            e.process(), e.total_cross_section());
-  olund_ << buf;
+  *olund_ << buf;
   for (const auto& part : e) {
     if (!part.final_state()) {
       continue;
@@ -75,7 +78,7 @@ void event_out::write_lund(const event& e) {
              part.parent_first(), part.daughter_begin(), part.p().x(),
              part.p().y(), part.p().z(), part.energy(), part.mass(),
              part.vertex().x(), part.vertex().y(), part.vertex().z());
-    olund_ << buf;
+    *olund_ << buf;
   }
 }
 
@@ -99,18 +102,11 @@ void event_out::add(const particle& part) {
 }
 // add a detected particle to the buffer
 void event_out::add_detected(const detected_particle& dp) {
-  auto pbuf = new (rc_parts_[rc_n_part_]) TParticle(
-      static_cast<int32_t>(dp.generated().type<int32_t>()),
-      dp.status(),
-      dp.generated().index(), 0,0,0,
-      dp.p().X(),
-      dp.p().Y(),
-      dp.p().Z(),
-      dp.p().E(),
-      dp.vertex().X(),
-      dp.vertex().Y(),
-      dp.vertex().Z(),
-      dp.vertex().T());
+  auto pbuf = new (rc_parts_[rc_n_part_])
+      TParticle(static_cast<int32_t>(dp.generated().type<int32_t>()),
+                dp.status(), dp.generated().index(), 0, 0, 0, dp.p().X(),
+                dp.p().Y(), dp.p().Z(), dp.p().E(), dp.vertex().X(),
+                dp.vertex().Y(), dp.vertex().Z(), dp.vertex().T());
   // increment our detected particle counter
   rc_n_part_ += 1;
 }

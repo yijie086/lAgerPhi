@@ -163,7 +163,7 @@ private:
 // =============================================================================
 class lp_gamma_out : public event_out {
 public:
-  lp_gamma_out(std::shared_ptr<TFile> f, std::ofstream& olund,
+  lp_gamma_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
                const std::string& name);
   void push(const lp_gamma_event& e);
   void push(const std::vector<lp_gamma_event>& e);

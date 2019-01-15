@@ -14,9 +14,9 @@
 #include <pcsim/gen/beam/primary_gen.hh>
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
-#include <pcsim/proc/detector/solid.hh>
 #include <pcsim/proc/detector/jleic.hh>
 #include <pcsim/proc/detector/null.hh>
+#include <pcsim/proc/detector/solid.hh>
 // TODO
 
 using namespace pcsim;
@@ -58,8 +58,15 @@ int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim-lp_gamma", "Initializing the output buffer");
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
-  std::ofstream olund{output + ".gemc.dat"};
-  lp_gamma_out evbuf{ofile, olund, "lp_gamma_event"};
+
+  // check if we want gemc output as well
+  std::unique_ptr<std::ofstream> olund;
+  auto do_gemc = cf.get_optional<bool>("output_gemc");
+  if (do_gemc && *do_gemc) {
+    LOG_INFO("pcsim-lp_gamma", "Also outputting text output for gemc");
+    olund = std::make_unique<std::ofstream>(output + ".gemc.dat");
+  }
+  lp_gamma_out evbuf{ofile, std::move(olund), "lp_gamma_event"};
 
   // get event generator
   LOG_INFO("pcsim-lp_gamma", "Initializing the event generator");
