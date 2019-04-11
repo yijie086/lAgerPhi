@@ -4,9 +4,9 @@
 
 
 ## function to build our programs
-function (BUILD_PROGRAM EXE PROG)
+function (BUILD_PROGRAM PROG)
   ## Sources and install headers
-  set (SOURCES "${EXE}.cc")
+  set (SOURCES "${PROG}.cc")
   ## compile and link
   add_executable(${PROG} ${SOURCES})
   target_link_libraries(${PROG}
@@ -30,4 +30,4 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## Build all programs
 ################################################################################
-BUILD_PROGRAM(pcsim-lp_gamma pcsim)
+BUILD_PROGRAM(pcsim)

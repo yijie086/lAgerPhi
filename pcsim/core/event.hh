@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
+#include <fstream>
 #include <memory>
 #include <pcsim/core/assert.hh>
 #include <pcsim/core/event.hh>
@@ -51,6 +52,20 @@ public:
   // update weight and process number
   void update_weight(const double w) { weight_ *= w; }
   void reset_weight(const double w = 1.) { weight_ = w; }
+
+  // count the number of tracks with certain properties
+  size_t count_status(const particle::status_code stat) const {
+    return std::count_if(part_.begin(), part_.end(),
+                         [=](const particle& p) { return p.status() == stat; });
+  }
+  size_t count_stable() const {
+    return std::count_if(part_.begin(), part_.end(),
+                         [](const particle& p) { return p.stable(); });
+  }
+  size_t count_final_state() const {
+    return std::count_if(part_.begin(), part_.end(),
+                         [](const particle& p) { return p.final_state(); });
+  }
 
   // ===========================================================================
   // PARICLE INFO
@@ -143,7 +158,8 @@ class event_out {
 public:
   constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
 
-  event_out(std::shared_ptr<TFile> f, const std::string& name);
+  event_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
+            const std::string& name);
   ~event_out() { tree_->AutoSave(); }
 
   // no implicit default constructors
@@ -158,6 +174,8 @@ public:
   TTree* tree() { return tree_; }
 
 private:
+  void write_lund(const event& e);
+
   // clear particle portion of the event buffer
   void clear();
   // add a particle to the event buffer
@@ -171,6 +189,7 @@ private:
   // file and tree
   std::shared_ptr<TFile> file_;
   TTree* tree_; // raw pointer because the TFile will have ownership of the tree
+  std::unique_ptr<std::ofstream> olund_; // LUND output stream
 
   // event data
   int32_t index_{0};

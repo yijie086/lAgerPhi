@@ -34,7 +34,7 @@ add_subdirectory(pcsim/core)
 add_subdirectory(pcsim/physics)
 add_subdirectory(pcsim/proc)
 add_subdirectory(pcsim/gen)
-add_subdirectory(pcsim/root)
+#add_subdirectory(pcsim/root)
 add_subdirectory(program)
 #add_subdirectory(python)
 

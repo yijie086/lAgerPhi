@@ -1,5 +1,6 @@
 #include <TFile.h>
 #include <TRandom3.h>
+#include <fstream>
 #include <memory>
 #include <pcsim/core/configuration.hh>
 #include <pcsim/core/framework.hh>
@@ -60,7 +61,15 @@ int run_mc(const configuration& cf, const std::string& output) {
   LOG_INFO("pcsim-lp_gamma", "Initializing the output buffer");
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
-  lp_gamma_out evbuf{ofile, "lp_gamma_event"};
+
+  // check if we want gemc output as well
+  std::unique_ptr<std::ofstream> olund;
+  auto do_gemc = cf.get_optional<bool>("output_gemc");
+  if (do_gemc && *do_gemc) {
+    LOG_INFO("pcsim-lp_gamma", "Also outputting text output for gemc");
+    olund = std::make_unique<std::ofstream>(output + ".gemc.dat");
+  }
+  lp_gamma_out evbuf{ofile, std::move(olund), "lp_gamma_event"};
 
   // get event generator
   LOG_INFO("pcsim-lp_gamma", "Initializing the event generator");
