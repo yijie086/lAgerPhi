@@ -137,7 +137,7 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
     } else if (rl_ == .05) {
       return bremsstrahlung_intensity_005_param(E_beam, E);
     } else if (rl_ == .10) {
-      return bremsstrahlung_intensity_005_param(E_beam, E);
+      return bremsstrahlung_intensity_010_param(E_beam, E);
     } else {
       return 0.; // can never happen
     }
