@@ -23,5 +23,5 @@ endfunction ()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   init_rpath_macos()
-  add_to_rpath(${CMAKE_INSTALL_PREFIX}/${INSTALL_LIB_DIR})
+  add_to_rpath(${INSTALL_LIB_DIR})
 endif()

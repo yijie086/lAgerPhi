@@ -243,7 +243,11 @@ public:
           // events are weighted with the partial branching ratio, also add
           // account for events we did not consider when only doing a limited
           // set of decay channels
-          n_tot_events_ += 1 / event.weight();
+          n_tot_events_ += 1;
+          // update BR, assumed to be same for all events!
+          // TODO this is really a design issue and should be fixed for a next
+          //      major release
+          branching_ratio_ = event.weight();
           event.update_stat(static_cast<size_t>(n_tot_events_),
                             cross_section());
           event.reset_weight();
@@ -280,9 +284,12 @@ public:
       return volume_ * process_list_.size();
     }
     // the actual cross section estimate
+    // Note that we did not use n_events(), which gives the "true" number of
+    // events including those we did not generate because of the limited
+    // branching ratio.
     return volume_ * n_tot_events_ / n_trials_;
   }
-  int64_t n_events() const { return n_tot_events_; }
+  int64_t n_events() const { return n_tot_events_ / branching_ratio_; }
 
   // calculate the number of requested events from the lumi * cross section,
   // or alternatively use the fixed number of events
@@ -407,6 +414,7 @@ private:
 
   double n_trials_{0.};                    // global trial counter
   double n_tot_events_{0};                 // total number of events
+  double branching_ratio_{1.};             // constant branching ratio
   std::vector<process_info> process_list_; // process dependent info
 
   int64_t n_requested_{-1}; // number of requested events

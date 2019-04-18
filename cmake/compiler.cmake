@@ -53,11 +53,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIR})
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  add_to_rpath_macos("${ROOT_LIBRARY_DIR}")
-  add_to_rpath_macos("${Boost_LIBRARY_DIRS}")
-  add_to_rpath_macos("${GSL_LIBDIR}")
-endif()
+#if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+#  add_to_rpath_macos("${ROOT_LIBRARY_DIR}")
+#  add_to_rpath_macos("${Boost_LIBRARY_DIRS}")
+#  add_to_rpath_macos("${GSL_LIBDIR}")
+#endif()
 
 #include (cmake/debug.cmake)
  
