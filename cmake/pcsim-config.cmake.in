@@ -25,3 +25,11 @@ find_package(root REQUIRED)
 find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 set(PCSIM_LIBRARIES ${PCSIM_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 set(PCSIM_INCLUDE_DIRS ${PCSIM_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+
+## Extra rpath stuff for MacOS
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_INSTALL_RPATH 
+    ${CMAKE_INSTALL_RPATH} 
+    "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
+  message("Podd: set rpath to ${CMAKE_INSTALL_RPATH}")
+endif()

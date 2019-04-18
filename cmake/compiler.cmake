@@ -1,19 +1,7 @@
 ################################################################################
-## setup
-################################################################################
-include(${PROJECT_SOURCE_DIR}/cmake/rpath.cmake)
-
-
-################################################################################
 ## global defines
 ################################################################################
-
-## set the RPATH for OsX
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  init_rpath_macos()
-  add_to_rpath_macos(${INSTALL_LIB_DIR})
-endif()
-
+# Nothing here
 
 ################################################################################
 ## CXX Compiler Settings 
@@ -61,7 +49,6 @@ include_directories(${ROOT_INCLUDE_DIRS})
 find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-
 ## gsl
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIR})
@@ -91,4 +78,3 @@ elseif( ${COMPILE_FOR_KNL} )
   # TODO 
   # http://www.prace-ri.eu/best-practice-guide-knights-landing-january-2017/
 endif() 
-

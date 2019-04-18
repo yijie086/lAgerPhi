@@ -24,6 +24,7 @@ option(COMPILE_FOR_KNL       "Enable the compiler flags for KNL instruction set 
 ################################################################################
 include(cmake/options.cmake)
 include(cmake/compiler.cmake)
+include(cmake/rpath.cmake)
 
 ################################################################################
 ## Add subdirectories
