@@ -26,7 +26,7 @@ class configuration_path_error;
 class configuration_key_error;
 class configuration_value_error;
 class configuration_translation_error;
-} // ns pcsim
+} // namespace pcsim
 
 // =============================================================================
 // Consistent way to format object paths/names/titles
@@ -65,7 +65,7 @@ public:
   }
   std::string str() const { return dump(); }
 };
-} // ns pcsim
+} // namespace pcsim
 
 // =============================================================================
 // configuration handler
@@ -77,7 +77,7 @@ public:
 namespace pcsim {
 
 namespace configuration_impl {
-  class value_proxy;
+class value_proxy;
 }
 
 class configuration {
@@ -95,6 +95,13 @@ public:
   // store the settings in the give ptree
   // The defaults are only exported if not yet present.
   void save(ptree& out_conf) const;
+
+  // HACK: expose raw ptree node, because we need this right now to directly
+  //       loop over an array of settings
+  //       the fact we need to do this means IMO that this part of the library
+  //       using boost ptree is end-of-life, and a better json library should be
+  //       used
+  ptree& raw_node(const string_path& key);
 
   // get the type info
   std::string type() const { return get<std::string>(TYPE_KEY); }
@@ -196,7 +203,6 @@ public:
   interval<T> get_range(const string_path& key,
                         const translation_map<T>& tr) const;
 
-
   // Helper functions to construct exceptions
   configuration_path_error path_error(const string_path& path) const;
   configuration_key_error key_error(const string_path& key) const;
@@ -224,7 +230,7 @@ private:
   string_path defaults_path_;
   ptree defaults_;
 };
-} // ns pcsim
+} // namespace pcsim
 
 // =============================================================================
 // configurable mixin
@@ -251,8 +257,7 @@ private:
   configuration conf_;
   const string_path path_;
 };
-} // ns pcsim
-
+} // namespace pcsim
 
 // =============================================================================
 // Definition: exceptions
@@ -318,7 +323,7 @@ private:
   const configuration& conf_;
   const string_path key_;
 };
-}
+} // namespace configuration_impl
 
 // =============================================================================
 // Implementation: configuration getters
@@ -597,6 +602,18 @@ interval<T> configuration::get_range(const string_path& key,
   }
   return *range;
 }
+// HACK: expose raw ptree node, because we need this right now to directly
+//       loop over an array of settings
+//       the fact we need to do this means IMO that this part of the library
+//       using boost ptree is end-of-life, and a better json library should be
+//       used
+inline ptree& configuration::raw_node(const string_path& key) {
+  auto node = settings_.get_child_optional(key);
+  if (!node) {
+    throw key_error(key);
+  }
+  return *node;
+}
 
 // =============================================================================
 // Implementation: configuration errors
@@ -639,6 +656,6 @@ configuration_translation_error::configuration_translation_error(
               "')",
           "configuration_translation_error") {}
 
-} // ns pcsim
+} // namespace pcsim
 
 #endif
