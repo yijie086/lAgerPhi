@@ -15,7 +15,6 @@
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
 #include <pcsim/gen/lp_gamma/oleksii_2vmp.hh>
-#include <pcsim/proc/detector/jleic.hh>
 #include <pcsim/proc/detector/null.hh>
 #include <pcsim/proc/detector/solid.hh>
 // TODO
