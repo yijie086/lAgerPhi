@@ -7,6 +7,20 @@
 namespace pcsim {
 namespace decay {
 
+lp_gamma::lp_gamma(const configuration& conf, const string_path& path,
+                   std::shared_ptr<TRandom> r)
+    : lp_gamma::base_type{std::move(r)}
+    , vm_decay_lplus_{static_cast<pdg_id>(
+          -abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
+    , vm_decay_lminus_{static_cast<pdg_id>(
+          abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
+    , vm_decay_br_{conf.get<double>(path / "vm_branching_ratio", 1)} {
+  LOG_INFO("decay", "VM decays into " + vm_decay_lplus_.name() +
+                        vm_decay_lminus_.name());
+  LOG_INFO("decay",
+           "VM Branching ratio set to: " + std::to_string(vm_decay_br_));
+}
+
 void lp_gamma::process(lp_gamma_event& e) const {
   for (int i = 0; i < e.size(); ++i) {
     LOG_JUNK2("decay::lp_gamma",
@@ -42,21 +56,22 @@ void lp_gamma::process(lp_gamma_event& e) const {
 }
 
 void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
-  e.update_weight(e[i].pdg()->DecayChannel(0)->BranchingRatio());
-  std::pair<particle, particle> decay_products{{pdg_id::e_plus},
-                                               {pdg_id::e_minus}};
+  // electron or muon BR only
+  e.update_weight(vm_decay_br_);
+  std::pair<particle, particle> decay_products{{vm_decay_lplus_.type()},
+                                               {vm_decay_lminus_.type()}};
   std::pair<particle, particle> decay_products_cm{
-      {pdg_id::e_plus, particle::status_code::INFO_PARENT_CM},
-      {pdg_id::e_minus, particle::status_code::INFO_PARENT_CM}};
+      {vm_decay_lplus_.type(), particle::status_code::INFO_PARENT_CM},
+      {vm_decay_lminus_.type(), particle::status_code::INFO_PARENT_CM}};
   const double epsilon_R = e.epsilon() * e.R();
   const double r04 = epsilon_R / (1 + epsilon_R);
   const double phi = rng()->Uniform(0., TMath::TwoPi());
-  const double ctheta =
-      rand_f({-1, 1},
-             [=](const double ctheta) {
-               return ((1. + r04) + (1. - 3. * r04) * ctheta * ctheta);
-             },
-             2.001);
+  const double ctheta = rand_f(
+      {-1, 1},
+      [=](const double ctheta) {
+        return ((1. + r04) + (1. - 3. * r04) * ctheta * ctheta);
+      },
+      2.001);
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // add the decay particles
@@ -82,51 +97,52 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
       e[i].type() == pdg_id::Pc_4380_52p) {
     // result from a pol6 fit to a digitized version of figure 6c from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      const double x3 = x2 * x;
-                      const double x4 = x3 * x;
-                      const double x5 = x4 * x;
-                      const double x6 = x5 * x;
-                      return .149211 - 0.194418 * x - 0.563191 * x2 +
-                             0.374024 * x3 + 0.658942 * x4 + 0.110057 * x5 +
-                             0.0931712 * x6;
-                    },
-                    0.63);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          const double x3 = x2 * x;
+          const double x4 = x3 * x;
+          const double x5 = x4 * x;
+          const double x6 = x5 * x;
+          return .149211 - 0.194418 * x - 0.563191 * x2 + 0.374024 * x3 +
+                 0.658942 * x4 + 0.110057 * x5 + 0.0931712 * x6;
+        },
+        0.63);
   } else if (e[i].type() == pdg_id::Pc_4450_52m ||
              e[i].type() == pdg_id::Pc_4380_52m) {
     // result from a pol7 fit to a digitized version of figure 5c from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      const double x3 = x2 * x;
-                      const double x4 = x3 * x;
-                      const double x5 = x4 * x;
-                      const double x6 = x5 * x;
-                      const double x7 = x6 * x;
-                      return 1.31241 - 1.19802 * x + 1.58351 * x2 +
-                             17.1514 * x3 + 20.8306 * x4 - 4.43848 * x5 +
-                             2.67151 * x6 + 6.06378 * x7;
-                    },
-                    44.06);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          const double x3 = x2 * x;
+          const double x4 = x3 * x;
+          const double x5 = x4 * x;
+          const double x6 = x5 * x;
+          const double x7 = x6 * x;
+          return 1.31241 - 1.19802 * x + 1.58351 * x2 + 17.1514 * x3 +
+                 20.8306 * x4 - 4.43848 * x5 + 2.67151 * x6 + 6.06378 * x7;
+        },
+        44.06);
   } else if (e[i].type() == pdg_id::Pc_4450_32p ||
              e[i].type() == pdg_id::Pc_4380_32p) {
     // result from a expo fit to a digitized version of figure 5b from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1}, [](const double x) { return exp(-5.944 - x); },
-                    0.00713);
+    ctheta = rand_f(
+        {-1, 1}, [](const double x) { return exp(-5.944 - x); }, 0.00713);
   } else if (e[i].type() == pdg_id::Pc_4450_32m ||
              e[i].type() == pdg_id::Pc_4380_32m) {
     // result from a pol2 fit to a digitized version of figure 6b from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      return 0.00845846 - 0.0128146 * x + 0.00526053 * x2;
-                    },
-                    0.0266);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          return 0.00845846 - 0.0128146 * x + 0.00526053 * x2;
+        },
+        0.0266);
   }
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);

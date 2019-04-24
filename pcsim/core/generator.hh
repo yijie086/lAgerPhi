@@ -226,6 +226,7 @@ public:
             LOG_JUNK(process.name, "Event accepted!");
             event.update_process(process.id);
             event_list.push_back(event);
+            n_gen_events_ += 1;
           } else {
             LOG_JUNK(process.name, "Event rejected.");
           }
@@ -240,16 +241,12 @@ public:
           LOG_JUNK("generator",
                    "Event accepted after event builder step (weight: " +
                        std::to_string(event.weight()) + ", reset to 1)");
-          // events are weighted with the partial branching ratio, also add
-          // account for events we did not consider when only doing a limited
-          // set of decay channels
-          n_tot_events_ += 1;
+          n_events_ += 1;
           // update BR, assumed to be same for all events!
           // TODO this is really a design issue and should be fixed for a next
           //      major release
           branching_ratio_ = event.weight();
-          event.update_stat(static_cast<size_t>(n_tot_events_),
-                            cross_section());
+          event.update_stat(static_cast<size_t>(n_events_), cross_section());
           event.reset_weight();
           good_event_list.push_back(event);
         } else {
@@ -280,23 +277,26 @@ public:
   double cross_section() const {
     // return a safe upper boundary in case we don't have enough events yet to
     // have some kind of reasonable estimate
-    if (n_tot_events_ < 50) {
+    if (n_events_ < 50) {
       return volume_ * process_list_.size();
     }
     // the actual cross section estimate
-    // Note that we did not use n_events(), which gives the "true" number of
-    // events including those we did not generate because of the limited
-    // branching ratio.
-    return volume_ * n_tot_events_ / n_trials_;
+    return volume_ * n_events() / n_trials_;
   }
-  int64_t n_events() const { return n_tot_events_ / branching_ratio_; }
+  double partial_cross_section() const {
+    return cross_section() * branching_ratio_;
+  }
+  int64_t n_events() const { return n_events_; }
+  // return the acceptance, i.e., the number of events divided by the number
+  // of generated events before the event builder step
+  double acceptance() const { return double(n_events_) / n_gen_events_; }
 
-  // calculate the number of requested events from the lumi * cross section,
-  // or alternatively use the fixed number of events
+  // calculate the number of requested events from the lumi * cross section *
+  // branching ratio, or alternatively use the fixed number of events
   int64_t n_requested() const {
-    return (n_requested_ > 0)
-               ? n_requested_
-               : static_cast<int64_t>(std::round(lumi_ * cross_section()));
+    return (n_requested_ > 0) ? n_requested_
+                              : static_cast<int64_t>(std::round(
+                                    lumi_ * partial_cross_section()));
   }
 
   bool finished() const { return (n_events() >= n_requested()); }
@@ -333,7 +333,8 @@ private:
   }
 
   // the maximum cross section and total phase space volume functions
-  // don't make sense here, as they are different for each of the sub-processes
+  // don't make sense here, as they are different for each of the
+  // sub-processes
   virtual double max_cross_section() const { return -1; }
   virtual double phase_space() const { return -1; }
 
@@ -412,9 +413,10 @@ private:
   double proc_volume_{-1.}; // largest generation volume in process_list
   double volume_{1.};       // total volume
 
-  double n_trials_{0.};                    // global trial counter
-  double n_tot_events_{0};                 // total number of events
-  double branching_ratio_{1.};             // constant branching ratio
+  double n_trials_{0.};        // global trial counter
+  double n_events_{0};         // total number of events
+  double n_gen_events_{1};     // raw number of events before event builder step
+  double branching_ratio_{1.}; // constant branching ratio
   std::vector<process_info> process_list_; // process dependent info
 
   int64_t n_requested_{-1}; // number of requested events

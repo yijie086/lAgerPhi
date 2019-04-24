@@ -46,10 +46,13 @@ private:
 
 public:
   std::shared_ptr<T> create(const std::string& name, Args... a) const {
-    std::lock_guard<std::mutex> lock{mutex_};
+    // Removed lock guard because it screws up when doing nested constructions,
+    // and we are not running in a multi-threaded environment anyway
+    //    std::lock_guard<std::mutex> lock{mutex_};
     LOG_DEBUG("factory", "Constructing " + name);
     if (!workers_) {
-      LOG_DEBUG("factory", "Worker pointer is a null pointer. This should never happen.");
+      LOG_DEBUG("factory",
+                "Worker pointer is a null pointer. This should never happen.");
     }
     if (!workers_ || !workers_->count(name)) {
       LOG_ERROR("factory", "Cannot construct object " + name +
@@ -96,9 +99,8 @@ private:
 
   std::unique_ptr<worker_map_type> workers_;
   mutable std::mutex mutex_;
-
 };
 
-}
+} // namespace pcsim
 
 #endif

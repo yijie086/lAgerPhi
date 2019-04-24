@@ -93,8 +93,7 @@ int run_mc(const configuration& cf, const std::string& output) {
                         to_string_exp(gen.cross_section()));
   LOG_INFO("pcsim", "Partial accepted cross section with BR [nb]: " +
                         to_string_exp(gen.partial_cross_section()));
-  LOG_INFO("pcsim",
-           " --> Acceptance [%]: " + std::to_string(100 * gen.acceptance()));
+  LOG_INFO("pcsim", " --> Acceptance [%]: " + to_string_exp(gen.acceptance()));
 
   return 0;
 }

@@ -25,7 +25,15 @@ template <class T> struct interval {
   constexpr operator std::pair<value_type, value_type>() const {
     return std::make_pair(min, max);
   }
+  constexpr interval operator*(const double rhs) const {
+    return {min * rhs, max * rhs};
+  }
+  constexpr interval operator/(const double rhs) const {
+    return operator*(1 / rhs);
+  }
+  interval operator*=(const double rhs) { *this = operator*(rhs); }
+  interval operator/=(const double rhs) { *this = operator/(rhs); }
 };
-} // ns pcsim
+} // namespace pcsim
 
 #endif

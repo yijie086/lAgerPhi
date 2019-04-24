@@ -133,13 +133,12 @@ public:
   template <class T>
   T get(const string_path& key, const translation_map<T>& tr) const;
   // 3. default-value version
-  //      if default_value is needed, it is automatically added to
-  //      the default configurations for this entity
+  //      if default_value is needed
   template <class T, class = typename std::enable_if<!is_map<T>::value>::type>
-  T get(const string_path& key, const T& default_value);
+  T get(const string_path& key, const T& default_value) const;
   template <class T>
   T get(const string_path& key, const T& default_value,
-        const translation_map<T>& tr);
+        const translation_map<T>& tr) const;
   // same getters, but in (STL) vector version
   // 1. optional version
   template <class T>
@@ -363,17 +362,16 @@ T configuration::get(const string_path& key,
   return translate(key, val, tr);
 }
 template <class T, class>
-T configuration::get(const string_path& key, const T& default_value) {
+T configuration::get(const string_path& key, const T& default_value) const {
   auto s = get_optional<T>(key);
   if (!s) {
-    defaults_.put(key, default_value);
     return default_value;
   }
   return *s;
 }
 template <class T>
 T configuration::get(const string_path& key, const T& default_value,
-                     const translation_map<T>& tr) {
+                     const translation_map<T>& tr) const {
   std::string val{get(key, default_value)};
   return translate(key, val, tr);
 }
