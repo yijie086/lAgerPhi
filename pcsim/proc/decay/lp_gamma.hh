@@ -20,6 +20,11 @@ namespace decay {
 // Note: adds event weight to account for branching ratios when not simulating
 // the full decay width
 // =============================================================================
+class radiative_decay_vm {
+public:
+  radiative_decay_vm();
+  void process(lp_gamma_event& e, const int vm_index);
+};
 
 class lp_gamma : public decay<lp_gamma_event> {
 public:
@@ -35,6 +40,7 @@ private:
   const particle vm_decay_lplus_;
   const particle vm_decay_lminus_;
   const double vm_decay_br_;
+  std::unique_ptr<radiative_decay_vm> radiative_decay_;
 };
 
 } // namespace decay

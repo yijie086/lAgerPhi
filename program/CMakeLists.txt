@@ -12,6 +12,7 @@ function (BUILD_PROGRAM PROG)
   target_link_libraries(${PROG}
     pcsim_core pcsim_physics pcsim_proc pcsim_gen
     pcsim_core pcsim_physics pcsim_proc pcsim_gen
+    ${PHOTOSPP_LIBRARIES}
   ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 #target_compile_options(${PROG} PUBLIC "$<$<CONFIG:DEBUG>:${MY_DEBUG_OPTIONS}>")
   target_compile_options(${PROG} PUBLIC "$<$<CONFIG:RELEASE>:${PROJECT_EXTRA_CXX_FLAGS}>")

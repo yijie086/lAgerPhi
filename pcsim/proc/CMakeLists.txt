@@ -35,6 +35,7 @@ target_compile_options(${LIBRARY} PUBLIC ${PROJECT_EXTRA_CXX_FLAGS})
 target_link_libraries(${LIBRARY} 
                       ${PROJECT_NAME}_core ${PROJECT_NAME}_physics
                       ${ROOT_GenVector_LIBRARY} ${ROOT_EG_LIBRARY} ${ROOT_LIBRARIES} 
+                      ${HEPMC_LIBRARIES} ${PHOTOSPP_LIBRARIES}
                       ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY} PROPERTIES 
   VERSION ${PCSIM_VERSION} 

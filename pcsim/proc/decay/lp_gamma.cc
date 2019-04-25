@@ -4,6 +4,10 @@
 #include <pcsim/core/pdg.hh>
 #include <pcsim/core/stringify.hh>
 
+#include <HepMC/GenEvent.h>
+#include <photospp/Photos.h>
+#include <photospp/PhotosHepMCEvent.h>
+
 namespace pcsim {
 namespace decay {
 
@@ -19,6 +23,12 @@ lp_gamma::lp_gamma(const configuration& conf, const string_path& path,
                         vm_decay_lminus_.name());
   LOG_INFO("decay",
            "VM Branching ratio set to: " + std::to_string(vm_decay_br_));
+  auto do_radiative_decay_vm =
+      conf.get<bool>(path / "do_radiative_decay_vm", false);
+  if (do_radiative_decay_vm) {
+    LOG_INFO("decay", "Simulating radiative decay for VM particles");
+    radiative_decay_ = std::make_unique<radiative_decay_vm>();
+  }
 }
 
 void lp_gamma::process(lp_gamma_event& e) const {
@@ -76,6 +86,9 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // add the decay particles
   e.add_daughter(decay_products, i);
+  if (radiative_decay_) {
+    radiative_decay_->process(e, i);
+  }
 
   // add the SCHC info in the VM helicity frame
   decay_products_cm.first.add_parent(i);
@@ -84,6 +97,53 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
 
   // mark the vm as decayed
   e[i].update_status(particle::status_code::DECAYED_SCHC);
+}
+radiative_decay_vm::radiative_decay_vm() {
+  Photospp::Photos::initialize();
+  // 0.5MeV cutoff for a 3GeV J/psi
+  Photospp::Photos::setInfraredCutOff(.0005 / 3.);
+}
+void radiative_decay_vm::process(lp_gamma_event& e, const int vm_index) {
+  const std::pair<int, int> decay_index = {e[vm_index].daughter_begin(),
+                                           e[vm_index].daughter_begin() + 1};
+  HepMC::GenEvent evt(20, 1);
+  evt.use_units(HepMC::Units::GEV, HepMC::Units::CM);
+  auto vx = std::make_shared<HepMC::GenVertex>();
+  evt.add_vertex(vx.get());
+  vx->add_particle_in(new HepMC::GenParticle(
+      HepMC::FourVector(e[vm_index].p().X(), e[vm_index].p().Y(),
+                        e[vm_index].p().Z(), e[vm_index].p().E()),
+      e[vm_index].type<int>(), 31));
+  vx->add_particle_out(new HepMC::GenParticle(
+      HepMC::FourVector(
+          e[decay_index.first].p().X(), e[decay_index.first].p().Y(),
+          e[decay_index.first].p().Z(), e[decay_index.first].p().E()),
+      e[decay_index.first].type<int>(), 31));
+  vx->add_particle_out(new HepMC::GenParticle(
+      HepMC::FourVector(
+          e[decay_index.second].p().X(), e[decay_index.second].p().Y(),
+          e[decay_index.second].p().Z(), e[decay_index.second].p().E()),
+      e[decay_index.second].type<int>(), 31));
+  Photospp::PhotosHepMCEvent photos_event(&evt);
+  photos_event.process();
+  // did we radiate one (or more) photons?
+  if (evt.particles_size() > 3) {
+    // then we need to update our event record and add the photon
+    auto it = evt.particles_begin();
+    ++it; // skip the VM
+    // next up is the first decay lepton
+    e[decay_index.first].p() = (*it)->momentum();
+    ++it;
+    // second decay lepton
+    e[decay_index.second].p() = (*it)->momentum();
+    ++it;
+    // now store the photons
+    for (; it != evt.particles_end(); ++it) {
+      e.add_daughter({static_cast<pdg_id>((*it)->pdg_id()),
+                      particle::XYZTVector((*it)->momentum())},
+                     vm_index);
+    }
+  }
 }
 void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
   std::pair<particle, particle> decay_products{
