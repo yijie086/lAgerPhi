@@ -7,8 +7,9 @@ namespace pcsim {
 // =============================================================================
 lp_gamma_out::lp_gamma_out(std::shared_ptr<TFile> f,
                            std::unique_ptr<std::ofstream> olund,
+                           std::unique_ptr<std::ofstream> osimc,
                            const std::string& name)
-    : event_out{f, std::move(olund), name} {
+    : event_out{f, std::move(olund), std::move(osimc), name} {
   create_branches();
 }
 

@@ -159,7 +159,7 @@ public:
   constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
 
   event_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
-            const std::string& name);
+            std::unique_ptr<std::ofstream> osimc, const std::string& name);
   ~event_out() { tree_->AutoSave(); }
 
   // no implicit default constructors
@@ -175,6 +175,7 @@ public:
 
 private:
   void write_lund(const event& e);
+  void write_simc(const event& e);
 
   // clear particle portion of the event buffer
   void clear();
@@ -190,6 +191,7 @@ private:
   std::shared_ptr<TFile> file_;
   TTree* tree_; // raw pointer because the TFile will have ownership of the tree
   std::unique_ptr<std::ofstream> olund_; // LUND output stream
+  std::unique_ptr<std::ofstream> osimc_; // SIMC output stream
 
   // event data
   int32_t index_{0};

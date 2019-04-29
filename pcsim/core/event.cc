@@ -9,9 +9,11 @@
 namespace pcsim {
 event_out::event_out(std::shared_ptr<TFile> f,
                      std::unique_ptr<std::ofstream> olund,
+                     std::unique_ptr<std::ofstream> osimc,
                      const std::string& name)
     : file_{f}
     , olund_{std::move(olund)}
+    , osimc_{std::move(osimc)}
     , parts_{"TParticle", PARTICLE_BUFFER_SIZE}
     , rc_parts_{"TParticle", PARTICLE_BUFFER_SIZE} {
   LOG_INFO("event_out", "Initializing ROOT output stream");
@@ -56,6 +58,10 @@ void event_out::push(const event& e) {
   if (olund_) {
     write_lund(e);
   }
+  // write SIMC record if wanted
+  if (osimc_) {
+    write_simc(e);
+  }
 
   // that's all
 }
@@ -79,6 +85,28 @@ void event_out::write_lund(const event& e) {
              part.p().y(), part.p().z(), part.energy(), part.mass(),
              part.vertex().x(), part.vertex().y(), part.vertex().z());
     *olund_ << buf;
+  }
+}
+void event_out::write_simc(const event& e) {
+  char buf[1024];
+  // assume HMS is detector ID 1 and SHMS is detector ID 2
+  auto hms_track =
+      std::find_if(e.detected().begin(), e.detected().end(),
+                   [](const auto& part) { return part.status() == 1; });
+  auto shms_track =
+      std::find_if(e.detected().begin(), e.detected().end(),
+                   [](const auto& part) { return part.status() == 2; });
+  auto end = e.detected().end();
+  if (hms_track != end && shms_track != end) {
+    snprintf(buf, 1024,
+             "%16.10e %16.10e %16.10e %16.10e %16.10e %16.10e %16.10e %16.10e "
+             "%16.10e %16.10e %16.10e\n",
+             hms_track->p().X(), hms_track->p().Y(),
+             hms_track->p().Z(), hms_track->energy(),
+             hms_track->vertex().Z(), shms_track->p().X(),
+             shms_track->p().Y(), shms_track->p().Z(),
+             shms_track->energy(), shms_track->vertex().Z(), 1.);
+    *osimc_ << buf;
   }
 }
 

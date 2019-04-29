@@ -50,12 +50,18 @@ void lp_gamma::process(lp_gamma_event& e) const {
     // leading particle from decay products
     if (e.detected_leading_index() < 0 && e.leading_index() >= 0) {
       if (e.detected(i).generated().parent_first() == e.leading_index() &&
-          e.detected(i).generated().n_parents() == 1) {
+          e.detected(i).generated().n_parents() == 1 &&
+          e.leading().n_daughters() > 1) {
         LOG_JUNK2("reconstruction",
                   "Found decay particle from leading particle, "
                   "scanning for the matching particles (particle type : " +
                       e.leading().name() + ") ");
-        if (e.leading().n_daughters() != 2) {
+        // disable enforced number of daughters for VMs, as RC particles are
+        // also stored as daughters. For now we implicitly reconstruct using
+        // only 2 particles for VMs
+        if (e.leading().n_daughters() != 2 &&
+            e.leading().type() != pdg_id::J_psi &&
+            e.leading().type() != pdg_id::upsilon) {
           LOG_DEBUG("reconstruction",
                     "Only 2-body reconstruction implemented, but this "
                     "leading particle has " +
@@ -71,6 +77,7 @@ void lp_gamma::process(lp_gamma_event& e) const {
               // we found both!
               e.add_detected(
                   {e.leading(), e.detected(i).p() + e.detected(j).p(), -1});
+              break;
             }
           }
         }

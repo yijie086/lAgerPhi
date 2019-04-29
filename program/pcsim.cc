@@ -51,16 +51,16 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(detector::detector, detector::composite, "composite");
   // TODO
 
-  LOG_INFO("pcsim-lp_gamma", "Initializing PCSIM for lp-gamma processes");
+  LOG_INFO("pcsim", "Initializing PCSIM for lp-gamma processes");
 
   // get RNG
-  LOG_INFO("pcsim-lp_gamma",
+  LOG_INFO("pcsim",
            "Initializing the RNG with seed " + cf.get<std::string>("run"));
   std::shared_ptr<TRandom> r{std::make_shared<TRandom3>()};
   r->SetSeed(cf.get<int>("run"));
 
   // make output file and buffer
-  LOG_INFO("pcsim-lp_gamma", "Initializing the output buffer");
+  LOG_INFO("pcsim", "Initializing the output buffer");
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
 
@@ -68,20 +68,28 @@ int run_mc(const configuration& cf, const std::string& output) {
   std::unique_ptr<std::ofstream> olund;
   auto do_gemc = cf.get_optional<bool>("output_gemc");
   if (do_gemc && *do_gemc) {
-    LOG_INFO("pcsim-lp_gamma", "Also outputting text output for gemc");
+    LOG_INFO("pcsim", "Also outputting text output for GEMC");
     olund = std::make_unique<std::ofstream>(output + ".gemc.dat");
   }
-  lp_gamma_out evbuf{ofile, std::move(olund), "lp_gamma_event"};
+  // check if we want simc, in similar vein
+  std::unique_ptr<std::ofstream> osimc;
+  auto do_simc = cf.get_optional<bool>("output_simc");
+  if (do_simc && *do_simc) {
+    LOG_INFO("pcsim", "Also outputting text output for SIMC");
+    osimc = std::make_unique<std::ofstream>(output + ".simc.dat");
+  }
 
+  lp_gamma_out evbuf{ofile, std::move(olund), std::move(osimc),
+                     "lp_gamma_event"};
   // get event generator
-  LOG_INFO("pcsim-lp_gamma", "Initializing the event generator");
+  LOG_INFO("pcsim", "Initializing the event generator");
   lp_gamma_generator gen{cf, "generator", r};
 
   // init the progress meter with number of requested events
   progress_meter progress{static_cast<size_t>(gen.n_requested())};
 
   // loop over events
-  LOG_INFO("pcsim-lp_gamma", "Starting the main generation loop");
+  LOG_INFO("pcsim", "Starting the main generation loop");
   while (!gen.finished()) {
     evbuf.push(gen.generate());
     progress.update(gen.n_events(), gen.n_requested());
