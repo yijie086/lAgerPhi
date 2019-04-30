@@ -17,7 +17,7 @@ namespace beam {
 // Bremsstrahlung photons
 class bremsstrahlung : public photon_generator {
 public:
-  enum class model { FLAT, PARAM, APPROX };
+  enum class model { FLAT, PARAM, APPROX, EXACT };
 
   bremsstrahlung(const configuration& cf, const string_path& path,
                  std::shared_ptr<TRandom> r);

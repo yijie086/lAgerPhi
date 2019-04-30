@@ -14,7 +14,8 @@ namespace {
 const pcsim::translation_map<pcsim::beam::bremsstrahlung::model>
     bs_model_translator{{"flat", pcsim::beam::bremsstrahlung::model::FLAT},
                         {"param", pcsim::beam::bremsstrahlung::model::PARAM},
-                        {"approx", pcsim::beam::bremsstrahlung::model::APPROX}};
+                        {"approx", pcsim::beam::bremsstrahlung::model::APPROX},
+                        {"exact", pcsim::beam::bremsstrahlung::model::EXACT}};
 // Bremsstrahlung spectrum for a 1%, 5% and 10% r.l. radiator interpolated
 // between the  resultes of the exact calculation by Tsai and Whitis
 // (SLAC-PUB-184 1966  (Table I))
@@ -47,6 +48,35 @@ inline double bremsstrahlung_intensity_010_param(const double E0,
                         0.80616, 0.80289, 0.79691, 0.78565, 0.76136, 0.64338};
   static const TSpline3 brems10{"brems010", xv, yv, 18};
   return brems10.Eval(k / E0) * 0.1 / k;
+}
+// exact BS spectrum from Tsai and Whitis, gives the values consistent with the
+// interpolation results above
+inline double bremsstrahlung_intensity_exact(const double rad_len,
+                                             const double E0, const double k) {
+  static TF1 integrand(
+      "I_g_gen1_integrand",
+      [](double* ttprime, double* uu) {
+        const double tprime = ttprime[0];
+        const double u = uu[0]; // u = k/E0
+        const double ln_u_inv = std::log(1 / u);
+        const double a = 4. * tprime / 3.;
+        const double fact0 = std::exp(7. * tprime / 9.) / tgamma(a + 1);
+        const double fact1 = std::pow(ln_u_inv, a);
+        const double term0 = u;
+        double term1 = 0;
+        // first 10 terms of perturbative expansion in eq 24
+        for (int i = 0; i < 10; ++i) {
+          double val = 1. / (tgamma(i + 1) * (i + a + 1));
+          val *= ((4. / 3.) * std::pow(-1, i)) - u * u;
+          val *= std::pow(ln_u_inv, i + 1);
+          term1 += val;
+        }
+        return fact0 * fact1 * (term0 + term1);
+      },
+      0, 2, 1);
+  integrand.SetParameter(0, k / E0);
+  const double integral = integrand.Integral(0, rad_len);
+  return std::exp(-7. * rad_len / 9.) * integral / k;
 }
 } // namespace
 
@@ -92,6 +122,9 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
                                   "arbitrary radiation length.");
       throw cf.value_error("rl");
     }
+  } else if (model_ == model::EXACT) {
+    LOG_INFO("bremsstrahlung", "Using exact of BS spectrum.");
+    LOG_INFO("bremsstrahlung", "RL: " + std::to_string(rl_));
   } else { // APPROX
     LOG_INFO("bremsstrahlung", "Using approximation of the exact BS spectrum");
     LOG_INFO("bremsstrahlung", "RL: " + std::to_string(rl_));
@@ -141,6 +174,8 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
     } else {
       return 0.; // can never happen
     }
+  } else if (model_ == model::EXACT) {
+    return bremsstrahlung_intensity_exact(rl_, E_beam, E);
   } else { // APPROX
     return physics::bremsstrahlung_approx(rl_, E_beam, E);
   }
@@ -237,11 +272,12 @@ double vphoton::calc_max_flux(const configuration& cf) const {
       static_cast<pdg_id>(cf.get<int>("target/particle_type")),
       cf.get_vector3<particle::XYZVector>("target/dir"),
       cf.get<double>("target/energy")};
-  TF2 fflux("flux",
-           [=](double* Q2y, double* par = 0x0) {
-             return this->flux(Q2y[0], Q2y[1], beam, target);
-           },
-           Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);
+  TF2 fflux(
+      "flux",
+      [=](double* Q2y, double* par = 0x0) {
+        return this->flux(Q2y[0], Q2y[1], beam, target);
+      },
+      Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);
   double Q2, y;
   fflux.GetMaximumXY(Q2, y);
   return flux(Q2, y, beam, target) * 1.01;
@@ -266,11 +302,11 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
 
   // In general, the maximum Q2 range is determined through the kinematics of
   // t-channel scattering (falling function of y), as well as the requirement
-  // that the final state contain at least te target mass (W2min = M2_target; a
-  // rising function of y).
+  // that the final state contain at least te target mass (W2min = M2_target;
+  // a rising function of y).
   //
-  // Q2 max is reached for the point where both values cross,  which is (up to a
-  // precision of lepton mass squared): y = 2E/(M+2E).
+  // Q2 max is reached for the point where both values cross,  which is (up to
+  // a precision of lepton mass squared): y = 2E/(M+2E).
   //
   // alternatively, if a y-cut is set below this point, the maximum is reached
   // at maximum y
