@@ -12,6 +12,7 @@
 // TODO fix this
 #include <pcsim/gen/beam/photon_gen.hh>
 #include <pcsim/gen/beam/primary_gen.hh>
+#include <pcsim/gen/beam/vertex_gen.hh>
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
 #include <pcsim/gen/lp_gamma/oleksii_2vmp.hh>
@@ -40,6 +41,8 @@ int run_mc(const configuration& cf, const std::string& output) {
                     "oleksii_2vmp");
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::gaussian_qpq,
                     "gaussian_1qpq");
+  FACTORY_REGISTER2(beam::vertex_generator, beam::origin_vertex, "origin");
+  FACTORY_REGISTER2(beam::vertex_generator, beam::origin_vertex, "linear");
   FACTORY_REGISTER2(beam::primary_generator, beam::beam, "primary");
 
   FACTORY_REGISTER2(beam::photon_generator, beam::bremsstrahlung,
