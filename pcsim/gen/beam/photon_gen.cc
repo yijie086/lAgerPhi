@@ -217,18 +217,22 @@ bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
           "Ensure min <= max for the target z-coordinate range");
   // radiation length
   LOG_INFO("bremsstrahlung_realistic_target",
-           "Radiator RL (calculated) [%]: " + std::to_string(rl_radiator_));
+           "Radiator RL (calculated) [%]: " +
+               std::to_string(rl_radiator_ * 100.));
   LOG_INFO("bremsstrahlung_realistic_target",
-           "Window RL (calculated) [%]: " + std::to_string(rl_window_));
+           "Window RL (calculated) [%]: " + std::to_string(rl_window_ * 100.));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Target RL (for 1cm of target material) [%]: " +
+               std::to_string(extra_rl_per_cm_ * 100.));
   LOG_INFO("bremsstrahlung_realistic_target",
            "Target RL (for all target material) [%]: " +
-               std::to_string(extra_rl_per_cm_ * target_range_.width()));
+               std::to_string(extra_rl_per_cm_ * target_range_.width() * 100.));
   LOG_INFO("bremsstrahlung_realistic_target",
            "RL at front of target [%]" +
-               std::to_string(total_rl(target_range_.min)));
+               std::to_string(total_rl(target_range_.min) * 100.));
   LOG_INFO("bremsstrahlung_realistic_target",
            "RL at back of target [%]" +
-               std::to_string(total_rl(target_range_.max)));
+               std::to_string(total_rl(target_range_.max) * 100.));
 }
 
 // =======================================================================================
@@ -236,14 +240,14 @@ bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
 // =======================================================================================
 double bremsstrahlung_realistic_target::total_rl(const double vz) const {
   double rl = rl_radiator_ + rl_window_;
-  if (target_range_.includes(vz)) {
+  if (target_range_.min <= vz && vz <= target_range_.max) {
     rl += extra_rl_per_cm_ * (vz - target_range_.min);
   } else if (vz > target_range_.max) {
     rl += extra_rl_per_cm_ * target_range_.width();
   }
   LOG_JUNK2("bremsstrahlung_realistic_target",
             "Calculated RL for z-vertex position at " + std::to_string(vz) +
-                " cm [%]: " + std::to_string(rl));
+                " cm [%]: " + std::to_string(rl * 100.));
   return rl;
 }
 

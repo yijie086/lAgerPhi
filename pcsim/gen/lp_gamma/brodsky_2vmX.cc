@@ -162,7 +162,7 @@ interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
   const double Q2min = 0.;
   // calculate the corresponding t range
   // in case of particles with non-zero width, we use M - 4 x sigma
-  // 
+  //
   // tlim1: the correct lower t limit (tmax)
   const auto tlim1 =
       physics::t_range(W2max, (Q2max > 1e-10 ? Q2max : 0.), target.mass(),
@@ -294,6 +294,10 @@ lp_gamma_event brodsky_2vmX::make_event(const lp_gamma_data& initial,
 
   // update VM particle status
   vm.update_status(particle::status_code::UNSTABLE_SCHC);
+
+  // set vertex info
+  vm.vertex() = phot.vertex();
+  X.vertex() = phot.vertex();
 
   // add to the event
   e.add_leading(vm, e.photon_index(), e.target_index());

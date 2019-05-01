@@ -64,8 +64,10 @@ lp_gamma_event gaussian_qpq::generate(const lp_gamma_data& initial) {
 
   // create our new event
   lp_gamma_event e{initial, xs, 1., xs_R};
-  e.add_daughter({qpq_.type(), e.photon().p() + e.target().p(), qpq_.status()},
-                 e.photon_index(), e.target_index());
+  int qpq_idx = e.add_daughter(
+      {qpq_.type(), e.photon().p() + e.target().p(), qpq_.status()},
+      e.photon_index(), e.target_index());
+  e[qpq_idx].vertex() = e.photon().vertex();
 
   return e;
 }

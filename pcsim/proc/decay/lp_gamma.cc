@@ -84,13 +84,17 @@ void lp_gamma::quarkonium_schc(lp_gamma_event& e, const int i) const {
       2.001);
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
+
+  // set the vertex in the decay products
+  decay_products.first.vertex() = e[i].vertex();
+  decay_products.second.vertex() = e[i].vertex();
   // add the decay particles
+
   e.add_daughter(decay_products, i);
   if (radiative_decay_) {
     radiative_decay_->process(e, i);
   }
 
-  // add the SCHC info in the VM helicity frame
   decay_products_cm.first.add_parent(i);
   decay_products_cm.second.add_parent(i);
   e.add_particle(decay_products_cm);
@@ -139,9 +143,10 @@ void radiative_decay_vm::process(lp_gamma_event& e, const int vm_index) {
     ++it;
     // now store the photons
     for (; it != evt.particles_end(); ++it) {
-      e.add_daughter({static_cast<pdg_id>((*it)->pdg_id()),
-                      particle::XYZTVector((*it)->momentum())},
-                     vm_index);
+      int new_idx = e.add_daughter({static_cast<pdg_id>((*it)->pdg_id()),
+                                    particle::XYZTVector((*it)->momentum())},
+                                   vm_index);
+      e[new_idx].vertex() = e[vm_index].vertex();
     }
   }
 }
@@ -206,6 +211,9 @@ void lp_gamma::pentaquark_wang(lp_gamma_event& e, const int i) const {
   }
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
+  // set the vertex info
+  decay_products.first.vertex() = e[i].vertex();
+  decay_products.second.vertex() = e[i].vertex();
   // add the decay particles as leading/recoil if not already set
   if (e.leading_index() < 0) {
     e.add_leading(decay_products.first, i);

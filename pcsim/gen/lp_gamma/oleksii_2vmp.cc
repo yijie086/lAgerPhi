@@ -519,6 +519,10 @@ lp_gamma_event oleksii_2vmp::make_event(const lp_gamma_data& initial,
   // update VM particle status
   vm.update_status(particle::status_code::UNSTABLE_SCHC);
 
+  // set vertex info
+  vm.vertex() = phot.vertex();
+  X.vertex() = phot.vertex();
+
   // add to the event
   e.add_leading(vm, e.photon_index(), e.target_index());
   e.add_recoil(X, e.photon_index(), e.target_index());
