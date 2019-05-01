@@ -7,6 +7,7 @@ lp_gamma_generator::lp_gamma_generator(const configuration& cf,
                                        const string_path& path,
                                        std::shared_ptr<TRandom> r)
     : base_type{cf, path, r}
+    , vertex_gen_{FACTORY_CREATE(beam::vertex_generator, conf(), "vertex", r)}
     , lepton_gen_{FACTORY_CREATE(beam::primary_generator, conf(), "beam", r)}
     , proton_gen_{FACTORY_CREATE(beam::primary_generator, conf(), "target", r)}
     , photon_gen_{FACTORY_CREATE(beam::photon_generator, conf(), "photon", r)}
@@ -20,8 +21,9 @@ lp_gamma_generator::lp_gamma_generator(const configuration& cf,
 }
 
 lp_gamma_data lp_gamma_generator::generate_initial() const {
-  auto beam = lepton_gen_->generate();
-  auto target = proton_gen_->generate();
+  auto vertex = vertex_gen_->generate();
+  auto beam = lepton_gen_->generate(vertex);
+  auto target = proton_gen_->generate(vertex);
   auto photon = photon_gen_->generate(beam, target);
   if (photon.cross_section() <= 0) {
     return {0.};

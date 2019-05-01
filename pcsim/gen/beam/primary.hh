@@ -20,6 +20,7 @@ public:
       : generator_data{xs}, beam_{part} {}
   primary(const double xs) : generator_data{xs} {}
 
+  particle& beam() { return beam_; }
   const particle& beam() const { return beam_; }
 
 private:

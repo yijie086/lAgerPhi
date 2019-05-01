@@ -26,6 +26,7 @@ protected:
 
 private:
   // initial state generators
+  std::shared_ptr<beam::vertex_generator> vertex_gen_;
   std::shared_ptr<beam::primary_generator> lepton_gen_;
   std::shared_ptr<beam::primary_generator> proton_gen_;
   std::shared_ptr<beam::photon_generator> photon_gen_;

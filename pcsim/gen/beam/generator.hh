@@ -37,8 +37,9 @@ factory<generator<Data, Input...>, const configuration&, const string_path&,
 // =============================================================================
 // beam generator types
 // =============================================================================
-using primary_generator = generator<primary>;
+using primary_generator = generator<primary, particle::XYZTVector>;
 using photon_generator = generator<photon, primary, primary>;
+using vertex_generator = generator<particle::XYZTVector>;
 
 } // namespace beam
 } // namespace pcsim

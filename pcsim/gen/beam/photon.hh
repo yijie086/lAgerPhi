@@ -46,6 +46,7 @@ public:
   double x() const { return x_; }
   double y() const { return y_; }
 
+  particle& scat() { return scat_; }
   const particle& scat() const { return scat_; }
 
 private:

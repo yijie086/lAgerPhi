@@ -44,6 +44,9 @@ int run_mc(const configuration& cf, const std::string& output) {
 
   FACTORY_REGISTER2(beam::photon_generator, beam::bremsstrahlung,
                     "bremsstrahlung");
+  FACTORY_REGISTER2(beam::photon_generator,
+                    beam::bremsstrahlung_realistic_target,
+                    "bremsstrahlung_realistic_target");
   FACTORY_REGISTER2(beam::photon_generator, beam::vphoton, "vphoton");
   FACTORY_REGISTER2(detector::detector, detector::solid, "solid");
   FACTORY_REGISTER2(detector::detector, detector::null, "4pi");

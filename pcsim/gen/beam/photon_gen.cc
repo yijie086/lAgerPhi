@@ -180,6 +180,111 @@ double bremsstrahlung::intensity(const double E, const double E_beam) const {
     return physics::bremsstrahlung_approx(rl_, E_beam, E);
   }
 }
+// =======================================================================================
+// bremsstrahlung_realistic_target constructor
+// =======================================================================================
+bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
+    const configuration& cf, const string_path& path,
+    std::shared_ptr<TRandom> r)
+    : photon_generator{std::move(r)}
+    , rl_radiator_{cf.get<double>(path / "radiator" / "thickness") /
+                   (cf.get<double>(path / "radiator" / "radiation_length") /
+                    cf.get<double>(path / "radiator" / "density"))}
+    , rl_window_{cf.get<double>(path / "window" / "thickness") /
+                 (cf.get<double>(path / "window" / "radiation_length") /
+                  cf.get<double>(path / "window" / "density"))}
+    , extra_rl_per_cm_{1.0 /
+                       (cf.get<double>(path / "target" / "radiation_length") /
+                        cf.get<double>(path / "target" / "density"))}
+    , target_range_{cf.get_range<double>(path / "taret" / "range")}
+    , E_beam_{cf.get<double>("beam/energy")}
+    , E_range_{cf.get_range<double>(path / "E_range")}
+    , max_{intensity(E_range_.min, E_beam_, target_range_.max)} {
+  // initial info
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Maximum primary electron beam energy [GeV]: " +
+               std::to_string(E_beam_));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Photon energy range [GeV]: " + std::to_string(E_range_.min) + ", " +
+               std::to_string(E_range_.max) + "]");
+  // validate the setup
+  tassert(E_range_.max <= E_beam_,
+          "Photon energy cannot exceed electron beam energy");
+  tassert(E_range_.width() > 0,
+          "Ensure Emin < Emax for the photon energy range");
+  tassert(E_range_.min > 0, "Ensure Emin > 0 for the photon beam energy");
+  tassert(target_range_.width() >= 0,
+          "Ensure min <= max for the target z-coordinate range");
+  // radiation length
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Radiator RL (calculated) [%]: " + std::to_string(rl_radiator_));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Window RL (calculated) [%]: " + std::to_string(rl_window_));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Target RL (for all target material) [%]: " +
+               std::to_string(extra_rl_per_cm_ * target_range_.width()));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "RL at front of target [%]" +
+               std::to_string(total_rl(target_range_.min)));
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "RL at back of target [%]" +
+               std::to_string(total_rl(target_range_.max)));
+}
+
+// =======================================================================================
+// Calculate the effictive radiation length at a z vertex position
+// =======================================================================================
+double bremsstrahlung_realistic_target::total_rl(const double vz) const {
+  double rl = rl_radiator_ + rl_window_;
+  if (target_range_.includes(vz)) {
+    rl += extra_rl_per_cm_ * (vz - target_range_.min);
+  } else if (vz > target_range_.max) {
+    rl += extra_rl_per_cm_ * target_range_.width();
+  }
+  LOG_INFO("bremsstrahlung_realistic_target",
+           "Calculated RL for z-vertex position at " + std::to_string(vz) +
+               " cm [%]: " + std::to_string(rl));
+  return rl;
+}
+
+// =======================================================================================
+// Generate a new bremstrahlung photon
+// =======================================================================================
+photon bremsstrahlung_realistic_target::generate(const primary& lepton,
+                                                 const primary& target) {
+  tassert(lepton.beam().energy() > E_range_.min,
+          "Beam energy below bremsstrahlung generation window");
+  tassert(lepton.beam().energy() <= E_beam_,
+          "Beam energy higher than maximum electron beam energy.");
+  // generate a value for E
+  const double E = rng()->Uniform(E_range_.min, E_range_.max);
+  LOG_JUNK("bremsstrahlung_realistic_target",
+           "Generated E: " + std::to_string(E));
+
+  // check if this value is in the allowed range
+  const interval<double> Elim{E_range_.min,
+                              fmin(lepton.beam().energy(), E_range_.max)};
+  if (Elim.excludes(E)) {
+    LOG_JUNK("bremsstrahlung", "Value outside the valid E range");
+    return photon{0.};
+  }
+
+  photon pd = photon::make_real(
+      lepton.beam(), target.beam(), E,
+      intensity(E, lepton.beam().energy(), lepton.beam().vertex().z()));
+
+  // that's all!
+  return pd;
+}
+
+// =======================================================================================
+// return the bremstrahlung intensity for the prefered parameterization
+// =======================================================================================
+double bremsstrahlung_realistic_target::intensity(const double E,
+                                                  const double E_beam,
+                                                  const double vz) const {
+  return bremsstrahlung_intensity_exact(total_rl(vz), E_beam, E);
+}
 
 // =======================================================================================
 // constructor for vphoton
@@ -300,16 +405,16 @@ interval<double> vphoton::calc_max_Q2_range(const configuration& cf) const {
   const double Q2min =
       fmax(physics::Q2_range(beam, target, y_range_.min).min, 1.0e-12);
 
-  // In general, the maximum Q2 range is determined through the kinematics of
-  // t-channel scattering (falling function of y), as well as the requirement
-  // that the final state contain at least te target mass (W2min = M2_target;
-  // a rising function of y).
+  // In general, the maximum Q2 range is determined through the kinematics
+  // of t-channel scattering (falling function of y), as well as the
+  // requirement that the final state contain at least te target mass (W2min
+  // = M2_target; a rising function of y).
   //
-  // Q2 max is reached for the point where both values cross,  which is (up to
-  // a precision of lepton mass squared): y = 2E/(M+2E).
+  // Q2 max is reached for the point where both values cross,  which is (up
+  // to a precision of lepton mass squared): y = 2E/(M+2E).
   //
-  // alternatively, if a y-cut is set below this point, the maximum is reached
-  // at maximum y
+  // alternatively, if a y-cut is set below this point, the maximum is
+  // reached at maximum y
   //
   // finally, we also allow for the user to manually set a Q2 range
   const double E = (beam.p()).Dot(target.p()) / target.mass();

@@ -38,6 +38,32 @@ private:
   const double max_;               // the maximum intensity.
 };
 
+// Bremsstrahlung photons for a realistic (extended) target
+class bremsstrahlung_realistic_target : public photon_generator {
+public:
+  bremsstrahlung_realistic_target(const configuration& cf,
+                                  const string_path& path,
+                                  std::shared_ptr<TRandom> r);
+
+  virtual photon generate(const primary& beam, const primary& target);
+  virtual double max_cross_section() const { return max_; }
+  virtual double phase_space() const { return E_range_.width(); }
+
+protected:
+  double intensity(const double E, const double beam, const double vz) const;
+  double total_rl(const double vz) const;
+
+private:
+  const double rl_radiator_;            // RL for the radiator
+  const double rl_window_;              // RL for the target window
+  const double extra_rl_per_cm_;        // extra RL/cm in the target
+  const interval<double> target_range_; // target range in cm
+
+  const double E_beam_;            // (maximum) electron beam energy
+  const interval<double> E_range_; // photon energy range
+  const double max_;               // the maximum intensity.
+};
+
 // virtual photons
 class vphoton : public photon_generator {
 public:

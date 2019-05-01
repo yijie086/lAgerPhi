@@ -14,10 +14,15 @@ photon photon::make_real(const particle& lepton, const particle& target,
   vec *= E;
   photon gamma{{vec.X(), vec.Y(), vec.Z(), E}, xs};
   gamma.scat_ = {lepton.type(), lepton.p() - gamma.beam().p(),
-                  particle::status_code::SCAT};
+                 particle::status_code::SCAT};
   gamma.W2_ = (gamma.beam().p() + target.p()).M2();
   gamma.nu_ = (gamma.beam().p()).Dot(target.p()) / target.mass();
   gamma.y_ = gamma.y_ * target.mass() / (lepton.p()).Dot(target.p());
+  // this is not technically correct for a real photon, as the BS reaction might
+  // have happened at any point earlier, but effectively this is correct near
+  // the BS peak where the everything happens in the photon direction.
+  gamma.beam().vertex() = lepton.vertex();
+  gamma.scat_.vertex() = lepton.vertex();
 
   return gamma;
 }
@@ -60,6 +65,8 @@ photon photon::make_virtual(const particle& lepton, const particle& target,
   vphoton.nu_ = y * (target.p()).Dot(lepton.p()) / target.mass();
   vphoton.W2_ = target.mass2() + 2 * target.mass() * vphoton.nu_ - Q2;
   vphoton.x_ = Q2 / (2 * target.mass() * vphoton.nu_);
+  vphoton.beam().vertex() = lepton.vertex();
+  vphoton.scat_.vertex() = lepton.vertex();
 
   return vphoton;
 }

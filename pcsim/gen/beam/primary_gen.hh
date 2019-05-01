@@ -23,12 +23,17 @@ public:
       , beam_{static_cast<pdg_id>(cf.get<int>(path / "particle_type")),
               cf.get_vector3<particle::XYZVector>(path / "dir"),
               cf.get<double>(path / "energy"), particle::status_code::BEAM} {
-    LOG_INFO("beam::primary_gen", "type: " + std::string(beam_.pdg()->GetName()));
+    LOG_INFO("beam::primary_gen",
+             "type: " + std::string(beam_.pdg()->GetName()));
     LOG_INFO("beam::primary_gen",
              "energy [GeV]: " + std::to_string(beam_.energy()));
   }
 
-  virtual primary generate() { return {beam_}; }
+  virtual primary generate(const particle::XYZTVector& vertex) {
+    particle ret = beam_;
+    ret.vertex() = vertex;
+    return {ret};
+  }
   virtual double max_cross_section() const { return 1.; }
   virtual double phase_space() const { return 1.; }
 
