@@ -196,7 +196,7 @@ bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
     , extra_rl_per_cm_{1.0 /
                        (cf.get<double>(path / "target" / "radiation_length") /
                         cf.get<double>(path / "target" / "density"))}
-    , target_range_{cf.get_range<double>(path / "taret" / "range")}
+    , target_range_{cf.get_range<double>(path / "target" / "range")}
     , E_beam_{cf.get<double>("beam/energy")}
     , E_range_{cf.get_range<double>(path / "E_range")}
     , max_{intensity(E_range_.min, E_beam_, target_range_.max)} {
@@ -241,9 +241,9 @@ double bremsstrahlung_realistic_target::total_rl(const double vz) const {
   } else if (vz > target_range_.max) {
     rl += extra_rl_per_cm_ * target_range_.width();
   }
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "Calculated RL for z-vertex position at " + std::to_string(vz) +
-               " cm [%]: " + std::to_string(rl));
+  LOG_JUNK2("bremsstrahlung_realistic_target",
+            "Calculated RL for z-vertex position at " + std::to_string(vz) +
+                " cm [%]: " + std::to_string(rl));
   return rl;
 }
 

@@ -42,7 +42,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::gaussian_qpq,
                     "gaussian_1qpq");
   FACTORY_REGISTER2(beam::vertex_generator, beam::origin_vertex, "origin");
-  FACTORY_REGISTER2(beam::vertex_generator, beam::origin_vertex, "linear");
+  FACTORY_REGISTER2(beam::vertex_generator, beam::linear_vertex, "linear");
   FACTORY_REGISTER2(beam::primary_generator, beam::beam, "primary");
 
   FACTORY_REGISTER2(beam::photon_generator, beam::bremsstrahlung,

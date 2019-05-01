@@ -44,7 +44,9 @@ public:
   }
 
   virtual particle::XYZTVector generate() {
-    return {0., 0., rng()->Uniform(range_.min, range_.max), 0};
+    const double vz = rng()->Uniform(range_.min, range_.max);
+    LOG_JUNK2("linear_vertex", "Vertex position [cm]: " + std::to_string(vz));
+    return {0., 0., vz, 0};
   }
   virtual double max_cross_section() const { return 1.; }
   virtual double phase_space() const { return 1.; }
