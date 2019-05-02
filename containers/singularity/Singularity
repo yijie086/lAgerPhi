@@ -19,7 +19,7 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
   export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   cd /tmp
-  git clone https://gitlab+deploy-token-1:FaNA-Yg4s7hpjvWPZnq8@eicweb.phy.anl.gov/upsilon/Pcsim.git 
+  git clone https://gitlab+deploy-token-4:xsBH9WgzTuUWcskCnUme@eicweb.phy.anl.gov/upsilon/Pcsim.git 
   mkdir Pcsim/build && cd Pcsim/build 
   cmake ../. 
   make -j20
