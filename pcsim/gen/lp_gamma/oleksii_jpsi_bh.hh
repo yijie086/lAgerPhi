@@ -27,12 +27,12 @@ public:
   using base_type = lp_gamma::generator;
 
   oleksii_jpsi_bh(const configuration& cf, const string_path& path,
-               std::shared_ptr<TRandom> r);
+                  std::shared_ptr<TRandom> r);
   virtual lp_gamma_event generate(const lp_gamma_data&);
   virtual double max_cross_section() const { return max_; }
   virtual double phase_space() const {
     // last factor is the cos(theta) range
-    //return max_t_range_.width() *
+    // return max_t_range_.width() *
     return (exp(1.13 * max_t_range_.max) - exp(1.13 * max_t_range_.min)) *
            (Mll_range_.max * Mll_range_.max - Mll_range_.min * Mll_range_.min) *
            TMath::TwoPi() * 2.;
@@ -59,6 +59,9 @@ private:
   const interval<double> max_t_range_;
   const interval<double> Mll_range_;
   const double max_;
+
+  // subtraction constant
+  const double T_0_;
 
   // theta acceptance to cut out colinear enhancements
   const interval<double> p_range_;

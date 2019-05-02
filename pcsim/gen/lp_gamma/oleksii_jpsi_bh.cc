@@ -10,10 +10,6 @@
 #include <pcsim/physics/photon.hh>
 #include <pcsim/physics/vm.hh>
 
-namespace {
-const double T_0 = 22.45;
-}
-
 namespace pcsim {
 namespace lp_gamma {
 
@@ -29,6 +25,7 @@ oleksii_jpsi_bh::oleksii_jpsi_bh(const configuration& cf,
     , max_t_range_{calc_max_t_range(cf)}
     , Mll_range_{cf.get_range<double>(path / "Mll_range")}
     , max_{cf.get<double>(path / "max_cross_section")}
+    , T_0_{cf.get<double>(path / "T_0")}
     , theta_range_{cf.get_range<double>(path / "theta_range") *
                    TMath::DegToRad()}
     , p_range_{cf.get_range<double>(path / "p_range")} {
@@ -40,6 +37,8 @@ oleksii_jpsi_bh::oleksii_jpsi_bh(const configuration& cf,
                                   std::to_string(Mll_range_.max) + "]");
   LOG_INFO("oleksii_jpsi_bh",
            "Maximum cross section set to: " + std::to_string(max_));
+  LOG_INFO("oleksii_jpsi_bh",
+           "Subtraction constant T_0: " + std::to_string(T_0_));
   LOG_INFO("oleksii_jpsi_bh",
            "Theta acceptance [deg.]: [" +
                std::to_string(theta_range_.min * TMath::RadToDeg()) + ", " +
@@ -113,7 +112,7 @@ lp_gamma_event oleksii_jpsi_bh::generate(const lp_gamma_data& initial) {
 
   // evaluate the cross section
   const double xs =
-      oleksii_total_impl::calc_xsec(t, Mll2, Egamma, thetaCM, phiCM, T_0);
+      oleksii_total_impl::calc_xsec(t, Mll2, Egamma, thetaCM, phiCM, T_0_);
 
   LOG_JUNK("oleksii_jpsi_bh",
            "xsec: " + std::to_string(xs) + " < " + std::to_string(max_));
