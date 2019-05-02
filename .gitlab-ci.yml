@@ -3,6 +3,8 @@ image: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
 #
 
 singularity-build:
+  tags:
+     - singularity
   script:
     #- docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
      - cp containers/singularity/Singularity .
@@ -33,6 +35,8 @@ singularity-build:
         - build/Singularity
 
 singularity-broadwell:
+  tags:
+     - singularity
   script:
     #- docker login eicweb.phy.anl.gov:4567 -u whit -p ${CI_IMAGE_BUILD_PAT}
      - /bin/bash .gitlabci/setup.sh
