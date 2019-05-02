@@ -39,7 +39,6 @@ public:
   }
 
 private:
-  double calc_max_xsec(const configuration& cf) const;
   interval<double> calc_max_t_range(const configuration& cf) const;
 
   // threshold squared for these particular particles (correctly handels the
@@ -60,6 +59,10 @@ private:
   const interval<double> max_t_range_;
   const interval<double> Mll_range_;
   const double max_;
+
+  // theta acceptance to cut out colinear enhancements
+  const interval<double> p_range_;
+  const interval<double> theta_range_;
 };
 
 } // namespace lp_gamma

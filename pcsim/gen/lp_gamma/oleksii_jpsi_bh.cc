@@ -28,13 +28,25 @@ oleksii_jpsi_bh::oleksii_jpsi_bh(const configuration& cf,
     , vm_{pdg_id::J_psi}
     , max_t_range_{calc_max_t_range(cf)}
     , Mll_range_{cf.get_range<double>(path / "Mll_range")}
-    , max_{calc_max_xsec(cf)} {
+    , max_{cf.get<double>(path / "max_cross_section")}
+    , theta_range_{cf.get_range<double>(path / "theta_range") *
+                   TMath::DegToRad()}
+    , p_range_{cf.get_range<double>(path / "p_range")} {
   LOG_INFO("oleksii_jpsi_bh", "t range [GeV^2]: [" +
                                   std::to_string(max_t_range_.min) + ", " +
                                   std::to_string(max_t_range_.max) + "]");
   LOG_INFO("oleksii_jpsi_bh", "Mll range [GeV]: [" +
                                   std::to_string(Mll_range_.min) + ", " +
                                   std::to_string(Mll_range_.max) + "]");
+  LOG_INFO("oleksii_jpsi_bh",
+           "Maximum cross section set to: " + std::to_string(max_));
+  LOG_INFO("oleksii_jpsi_bh",
+           "Theta acceptance [deg.]: [" +
+               std::to_string(theta_range_.min * TMath::RadToDeg()) + ", " +
+               std::to_string(theta_range_.max * TMath::RadToDeg()) + "]");
+  LOG_INFO("oleksii_jpsi_bh", "P acceptance [GeV]: [" +
+                                  std::to_string(p_range_.min) + ", " +
+                                  std::to_string(p_range_.max) + "]");
 }
 
 lp_gamma_event oleksii_jpsi_bh::generate(const lp_gamma_data& initial) {
@@ -75,7 +87,8 @@ lp_gamma_event oleksii_jpsi_bh::generate(const lp_gamma_data& initial) {
   const double jacobian = exp(-1.13 * t) / 1.13;
   // further generate this phase space point
   // const double t = std::log(rng()->Uniform(std::exp(5 * max_t_range_.min),
-  //                                         std::exp(5 * max_t_range_.max))) /
+  //                                         std::exp(5 * max_t_range_.max)))
+  //                                         /
   //                 5.;
   // const double t = rng()->Uniform(max_t_range_.min, max_t_range_.max);
   // const double thetaCM = acos(rng()->Uniform(-0.766, -0.707));
@@ -107,84 +120,6 @@ lp_gamma_event oleksii_jpsi_bh::generate(const lp_gamma_data& initial) {
 
   // return a new VM event
   return make_event(initial, t, vm, recoil, xs * jacobian, thetaCM, phiCM);
-}
-
-// =============================================================================
-// oleksii_jpsi_bh::calc_max_xsec(cf)
-//
-// Utility function for the generator initialization
-//
-// max cross section as defined by the beam/target and phase-space settings
-//
-// The cross section is maximum when
-//  * W2 is maximum.
-//  * no t-requirement (we throw directly in exp(bt)
-//  * no Q2 requirement:
-//    - irrelevant for photo-production
-//    - for lepto-production, the (1 + epsilon * R) * dipole factor does not
-//      change the value for the fully differential cross section maximum at
-//      Q2min
-//  * note that we can be certain about these statements, as the program will
-//    exit with an error if the cross section maximum were ever violated
-// =============================================================================
-double oleksii_jpsi_bh::calc_max_xsec(const configuration& cf) const {
-  return 50.; // HARD CODED XSEC MAX
-  // get the extreme beam parameters (where the photon carries all of the
-  // lepton beam energy
-  const particle photon{pdg_id::gamma,
-                        cf.get_vector3<particle::XYZVector>("beam/dir"),
-                        cf.get<double>("beam/energy")};
-  const particle target{
-      static_cast<pdg_id>(cf.get<int>("target/particle_type")),
-      cf.get_vector3<particle::XYZVector>("target/dir"),
-      cf.get<double>("target/energy")};
-
-  const double E = (photon.p()).Dot(target.p()) / target.mass();
-  const particle vm{pdg_id::J_psi};
-
-  auto xsec_func = [=](double* xx, double*) {
-    const double E = xx[0];
-    const double theta = xx[1];
-    const double Mll = xx[2];
-    const double Mll2 = xx[2] * xx[2];
-    const double phi = 0.;
-
-    // initial state
-    const particle target{pdg_id::p};
-    const particle lepton{pdg_id::e_minus, {0, 0, 1}, E};
-    const auto photon = beam::photon::make_real(lepton, target, E, 1);
-    const lp_gamma_data initial{lepton, target, photon};
-    const particle vm = {pdg_id::J_psi, {0, 0, 0, Mll}};
-    const particle recoil = {pdg_id::p};
-
-    // set t to tmin
-    const auto tlim =
-        physics::t_range(photon.W2(), 0, target.mass(), Mll, recoil_.mass());
-    const double t = max_t_range_.min; // outer tmin
-    if (!tlim.includes(t)) {
-      return 0.;
-    }
-
-    const auto e = make_event(initial, t, vm, recoil, 1.e6, theta, phi);
-
-    const double W2 = recoil_.mass() * recoil_.mass() + 2 * recoil_.mass() * E;
-    // xsec near singularity max for tmax (tlim.min)
-    const double tmax = -1.0; // HARDCODED
-    const double xsec =
-        oleksii_total_impl::calc_xsec(tmax, Mll2, E, theta, phi, T_0);
-    return fmin(e.cross_section(), xsec);
-  };
-
-  // hard coded boundaries
-  TF3 ff("bhfunc", xsec_func, 9.6, 10.5, 0, 180 * TMath::DegToRad(),
-         Mll_range_.min, Mll_range_.max, 0);
-  double Emax, thetamax, Mllmax;
-  double max = ff.GetMaximumXYZ(Emax, thetamax, Mllmax);
-  LOG_INFO("oleksii_bh",
-           "Found maximum at (E, theta, Mll): " + std::to_string(Emax) + ", " +
-               std::to_string(thetamax) + ", " + std::to_string(Mllmax) +
-               ", value: " + std::to_string(max));
-  return max * 1.01;
 }
 
 // =============================================================================
@@ -311,7 +246,8 @@ lp_gamma_event oleksii_jpsi_bh::make_event(const lp_gamma_data& initial,
   physics::decay_2body(vm, thetaCM_el, phiCM_el, decay_products,
                        decay_products_cm);
 
-  // calculate some necessary boost and rotation vectors to go to the lab frame
+  // calculate some necessary boost and rotation vectors to go to the lab
+  // frame
   particle targ = target.beam();
   particle phot = gamma.beam();
 
@@ -360,26 +296,18 @@ lp_gamma_event oleksii_jpsi_bh::make_event(const lp_gamma_data& initial,
   decay_products_cm.second.add_parent(vm_idx);
   e.add_particle(decay_products_cm);
 
-#if 0
-  // "visor" spectrometers
-  // SHMS for positrons, HMS for electrons
-  const double pos_thx = asin(e[7].p().X() / e[7].momentum());
-  const double pos_thy = asin(e[7].p().Y() / e[7].momentum());
+  // momentum and polar angle cut
   const double pos_mom = e[7].momentum();
-  const double el_thx = asin(e[6].p().X() / e[6].momentum());
-  const double el_thy = asin(e[6].p().Y() / e[6].momentum());
   const double el_mom = e[6].momentum();
-  if (pos_thx < (5.5 * TMath::DegToRad() - .021) ||
-      pos_thx > (40 * TMath::DegToRad() + .021) || fabs(pos_thy) > .050 ||
-      pos_mom < 2.5 * .85 || pos_mom > 11. * 1.25 ||
-      -el_thx < (10.5 * TMath::DegToRad() - .025) ||
-      -el_thx > (90 * TMath::DegToRad() + .025) || fabs(el_thy) > .070 ||
-      el_mom < 0.4 * .90 || el_mom > 7.4 * 1.10) {
+  const double pos_theta = e[7].p().Theta();
+  const double el_theta = e[6].p().Theta();
+
+  if (p_range_.excludes(pos_mom) || p_range_.excludes(el_mom) ||
+      theta_range_.excludes(pos_theta) || theta_range_.excludes(el_theta)) {
     return lp_gamma_event{0.};
   } else {
-    LOG_INFO("DBG", "value INSIDE of visor");
+    ; // do nothing
   }
-#endif
 
   // all done!
   return e;
