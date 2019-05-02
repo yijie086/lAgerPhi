@@ -212,9 +212,12 @@ public:
           } else if (event.cross_section() > initial_max_ * process.max) {
             LOG_WARNING(
                 process.name,
-                "Cross section maximum exceeded, please check "
-                "the cross section maximum calculation. The MC "
-                "distributions will be invalid if this happens too often.");
+                "Cross section maximum exceeded (" +
+                    std::to_string(event.cross_section()) + " > " +
+                    std::to_string(initial_max_ * process.max) +
+                    "), please check "
+                    "the cross section maximum calculation. The MC "
+                    "distributions will be invalid if this happens too often.");
           }
           // accept/reject this event
           LOG_JUNK(process.name,

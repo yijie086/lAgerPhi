@@ -123,6 +123,10 @@ public:
     (*sink) << "[" << rt << ", " << mtitle << ", "
             << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
             << std::endl;
+
+    std::cout << "[" << rt << ", " << mtitle << ", "
+            << LOG_LEVEL_NAMES[static_cast<unsigned>(mlevel)] << "] " << mtext
+            << std::endl;
   }
 
 private:
