@@ -19,7 +19,7 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
   export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   cd /tmp
-  git clone git@eicweb.phy.anl.gov:upsilon/hepmc.git
+  git clone https://eicweb.phy.anl.gov/upsilon/hepmc.git
   mkdir build-hepmc && cd build-hepmc
   cmake ../hepmc -Dmomentum:STRING=GEV -Dlength:STRING=cm
   make -j20
