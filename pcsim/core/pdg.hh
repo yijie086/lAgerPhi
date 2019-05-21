@@ -47,7 +47,7 @@ constexpr int32_t pdg_pentaquark_id(int q1, int q2, int q3, int q4, int qbar,
 // add possibility for nuclear id
 // prefixed by 4 9's
 constexpr int32_t pdg_nuclear_id(unsigned A, unsigned Z) {
-  return 9999000000 + A * 1000 + Z;
+  return 999000000 + A * 1000 + Z;
 }
 
 // particle ID enum
