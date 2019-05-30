@@ -2,7 +2,11 @@ Bootstrap: docker
 From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
 
 %help
-  Help me. I'm in the container.
+  Pcsim quarkonium generator container
+  Tools: 
+     - pcsim      : main generator
+     - root       : root version as used by pcsim
+     - rootls, rootbrowse, root-config, hadd
 
 %labels
   Maintainer "Whitney Armstrong"
@@ -14,55 +18,146 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   source /usr/local/bin/thisroot.sh
 
 %post -c /bin/bash
-  echo "Hello from post"
   source /usr/local/bin/thisroot.sh
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
   export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  echo "  -------------------------------------------------"
+  echo "  1. Installing project dependency: hepmc"
+  echo "  -------------------------------------------------"
   cd /tmp
   git clone https://eicweb.phy.anl.gov/upsilon/hepmc.git
   mkdir build-hepmc && cd build-hepmc
   cmake ../hepmc -Dmomentum:STRING=GEV -Dlength:STRING=CM
   make -j20
   make install
+  cd /tmp
   rm -r /tmp/*hepmc
-  cd ..
+  echo "  -------------------------------------------------"
+  echo "  2. Installing project dependency: PHOTOS++"
+  echo "  -------------------------------------------------"
+  cd /tmp
   git clone https://gitlab+deploy-token-5:Vhaa1rUEZHWzWuRydM6T@eicweb.phy.anl.gov/upsilon/photospp.git 
   mkdir photospp/build && cd photospp/build
   cmake ..
   make -j20
   make install
-  cd ../..
+  cd /tmp
   rm -r /tmp/photospp
+  echo "  -------------------------------------------------"
+  echo "  2. Installing: PCSIM"
+  echo "  -------------------------------------------------"
   git clone https://gitlab+deploy-token-4:xsBH9WgzTuUWcskCnUme@eicweb.phy.anl.gov/upsilon/Pcsim.git 
   mkdir Pcsim/build && cd Pcsim/build 
-  cmake ../. 
+  cmake ..
   make -j20
   make install
+  cd /tmp
   rm -r /tmp/Pcsim
+  echo "  -------------------------------------------------"
+  echo "  3. Slimming down image"
+  echo "  -------------------------------------------------"
+  apt-get clean
+  rm -rf /var/lib/apt/lists/*
+  echo "  -------------------------------------------------"
+  echo "  Done building and installing software
+  echo "  -------------------------------------------------"
 
+# ===================================
+# GLOBAL
+# ===================================
+
+%environment -c /bin/bash
+  export PYTHONPATH=/usr/local/lib:$PYTHONPATH
+  export PATH=/usr/loca/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include
 
 %runscript
-  echo "Hello from runscirpt"
-  echo "Rooooar!"
-  echo "Arguments received: $*"
-  exec echo "$@"
+  echo "Launching a shell in the pcsim container."
+  echo "Use through singularity apps recommended (see help for more info)."
+  exec bash
 
-#  derp=
-#  if [ -p /dev/stdin ]; then
-#    # If we want to read the input line by line
-#    while IFS= read line; do
-#      #echo "Line: ${line}"
-#      if [ -z ${derp} ]; then
-#        derp="${line}"
-#      else 
-#        derp="${derp}\n${line}"
-#      fi
-#    done
-#  fi
-#  /bin/bash <<EOF
-#  source /usr/local/bin/geant4.sh
-#  echo -e ${derp} | bubble_chamber $@
-#EOF
-#  #exec /usr/local/bin/run_bubble_sim "$@"
+# =======================
+# pcsim
+# =======================
+%apprun pcsim
+  pcsim "$@"
+
+%appenv pcsim
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
+
+# =======================
+# root
+# =======================
+%apprun root
+  root "$@"
+
+%appenv root
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
+
+# =======================
+# root-config
+# =======================
+%apprun root-config
+  root-config "$@"
+
+%appenv root-config
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
 
 
+# =======================
+# rootbrowse
+# =======================
+%apprun rootbrowse
+  rootbrowse "$@"
+
+%appenv rootbrowse
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
+
+# =======================
+# rootls
+# =======================
+%apprun rootls
+  rootls "$@"
+
+%appenv rootls
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
+
+# =======================
+# hadd
+# =======================
+%apprun hadd
+  hadd "$@"
+
+%appenv hadd
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
+
+# =======================
+# h2root
+# =======================
+%apprun h2root
+  h2root "$@"
+
+%appenv h2root
+  export PYTHONPATH=/usr/local/lib:${PYTHONPATH}
+  export PATH=/usr/local/bin:${PATH}
+  export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  export ROOT_INCLUDE_PATH=/usr/local/include/podd:/usr/local/include/hcana
