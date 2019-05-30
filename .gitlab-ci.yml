@@ -35,6 +35,7 @@ singularity-build:
         - build/Singularity
 
 singularity-broadwell:
+  when: manual
   tags:
      - singularity
   script:
