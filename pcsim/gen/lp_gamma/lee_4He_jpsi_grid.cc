@@ -701,7 +701,7 @@ double lee_4He_jpsi_grid::calc_max_xsec(const configuration& cf) const {
   const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
-  return dsigma_dt(W2max, max_t_range_.min, target.mass()) * 1.0001;
+  return dsigma_dt(W2max, max_t_range_.max, target.mass()) * 1.0001;
 }
 
 // =============================================================================
