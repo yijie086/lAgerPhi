@@ -1,4 +1,4 @@
-#include "lee_4He_jpsi.hh"
+#include "lee_4He_jpsi_grid.hh"
 #include <TMath.h>
 #include <pcsim/core/logger.hh>
 #include <pcsim/physics/kinematics.hh>
@@ -6,7 +6,7 @@
 #include <pcsim/physics/vm.hh>
 
 namespace lee {
-const double Eg[] = {
+double Eg[] = {
     0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01,
     0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01,
     0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01, 0.8500E+01,
@@ -200,7 +200,7 @@ const double Eg[] = {
     0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02,
     0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02, 0.1090E+02,
     0.1090E+02};
-const double abst = {
+double abst[] = {
     0.4104E+00, 0.4107E+00, 0.4114E+00, 0.4126E+00, 0.4143E+00, 0.4166E+00,
     0.4192E+00, 0.4224E+00, 0.4261E+00, 0.4303E+00, 0.4349E+00, 0.4401E+00,
     0.4457E+00, 0.4518E+00, 0.4584E+00, 0.4655E+00, 0.4731E+00, 0.4811E+00,
@@ -394,7 +394,7 @@ const double abst = {
     0.6091E+00, 0.6338E+00, 0.6592E+00, 0.6855E+00, 0.7125E+00, 0.7402E+00,
     0.7687E+00, 0.7980E+00, 0.8280E+00, 0.8588E+00, 0.8904E+00, 0.9227E+00,
     0.9557E+00};
-const double dsdt[] = {
+double dsdt[] = {
     0.1764E-01, 0.1750E-01, 0.1709E-01, 0.1641E-01, 0.1550E-01, 0.1440E-01,
     0.1313E-01, 0.1175E-01, 0.1030E-01, 0.8827E-02, 0.7382E-02, 0.6002E-02,
     0.4723E-02, 0.3573E-02, 0.2574E-02, 0.1739E-02, 0.1074E-02, 0.5781E-03,
@@ -594,31 +594,34 @@ namespace pcsim {
 namespace lp_gamma {
 
 // =============================================================================
-// Constructor for lp_gamma::lee_4He_jpsi
+// Constructor for lp_gamma::lee_4He_jpsi_grid
 // =============================================================================
-lee_4He_jpsi::lee_4He_jpsi(const configuration& cf, const string_path& path,
-                           std::shared_ptr<TRandom> r)
+lee_4He_jpsi_grid::lee_4He_jpsi_grid(const configuration& cf,
+                                     const string_path& path,
+                                     std::shared_ptr<TRandom> r)
     : base_type{r}
     , recoil_{pdg_id::He4}
     , vm_{pdg_id::J_psi}
-    , grid_{std::make_unique<TGraph2D>(1153, lee::Eg, lee::abst, lee::ds)}
+    , grid_{std::make_unique<TGraph2D>(1153, lee::Eg, lee::abst, lee::dsdt)}
     , R_vm_c_{cf.get<double>(path / "R_vm_c")}
     , R_vm_n_{cf.get<double>(path / "R_vm_n")}
     , dipole_n_{cf.get<double>(path / "dipole_n")}
     , max_t_range_{calc_max_t_range(cf)}
     , max_{calc_max_xsec(cf)} {
-  LOG_INFO("lee_4He_jpsi", "t range [GeV^2]: [" +
-                               std::to_string(max_t_range_.min) + ", " +
-                               std::to_string(max_t_range_.max) + "]");
-  LOG_INFO("lee_4He_jpsi", "R_vm c-parameter: " + std::to_string(R_vm_c_));
-  LOG_INFO("lee_4He_jpsi",
+  LOG_INFO("lee_4He_jpsi_grid", "t range [GeV^2]: [" +
+                                    std::to_string(max_t_range_.min) + ", " +
+                                    std::to_string(max_t_range_.max) + "]");
+  LOG_INFO("lee_4He_jpsi_grid", "R_vm c-parameter: " + std::to_string(R_vm_c_));
+  LOG_INFO("lee_4He_jpsi_grid",
            "R_vm n-parameter (power): " + std::to_string(R_vm_n_));
-  LOG_INFO("lee_4He_jpsi", "'Dipole' FF power: " + std::to_string(dipole_n_));
-  LOG_INFO("lee_4He_jpsi", "VM: " + std::string(vm_.pdg()->GetName()));
-  LOG_INFO("lee_4He_jpsi", "recoil: " + std::string(recoil_.pdg()->GetName()));
+  LOG_INFO("lee_4He_jpsi_grid",
+           "'Dipole' FF power: " + std::to_string(dipole_n_));
+  LOG_INFO("lee_4He_jpsi_grid", "VM: " + std::string(vm_.pdg()->GetName()));
+  LOG_INFO("lee_4He_jpsi_grid",
+           "recoil: " + std::string(recoil_.pdg()->GetName()));
 }
 
-lp_gamma_event lee_4He_jpsi::generate(const lp_gamma_data& initial) {
+lp_gamma_event lee_4He_jpsi_grid::generate(const lp_gamma_data& initial) {
 
   // generate a mass() in case of non-zero width, initialize the particles
   particle vm = {vm_.type(), rng()};
@@ -630,42 +633,42 @@ lp_gamma_event lee_4He_jpsi::generate(const lp_gamma_data& initial) {
 
   // check if enough energy available
   if (gamma.W2() < threshold2(vm, recoil)) {
-    LOG_JUNK("lee_4He_jpsi", "Not enough phase space available - W2: " +
-                                 std::to_string(gamma.W2()) + " < " +
-                                 std::to_string(threshold2(vm, recoil)));
+    LOG_JUNK("lee_4He_jpsi_grid", "Not enough phase space available - W2: " +
+                                      std::to_string(gamma.W2()) + " < " +
+                                      std::to_string(threshold2(vm, recoil)));
     return lp_gamma_event{0.};
   }
 
   // generate a phase space point
   const double t = rng()->Uniform(max_t_range_.min, max_t_range_.max);
 
-  LOG_JUNK("lee_4He_jpsi", "t: " + std::to_string(t));
+  LOG_JUNK("lee_4He_jpsi_grid", "t: " + std::to_string(t));
 
   // check if kinematically allowed
   if (physics::t_range(gamma.W2(), gamma.Q2(), target.beam().mass(), vm.mass(),
                        recoil.mass())
           .excludes(t)) {
-    LOG_JUNK("lee_4He_jpsi", "t outside of the allowed range for this W2")
+    LOG_JUNK("lee_4He_jpsi_grid", "t outside of the allowed range for this W2")
     return lp_gamma_event{0.};
   }
 
   // evaluate the cross section
   const double xs_R = R(gamma.Q2());
   const double xs_dipole = dipole(gamma.Q2());
-  const double xs_photo = dsigma_dexp_bt(gamma.W2(), target.beam().mass());
+  const double xs_photo = dsigma_dt(gamma.W2(), t, target.beam().mass());
   const double xs = (1 + gamma.epsilon() * xs_R) * xs_dipole * xs_photo;
 
-  LOG_JUNK("lee_4He_jpsi",
+  LOG_JUNK("lee_4He_jpsi_grid",
            "xsec: " + std::to_string(xs_photo) + " < " + std::to_string(max_));
-  LOG_JUNK("lee_4He_jpsi", "R: " + std::to_string(xs_R));
-  LOG_JUNK("lee_4He_jpsi", "dipole: " + std::to_string(xs_dipole));
+  LOG_JUNK("lee_4He_jpsi_grid", "R: " + std::to_string(xs_R));
+  LOG_JUNK("lee_4He_jpsi_grid", "dipole: " + std::to_string(xs_dipole));
 
   // return a new VM event
   return make_event(initial, t, vm, recoil, xs, xs_R);
 }
 
 // =============================================================================
-// lee_4He_jpsi::calc_max_xsec(cf)
+// lee_4He_jpsi_grid::calc_max_xsec(cf)
 //
 // Utility function for the generator initialization
 //
@@ -682,7 +685,7 @@ lp_gamma_event lee_4He_jpsi::generate(const lp_gamma_data& initial) {
 //  * note that we can be certain about these statements, as the program will
 //    exit with an error if the cross section maximum were ever violated
 // =============================================================================
-double lee_4He_jpsi::calc_max_xsec(const configuration& cf) const {
+double lee_4He_jpsi_grid::calc_max_xsec(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,
@@ -698,11 +701,11 @@ double lee_4He_jpsi::calc_max_xsec(const configuration& cf) const {
   const double W2max = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
-  return dsigma_dexp_bt(W2max, target.mass()) * 1.0001;
+  return dsigma_dt(W2max, max_t_range_.min, target.mass()) * 1.0001;
 }
 
 // =============================================================================
-// lee_4He_jpsi::calc_max_t_range(cf)
+// lee_4He_jpsi_grid::calc_max_t_range(cf)
 //
 // Utility function for the generator initialization
 //
@@ -713,7 +716,8 @@ double lee_4He_jpsi::calc_max_xsec(const configuration& cf) const {
 //  bound
 //  * Q2 = 0 for the upper t bound (tmin)
 // =============================================================================
-interval<double> lee_4He_jpsi::calc_max_t_range(const configuration& cf) const {
+interval<double>
+lee_4He_jpsi_grid::calc_max_t_range(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,
@@ -751,37 +755,35 @@ interval<double> lee_4He_jpsi::calc_max_t_range(const configuration& cf) const {
   return tlim;
 }
 // =============================================================================
-// lee_4He_jpsi::dsigma_dt()
-// lee_4He_jpsi::jacobian()
-// lee_4He_jpsi::R()
-// lee_4He_jpsi::dipole()
+// lee_4He_jpsi_grid::dsigma_dt()
+// lee_4He_jpsi_grid::jacobian()
+// lee_4He_jpsi_grid::R()
+// lee_4He_jpsi_grid::dipole()
 //
 // Utility functions to calculate the cross section components
 // =============================================================================
-double lee_4He_jpsi::dsigma_dt(const double W2, const double t,
-                               const double Mt) const {
+double lee_4He_jpsi_grid::dsigma_dt(const double W2, const double t,
+                                    const double Mt) const {
   const double Eg = 0.5 * (W2 / Mt - Mt);
   const double abst = -t;
-  return grid_->Interpolation(Eg, abst);
+  return grid_->Interpolate(Eg, abst);
 }
-double lee_4He_jpsi::jacobian(const double t) const {
-  return photo_b_ * exp(photo_b_ * t);
-}
-double lee_4He_jpsi::R(const double Q2) const {
+double lee_4He_jpsi_grid::jacobian(const double t) const { return 1.; }
+double lee_4He_jpsi_grid::R(const double Q2) const {
   return physics::R_vm_martynov(Q2, vm_.mass(), R_vm_c_, R_vm_n_);
 }
-double lee_4He_jpsi::dipole(const double Q2) const {
+double lee_4He_jpsi_grid::dipole(const double Q2) const {
   return physics::dipole_ff_vm(Q2, vm_.mass(), dipole_n_);
 }
 // =============================================================================
-// lee_4He_jpsi::threshold2()
+// lee_4He_jpsi_grid::threshold2()
 //
 // utility function returns the production threshold squared for the chosen
 // particles. Important to re-calculate in case of a particle with non-zero
 // widht.
 // =============================================================================
-double lee_4He_jpsi::threshold2(const particle& vm,
-                                const particle& recoil) const {
+double lee_4He_jpsi_grid::threshold2(const particle& vm,
+                                     const particle& recoil) const {
 
   return recoil.mass2() + vm.mass2() + 2 * vm.mass() * recoil.mass();
 }
@@ -790,9 +792,10 @@ double lee_4He_jpsi::threshold2(const particle& vm,
 // create the lp_gamma_event dataf, calculates the final state four-vectors in
 // the lab-frame
 // =============================================================================
-lp_gamma_event lee_4He_jpsi::make_event(const lp_gamma_data& initial,
-                                        const double t, particle vm, particle X,
-                                        const double xs, const double R) {
+lp_gamma_event lee_4He_jpsi_grid::make_event(const lp_gamma_data& initial,
+                                             const double t, particle vm,
+                                             particle X, const double xs,
+                                             const double R) {
   const auto& gamma = initial.photon();
   const auto& target = initial.target();
 

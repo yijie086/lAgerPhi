@@ -1,7 +1,7 @@
-#ifndef PCSIM_GEN_LP_GAMMA_LEE_4HE_JPSI_LOADED
-#define PCSIM_GEN_LP_GAMMA_LEE_4HE_JPSI_LOADED
+#ifndef PCSIM_GEN_LP_GAMMA_LEE_4HE_JPSI_GRID_LOADED
+#define PCSIM_GEN_LP_GAMMA_LEE_4HE_JPSI_GRID_LOADED
 
-#include <TGraph2D>
+#include <TGraph2D.h>
 #include <memory>
 #include <pcsim/core/generator.hh>
 #include <pcsim/core/particle.hh>
@@ -12,7 +12,7 @@ namespace pcsim {
 namespace lp_gamma {
 
 // =============================================================================
-// lp_gamma::lee_4He_jpsi
+// lp_gamma::lee_4He_jpsi_grid
 //
 // gamma + p -> VM + X process
 //
@@ -24,15 +24,15 @@ namespace lp_gamma {
 //  * t-channel cross section:
 //        dsigma_dexp_bt_brodsky(...)
 // =============================================================================
-class lee_4He_jpsi : public lp_gamma::generator {
+class lee_4He_jpsi_grid : public lp_gamma::generator {
 public:
   using base_type = lp_gamma::generator;
 
-  lee_4He_jpsi(const configuration& cf, const string_path& path,
-               std::shared_ptr<TRandom> r);
+  lee_4He_jpsi_grid(const configuration& cf, const string_path& path,
+                    std::shared_ptr<TRandom> r);
   virtual lp_gamma_event generate(const lp_gamma_data&);
   virtual double max_cross_section() const { return max_; }
-  virtual double phase_space() const { return max_exp_bt_range_.width(); }
+  virtual double phase_space() const { return max_t_range_.width(); }
 
 private:
   double calc_max_xsec(const configuration& cf) const;

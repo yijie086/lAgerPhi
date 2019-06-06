@@ -4,7 +4,7 @@
 ## PROJECT: pcsim
 ################################################################################
 cmake_minimum_required (VERSION 3.8)
-project (pcsim VERSION 2.4.0 LANGUAGES CXX )
+project (pcsim VERSION 2.4.1 LANGUAGES CXX )
 # note: the following is old-style cmake. But
 set (PCSIM_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set (PCSIM_MINOR_VERSION ${PROJECT_VERSION_MINOR})

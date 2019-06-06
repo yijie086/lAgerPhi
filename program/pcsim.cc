@@ -15,6 +15,7 @@
 #include <pcsim/gen/beam/vertex_gen.hh>
 #include <pcsim/gen/lp_gamma/brodsky_2vmX.hh>
 #include <pcsim/gen/lp_gamma/gaussian_1X.hh>
+#include <pcsim/gen/lp_gamma/lee_4He_jpsi_grid.hh>
 #include <pcsim/gen/lp_gamma/oleksii_2vmp.hh>
 #include <pcsim/gen/lp_gamma/oleksii_jpsi_bh.hh>
 #include <pcsim/proc/detector/composite.hh>
@@ -40,6 +41,8 @@ int run_mc(const configuration& cf, const std::string& output) {
                     "brodsky_2vmX");
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::oleksii_2vmp,
                     "oleksii_2vmp");
+  FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::lee_4He_jpsi_grid,
+                    "lee_4He_jpsi_grid");
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::oleksii_jpsi_bh,
                     "oleksii_jpsi_bh");
   FACTORY_REGISTER2(lp_gamma::generator, lp_gamma::gaussian_qpq,
