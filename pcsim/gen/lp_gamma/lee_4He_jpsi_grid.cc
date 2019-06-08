@@ -764,8 +764,12 @@ lee_4He_jpsi_grid::calc_max_t_range(const configuration& cf) const {
 // =============================================================================
 double lee_4He_jpsi_grid::dsigma_dt(const double W2, const double t,
                                     const double Mt) const {
-  const double Eg = 0.5 * (W2 / Mt - Mt);
+  double Eg = 0.5 * (W2 / Mt - Mt);
   const double abst = -t;
+  // grid only available up to 10.9GeV
+  if (Eg > 10.9) {
+    Eg = 10.9;
+  }
   return grid_->Interpolate(Eg, abst);
 }
 double lee_4He_jpsi_grid::jacobian(const double t) const { return 1.; }
