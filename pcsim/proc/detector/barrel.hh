@@ -15,28 +15,25 @@ class barrel : public detector {
 public:
   using base_type = detector;
 
-  barrel(const configuration&, const string_path&,
-               std::shared_ptr<TRandom> r);
+  barrel(const configuration&, const string_path&, std::shared_ptr<TRandom> r);
 
   virtual void process(event& e) const;
 
 private:
+  ROOT::Math::PxPyPzMVector barrel::detected_track(const particle& part) const {
 
-  ROOT::Math::PxPyPzMVector
-  barrel::detected_track(const particle& part, const double th_in,
-                             const double th_out) const {
-
-  const std::string name_;        // spectromter name
-  const int id_{0};               // barrel ID
-  const interval<double> theta_; // barrel theta range
-  const interval<double> p_; // barrel momentum range
-  const std::vector<int> pid_;    // PID info for acceptable particle types
-  const double acceptance_{1.};   // flat acceptance
-  const double p_smear_{0.};      // optional momentum smearing
-  const double theta_smear_{0.};  // optional angle smearing
-};
+    const std::string name_;       // spectromter name
+    const int id_{0};              // barrel ID
+    const interval<double> theta_; // barrel theta range
+    const interval<double> p_;     // barrel momentum range
+    const std::vector<int> pid_;   // PID info for acceptable particle types
+    const double acceptance_{1.};  // flat acceptance
+    const double p_smear_{0.};     // optional momentum smearing
+    const double theta_smear_{0.}; // optional angle smearing
+    const double phi_smear_{0.};   //
+  };
 
 } // namespace detector
-} // namespace pcsim
+} // namespace detector
 
 #endif
