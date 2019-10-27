@@ -20,20 +20,20 @@ public:
   virtual void process(event& e) const;
 
 private:
-  ROOT::Math::PxPyPzMVector barrel::detected_track(const particle& part) const {
+  ROOT::Math::PxPyPzMVector barrel::detected_track(const particle& part) const;
 
-    const std::string name_;       // spectromter name
-    const int id_{0};              // barrel ID
-    const interval<double> theta_; // barrel theta range
-    const interval<double> p_;     // barrel momentum range
-    const std::vector<int> pid_;   // PID info for acceptable particle types
-    const double acceptance_{1.};  // flat acceptance
-    const double p_smear_{0.};     // optional momentum smearing
-    const double theta_smear_{0.}; // optional angle smearing
-    const double phi_smear_{0.};   //
-  };
+  const std::string name_;       // spectromter name
+  const int id_{0};              // barrel ID
+  const interval<double> theta_; // barrel theta range
+  const interval<double> p_;     // barrel momentum range
+  const std::vector<int> pid_;   // PID info for acceptable particle types
+  const double acceptance_{1.};  // flat acceptance
+  const double p_smear_{0.};     // optional momentum smearing
+  const double theta_smear_{0.}; // optional angle smearing
+  const double phi_smear_{0.};   //
+};
 
 } // namespace detector
-} // namespace detector
+} // namespace pcsim
 
 #endif
