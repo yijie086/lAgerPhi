@@ -18,6 +18,7 @@
 #include <pcsim/gen/lp_gamma/lee_4He_jpsi_grid.hh>
 #include <pcsim/gen/lp_gamma/oleksii_2vmp.hh>
 #include <pcsim/gen/lp_gamma/oleksii_jpsi_bh.hh>
+#include <pcsim/proc/detector/barrel.hh>
 #include <pcsim/proc/detector/composite.hh>
 #include <pcsim/proc/detector/null.hh>
 #include <pcsim/proc/detector/solid.hh>
@@ -60,6 +61,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(detector::detector, detector::solid, "solid");
   FACTORY_REGISTER2(detector::detector, detector::null, "4pi");
   FACTORY_REGISTER2(detector::detector, detector::spectrometer, "spectrometer");
+  FACTORY_REGISTER2(detector::detector, detector::barrel, "barrel");
   FACTORY_REGISTER2(detector::detector, detector::composite, "composite");
   // TODO
 
