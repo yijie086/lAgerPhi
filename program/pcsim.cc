@@ -35,6 +35,14 @@ std::string to_string_exp(double d) {
   return ss.str();
 }
 
+void write_value_to_file(std::shared_ptr<TFile> ofile, const std::string& name,
+                         double value) {
+  TH1D* tmp = new TH1D(name.c_str(), "", 1, 0, 1);
+  tmp->SetBinContent(1, value);
+  ofile->cd();
+  tmp->Write();
+}
+
 int run_mc(const configuration& cf, const std::string& output) {
 
   // TODO fix this
@@ -108,6 +116,7 @@ int run_mc(const configuration& cf, const std::string& output) {
     evbuf.push(gen.generate());
     progress.update(gen.n_events(), gen.n_requested());
   }
+
   LOG_INFO("pcsim", "Event generation complete");
   LOG_INFO("pcsim", "Total number of generated events: " +
                         std::to_string(gen.n_events()));
@@ -117,6 +126,13 @@ int run_mc(const configuration& cf, const std::string& output) {
                         to_string_exp(gen.partial_cross_section()));
   LOG_INFO("pcsim",
            " --> Acceptance [%]: " + std::to_string(100 * gen.acceptance()));
+  // write generation statistics to file as 1D histograms
+  LOG_INFO("pcsim", "Writing generation statistics to output file");
+  write_value_to_file(ofile, "weighted_cross_section",
+                      gen.cross_section() * gen.n_events());
+  write_value_to_file(ofile, "weighted_partial_cross_section",
+                      gen.partial_cross_section() * gen.n_events());
+  write_value_to_file(ofile, "n_events", gen.n_events());
 
   return 0;
 }
