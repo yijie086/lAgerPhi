@@ -19,7 +19,8 @@ class origin_vertex : public vertex_generator {
 public:
   origin_vertex(const configuration& cf, const string_path& path,
                 std::shared_ptr<TRandom> r)
-      : vertex_generator{std::move(r)}, vertex_{0, 0, 0, 0} {
+      : vertex_generator{std::move(r)}
+      , vertex_{0, 0, cf.get<double>(path / "vz", 0), 0} {
     LOG_INFO("beam::origin_vertex", "Vertex generator initialized");
   }
 
