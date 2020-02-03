@@ -41,6 +41,7 @@ RUN source /usr/local/bin/thisroot.sh \
   && echo "  3. Installing: LIEGE" \
   && echo "  -------------------------------------------------" \
   && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git \
+  && cd /tmp \
   && mkdir liege/build && cd liege/build \
   && cmake .. \
   && make -j20 \
