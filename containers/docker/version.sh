@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "0.1"
+grep "liege VERSION" ../../CMakeLists.txt | sed 's/project (liege VERSION //' | sed 's/ LANGUAGES CXX )//'
