@@ -1,0 +1,35 @@
+# - Config file for the FooBar package
+# It defines the following variables
+#  LIEGE_INCLUDE_DIRS   - include directories for liege
+#  LIEGE_DEFINITIONS    - definitions needed to compile against liege
+#  LIEGE_LIBRARIES      - Libraries to link against
+ 
+# Enable languages
+enable_language(CXX)
+
+# Compute paths
+get_filename_component(LIEGE_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(LIEGE_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@/..")
+set(LIEGE_DEFINITIONS "@CONF_DEFINITIONS@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET liege AND NOT liege_BINARY_DIR)
+  include("${LIEGE_CMAKE_DIR}/liege-targets.cmake")
+endif()
+ 
+# These are IMPORTED targets created by liege-targets.cmake
+set(LIEGE_LIBRARIES @TARGETS@)
+
+# Add the external libraries
+find_package(root REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+set(LIEGE_LIBRARIES ${LIEGE_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+set(LIEGE_INCLUDE_DIRS ${LIEGE_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+
+## Extra rpath stuff for MacOS
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_INSTALL_RPATH 
+    ${CMAKE_INSTALL_RPATH} 
+    "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
+  message("Podd: set rpath to ${CMAKE_INSTALL_RPATH}")
+endif()

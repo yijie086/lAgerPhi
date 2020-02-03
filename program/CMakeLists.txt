@@ -10,8 +10,8 @@ function (BUILD_PROGRAM PROG)
   ## compile and link
   add_executable(${PROG} ${SOURCES})
   target_link_libraries(${PROG}
-    pcsim_core pcsim_physics pcsim_proc pcsim_gen
-    pcsim_core pcsim_physics pcsim_proc pcsim_gen
+    liege_core liege_physics liege_proc liege_gen
+    liege_core liege_physics liege_proc liege_gen
     ${PHOTOSPP_LIBRARIES}
   ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 #target_compile_options(${PROG} PUBLIC "$<$<CONFIG:DEBUG>:${MY_DEBUG_OPTIONS}>")
@@ -31,4 +31,4 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 ################################################################################
 ## Build all programs
 ################################################################################
-BUILD_PROGRAM(pcsim)
+BUILD_PROGRAM(liege)

@@ -18,7 +18,6 @@ option(COMPILE_FOR_BROADWELL "Enable the compiler flags for broadwell avx2 suppo
 option(COMPILE_FOR_HASWELL   "Enable the compiler flags for haswell avx2 support" OFF)
 option(COMPILE_FOR_KNL       "Enable the compiler flags for KNL instruction set support" OFF)
 
-
 ################################################################################
 ## CMAKE Settings 
 ################################################################################
@@ -35,9 +34,7 @@ add_subdirectory(pcsim/core)
 add_subdirectory(pcsim/physics)
 add_subdirectory(pcsim/proc)
 add_subdirectory(pcsim/gen)
-#add_subdirectory(pcsim/root)
 add_subdirectory(program)
-#add_subdirectory(python)
 
 ################################################################################
 ## Prepare the project to be EXPORTed, generate configuration files
