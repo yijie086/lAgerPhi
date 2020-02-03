@@ -4,7 +4,7 @@ stages:
   - phase1
   - phase2
 
-hallac_docker:
+liege_docker:
   stage: phase1
   tags:
      - eic0 docker
@@ -13,7 +13,7 @@ hallac_docker:
      - make login
      - make release 
 
-hallac_singularity:
+liege_singularity:
   stage: phase2
   tags:
      - singularity
