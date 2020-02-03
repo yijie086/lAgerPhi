@@ -25,7 +25,7 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   echo "  1. Installing project dependency: hepmc"
   echo "  -------------------------------------------------"
   cd /tmp
-  git clone https://eicweb.phy.anl.gov/upsilon/hepmc.git
+  git clone https://eicweb.phy.anl.gov/monte_carlo/hepmc.git
   mkdir build-hepmc && cd build-hepmc
   cmake ../hepmc -Dmomentum:STRING=GEV -Dlength:STRING=CM
   make -j20
