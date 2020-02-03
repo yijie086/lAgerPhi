@@ -4,7 +4,7 @@
 ## PROJECT: liege
 ################################################################################
 cmake_minimum_required (VERSION 3.8)
-project (liege VERSION 2.4.4 LANGUAGES CXX )
+project (liege VERSION 3.0.0 LANGUAGES CXX )
 # note: the following is old-style cmake. But
 set (LIEGE_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set (LIEGE_MINOR_VERSION ${PROJECT_VERSION_MINOR})
