@@ -36,7 +36,7 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   echo "  2. Installing project dependency: PHOTOS++"
   echo "  -------------------------------------------------"
   cd /tmp
-  git clone https://gitlab+deploy-token-5:Vhaa1rUEZHWzWuRydM6T@eicweb.phy.anl.gov/upsilon/photospp.git 
+  git clone https://eicweb.phy.anl.gov/monte_carlo/photospp.git 
   mkdir photospp/build && cd photospp/build
   cmake ..
   make -j20
@@ -44,9 +44,9 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   cd /tmp
   rm -r /tmp/photospp
   echo "  -------------------------------------------------"
-  echo "  2. Installing: PCSIM"
+  echo "  3. Installing: PCSIM"
   echo "  -------------------------------------------------"
-  git clone https://gitlab+deploy-token-4:xsBH9WgzTuUWcskCnUme@eicweb.phy.anl.gov/upsilon/Pcsim.git 
+  git clone https://eicweb.phy.anl.gov/monte_carlo/Pcsim.git 
   mkdir Pcsim/build && cd Pcsim/build 
   cmake ..
   make -j20
@@ -54,7 +54,7 @@ From: eicweb.phy.anl.gov:4567/whit/image_recipes/root_base:latest
   cd /tmp
   rm -r /tmp/Pcsim
   echo "  -------------------------------------------------"
-  echo "  3. Slimming down image"
+  echo "  4. Slimming down image"
   echo "  -------------------------------------------------"
   apt-get clean
   rm -rf /var/lib/apt/lists/*
