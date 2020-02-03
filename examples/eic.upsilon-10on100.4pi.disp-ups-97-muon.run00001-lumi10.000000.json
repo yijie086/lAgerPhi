@@ -1,13 +1,12 @@
 {
     "mc": {
-        "type": "pcsim-vm",
-        "run": "1",
-        "events": "1000",
-        "lumi": "100",
-        "info": "1 x 100 fb^-1: nominal EIC lumi",
-        "tag": "e10p100",
+        "type": "pcsim",
+        "tag": "disp-ups-97-muon",
         "generator": {
-            "type": "upsilon-ep",
+            "type": "upsilon-10on100",
+            "vertex": {
+                "type": "origin"
+            },
             "beam": {
                 "type": "primary",
                 "particle_type": "11",
@@ -39,10 +38,10 @@
                     "10000"
                 ]
             },
-            "process_1": {
+            "process_0": {
                 "type": "oleksii_2vmp",
                 "vm_type": "553",
-                "T0": "4.0",
+                "T0": "97",
                 "R_vm_c": "2.164",
                 "R_vm_n": "2.131",
                 "dipole_n": "2.575"
@@ -51,12 +50,15 @@
         "detector": {
             "type": "4pi"
         },
-        "reconstruction": {
-            "require_scat": "false",
-            "require_leading": "false"
-        }
+        "decay": {
+            "vm_decay_lepton_type": "13",
+            "vm_branching_ratio": "0.0248",
+            "do_radiative_decay_vm": "true"
+        },
+        "run": "1",
+        "lumi": "10"
     },
     "defaults": {
-        "pcsim-vm": ""
+        "pcsim": ""
     }
 }
