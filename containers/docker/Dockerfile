@@ -10,53 +10,53 @@ LABEL maintainer="Sylvester Joosten<sjoosten@anl.gov>" \
 ENV PYTHONPATH=/usr/local/lib:$PYTHONPATH \
     LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-RUN source /usr/local/bin/thisroot.sh                             \
-  && echo "  -------------------------------------------------"   \
-  && echo "  1. Installing project dependency: hepmc"             \
-  && echo "  -------------------------------------------------"   \
-  && cd /tmp                                                      \
-  && git clone https://eicweb.phy.anl.gov/upsilon/hepmc.git       \
-  && mkdir build-hepmc && cd build-hepmc                          \
-  && cmake ../hepmc -Dmomentum:STRING=GEV -Dlength:STRING=CM      \
-  && make -j20                                                    \
-  && make install                                                 \
-  && cd /tmp                                                      \
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  1. Installing project dependency: hepmc" \
+  && echo "  -------------------------------------------------" \
+  && cd /tmp \
+  && git clone https://eicweb.phy.anl.gov/monte_carlo/hepmc.git \
+  && mkdir build-hepmc && cd build-hepmc \
+  && cmake ../hepmc -Dmomentum:STRING=GEV -Dlength:STRING=CM \
+  && make -j20 \
+  && make install \
+  && cd /tmp \
   && rm -r /tmp/*hepmc
 
-RUN source /usr/local/bin/thisroot.sh                             \
-  && echo "  -------------------------------------------------"   \
-  && echo "  2. Installing project dependency: PHOTOS++"          \
-  && echo "  -------------------------------------------------"   \
-  && cd /tmp                                                      \
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  2. Installing project dependency: PHOTOS++" \
+  && echo "  -------------------------------------------------" \
+  && cd /tmp \
   && git clone https://eicweb.phy.anl.gov/monte_carlo/photospp.git \
-  && mkdir photospp/build && cd photospp/build                    \
-  && cmake ..                                                     \
-  && make -j20                                                    \
-  && make install                                                 \
-  && cd /tmp                                                      \
+  && mkdir photospp/build && cd photospp/build \
+  && cmake .. \
+  && make -j20 \
+  && make install \
+  && cd /tmp \
   && rm -r /tmp/photospp
 
-RUN source /usr/local/bin/thisroot.sh                             \
-  && echo "  -------------------------------------------------"   \
-  && echo "  3. Installing: LIEGE"                                \
-  && echo "  -------------------------------------------------"   \
-  && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git   \
-  && mkdir liege/build && cd liege/build                          \
-  && cmake ..                                                     \
-  && make -j20                                                    \
-  && make install                                                 \
-  && cd /tmp                                                      \
-  rm -r /tmp/liege
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  3. Installing: LIEGE" \
+  && echo "  -------------------------------------------------" \
+  && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git \
+  && mkdir liege/build && cd liege/build \
+  && cmake .. \
+  && make -j20 \
+  && make install \
+  && cd /tmp \
+  && rm -r /tmp/liege
 
-RUN source /usr/local/bin/thisroot.sh                             \
-  && echo "  -------------------------------------------------"   \
-  && echo "  4. Slimming down image"                              \
-  && echo "  -------------------------------------------------"   \
-  apt-get clean                                                   \
-  rm -rf /var/lib/apt/lists/*                                     \
-  echo "  -------------------------------------------------"      \
-  echo "  Done building and installing software"                  \
-  echo "  -------------------------------------------------"
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  4. Slimming down image" \
+  && echo "  -------------------------------------------------" \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && echo "  -------------------------------------------------" \
+  && echo "  Done building and installing software" \
+  && echo "  -------------------------------------------------"
 
 
 #
