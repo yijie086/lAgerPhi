@@ -129,13 +129,13 @@ fi
 
 if [ -f "$recipe" ]; then
 
-    imagefile="${recipe}.simg"
+    imagefile="`basename ${recipe} .def`.sif"
 
     echo "Creating $imagefile using $recipe..."
     singularity build $imagefile $recipe
 
     # If the image is successfully built, test it and upload (examples)
-  
+
     if [ -f "${imagefile}" ]; then
 
         # Example testing using run (you could also use test command)

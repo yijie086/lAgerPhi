@@ -9,10 +9,12 @@ apt-get update && apt-get install -y wget git \
                                           automake \
                                           autoconf \
                                           uuid-dev \
-                                          libssl-dev
+                                          libssl-dev \
+                                          python-pip
 
 
-sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+## Somehow sed cant find /etc/sudoers
+#sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 
 # Check Python
 
@@ -26,6 +28,7 @@ echo "sregistry Version:"
 # Install Singularity
 
 cd /tmp && \
+    rm -rf singularity && \
     git clone -b vault/release-2.5 https://www.github.com/sylabs/singularity.git
     cd singularity && \
     ./autogen.sh && \
