@@ -1,18 +1,18 @@
-## CMake project file for pcsim
+## CMake project file for liege
 
 ################################################################################
-## PROJECT: pcsim
+## PROJECT: liege
 ################################################################################
 cmake_minimum_required (VERSION 3.8)
-project (pcsim VERSION 2.4.4 LANGUAGES CXX )
+project (liege VERSION 2.4.4 LANGUAGES CXX )
 # note: the following is old-style cmake. But
-set (PCSIM_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
-set (PCSIM_MINOR_VERSION ${PROJECT_VERSION_MINOR})
-set (PCSIM_PATCH_VERSION ${PROJECT_VERSION_PATCH})
-set (PCSIM_TWEAK_VERSION ${PROJECT_VERSION_TWEAK})
-set (PCSIM_VERSION 
-  ${PCSIM_MAJOR_VERSION}.${PCSIM_MINOR_VERSION}.${PCSIM_PATCH_VERSION})
-set (PCSIM_SOVERSION ${PCSIM_MAJOR_VERSION})
+set (LIEGE_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+set (LIEGE_MINOR_VERSION ${PROJECT_VERSION_MINOR})
+set (LIEGE_PATCH_VERSION ${PROJECT_VERSION_PATCH})
+set (LIEGE_TWEAK_VERSION ${PROJECT_VERSION_TWEAK})
+set (LIEGE_VERSION 
+  ${LIEGE_MAJOR_VERSION}.${LIEGE_MINOR_VERSION}.${LIEGE_PATCH_VERSION})
+set (LIEGE_SOVERSION ${LIEGE_MAJOR_VERSION})
 
 option(COMPILE_FOR_BROADWELL "Enable the compiler flags for broadwell avx2 support" OFF)
 option(COMPILE_FOR_HASWELL   "Enable the compiler flags for haswell avx2 support" OFF)
@@ -30,10 +30,10 @@ include(cmake/rpath.cmake)
 ################################################################################
 set (TARGETS "")
 
-add_subdirectory(pcsim/core)
-add_subdirectory(pcsim/physics)
-add_subdirectory(pcsim/proc)
-add_subdirectory(pcsim/gen)
+add_subdirectory(liege/core)
+add_subdirectory(liege/physics)
+add_subdirectory(liege/proc)
+add_subdirectory(liege/gen)
 add_subdirectory(program)
 
 ################################################################################
