@@ -71,7 +71,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(detector::detector, detector::composite, "composite");
   // TODO
 
-  LOG_INFO("liege", "Initializing PCSIM for lp-gamma processes");
+  LOG_INFO("liege", "Initializing LIEGE for lp-gamma processes");
 
   // get RNG
   LOG_INFO("liege",
@@ -135,4 +135,4 @@ int run_mc(const configuration& cf, const std::string& output) {
   return 0;
 }
 
-MAKE_PCSIM_FRAMEWORK(run_mc)
+MAKE_LIEGE_FRAMEWORK(run_mc)
