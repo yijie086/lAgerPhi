@@ -1,7 +1,13 @@
-Old version of J/psi and Pc Monte Carlo generator.
-v1.x was used for the pentaquark proposal
-v2.x is capable of simulating collider experiments, was used for first
-EIC/SoLID projections
+# Lepton-Ion Event Generator (liege)
+Generic event generator to simulate electro- and photo-production off nucleons and nuclei.
+
+# Versions
+v3.0.0 Stable release version
+
+## Old (depecrated)
+Liege used to be known as pcsim.
+v2.x (called is capable of simulating collider experiments, was used for first EIC/SoLID projections)
+v1.x was used for the Hall C pentaquark proposal
 
 # Basic Example
 1. Ensure the generator is installed and accessible from your path
