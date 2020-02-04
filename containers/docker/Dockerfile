@@ -46,7 +46,7 @@ RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
   && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git \
-  && git checkout $APP_VERSION
+  && git checkout $APP_VERSION \
   && mkdir liege/build && cd liege/build \
   && cmake .. \
   && make -j20 \
