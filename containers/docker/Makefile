@@ -26,7 +26,7 @@ help: ## This help.
 # ==========================================================================
 #
 build: ## build the image
-	docker build -t $(APP_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME) .
 
 build-nc: ## Build the container without caching (from scratch)
 	docker build --no-cache -t $(APP_NAME) .
