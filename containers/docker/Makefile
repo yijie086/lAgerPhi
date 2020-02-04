@@ -29,15 +29,15 @@ build: ## build the image
 	docker build --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME) .
 
 build-nc: ## Build the container without caching (from scratch)
-	docker build --no-cache -t $(APP_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --no-cache -t $(APP_NAME) .
 
 build-alt: ## build the container for various machine architectures (broadwell, haswell, knl)
 	@echo 'building for architecture: $(ALT_NAME)'
-	docker build -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
 
 build-alt-nc: ## build the container for various machine architectures (broadwell, haswell, knl)
 	@echo 'build-alt-nc: building for architecture: $(ALT_NAME)'
-	docker build --no-cache -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --no-cache -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
 
 # ==========================================================================
 #
