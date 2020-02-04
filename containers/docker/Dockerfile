@@ -12,7 +12,7 @@ ARG APP_VERSION
 ENV PYTHONPATH=/usr/local/lib:$PYTHONPATH \
     LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-RUN echo ${APP_VERSION} && exit 1
+RUN echo $APP_VERSION && echo $PYTHONPATH && exit 1
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
@@ -46,7 +46,7 @@ RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
   && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git \
-  && git checkout ${APP_VERSION}
+  && git checkout $APP_VERSION
   && mkdir liege/build && cd liege/build \
   && cmake .. \
   && make -j20 \
