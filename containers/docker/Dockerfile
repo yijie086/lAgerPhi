@@ -7,6 +7,8 @@ LABEL maintainer="Sylvester Joosten<sjoosten@anl.gov>" \
       basedist="ubuntu"   \
       base="root_base"
 
+ARG APP_VERSION
+
 ENV PYTHONPATH=/usr/local/lib:$PYTHONPATH \
     LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
