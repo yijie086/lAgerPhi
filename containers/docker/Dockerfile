@@ -12,7 +12,7 @@ ARG APP_VERSION
 ENV PYTHONPATH=/usr/local/lib:$PYTHONPATH \
     LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-RUN echo $APP_VERSION && echo $PYTHONPATH && exit 1
+RUN echo "foo $APP_VERSION" && echo "bar $PYTHONPATH" && exit 1
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
