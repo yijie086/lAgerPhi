@@ -14,7 +14,6 @@ From: eicweb.phy.anl.gov:4567/monte_carlo/liege/liege:latest
 %environment -c /bin/bash
   export PYTHONPATH=/usr/local/lib:$PYTHONPATH
   export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  source /usr/local/bin/thisroot.sh
 
 %post -c /bin/bash
   echo "  -------------------------------------------------"
