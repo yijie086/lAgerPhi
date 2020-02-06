@@ -84,7 +84,7 @@ framework::framework(int argc, char* argv[],
   // add the run info and lumi or number of generated events
   char info[1024];
   if (lumi) {
-    sprintf(info, ".run%05i-lumi%f", run, *lumi);
+    sprintf(info, ".run%05i-lumi%.0f", run, *lumi);
   } else {
     sprintf(info, ".run%05i-%i", run, events);
   }
