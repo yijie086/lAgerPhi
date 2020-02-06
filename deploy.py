@@ -120,7 +120,8 @@ if __name__ == "__main__":
     version = '{}'.format(args.version)
     if version[0] is 'v':
         version = version[1:]
-    print(version, args.version)
+    if args.version[0].isdigit():
+        args.version = 'v{}'.format(args.version)
     container = '{}/{}.sif.{}'.format(libdir, PROJECT_NAME, version)
     if not os.path.exists(container) or args.force:
         url = CONTAINER_URL.format(GROUP_NAME, PROJECT_NAME, args.version)
