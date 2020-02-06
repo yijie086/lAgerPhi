@@ -95,6 +95,7 @@ if __name__ == "__main__":
         bind_directive = ' '.join([BIND_DIRECTIVE.format(path) for path in args.bind_paths])
 
     ## Create our install prefix if needed and ensure it is writable
+    args.prefix = os.path.abspath(args.prefix)
     print('Install prefix:', args.prefix)
     print('Creating install prefix if needed...')
     libdir = '{}/lib'.format(args.prefix)
