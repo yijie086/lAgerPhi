@@ -133,7 +133,6 @@ The generator is modular, and expects 6 keys to be present:
    currently give sensible results for both electro- and photo-production.
    You can in principle use `process_0` through `process_9` but make sure not to specify
    more than a single process at a time - process mixing is not (yet) supported.
-```
 
 ## Running an example
 To run an example using the `solid.ep-2gluon.json` configuration, go into the `examples`
