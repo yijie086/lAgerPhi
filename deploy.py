@@ -115,9 +115,13 @@ if __name__ == "__main__":
     ## valid bind paths
 
     ## Get the container
+    ## We want to slightly modify our version specifier: if it leads with a 'v' drop the v
     container = '{}/{}.sif.{}'.format(libdir, PROJECT_NAME, args.version)
+    version = args.version
+    if version[0] is 'v':
+        version = version[1:]
     if not os.path.exists(container) or args.force:
-        url = CONTAINER_URL.format(GROUP_NAME, PROJECT_NAME, args.version)
+        url = CONTAINER_URL.format(GROUP_NAME, PROJECT_NAME, version)
         print('Downloading container from:', url)
         print('Destination:', container)
         urllib.request.urlretrieve(url, container)

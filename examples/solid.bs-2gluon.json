@@ -1,146 +1,92 @@
 {
-    "mc": {
-        "type": "solid",
-        "tag": "",
-        "generator": {
-            "type": "bs-2gluon",
-            "vertex": {
-                "type": "linear",
-                "range": [
-                    "-7.5",
-                    "7.5"
-                ]
-            },
-            "beam": {
-                "type": "primary",
-                "particle_type": "11",
-                "dir": [
-                    "0",
-                    "0",
-                    "1"
-                ],
-                "energy": "11.0"
-            },
-            "target": {
-                "type": "primary",
-                "particle_type": "2212",
-                "dir": [
-                    "0",
-                    "0",
-                    "-1"
-                ],
-                "energy": "0.9382721"
-            },
-            "photon": {
-                "type": "bremsstrahlung_realistic_target",
-                "model": "exact",
-                "radiator": {
-                    "name": "none",
-                    "thickness": "0",
-                    "radiation_length": "1",
-                    "density": "1"
-                },
-                "window": {
-                    "name": "Loop 2 Entrance Window",
-                    "radiation_length": "24.01",
-                    "density": "2.699",
-                    "thickness": "0.015"
-                },
-                "target": {
-                    "name": "SoLID LH2",
-                    "radiation_length": "63.06",
-                    "density": "0.0708",
-                    "range": [
-                        "-7.5",
-                        "7.5"
-                    ]
-                },
-                "E_range": [
-                    "8",
-                    "11.0"
-                ]
-            },
-            "process_0": {
-                "type": "brodsky_2vmX",
-                "vm_type": "443",
-                "recoil_type": "2212",
-                "photo_b": "1.13",
-                "photo_c2g": "6.499e3",
-                "photo_c3g": "0.0",
-                "R_vm_c": "2.164",
-                "R_vm_n": "2.131",
-                "dipole_n": "2.575"
-            }
+  "mc" : {
+    "type" : "solid",
+    "tag" : "",
+    "lumi" : "1000",
+    "generator" : {
+      "type" : "bs-2gluon",
+      "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
+      "beam" : {
+        "type" : "primary",
+        "particle_type" : "11",
+        "dir" : [ "0", "0", "1" ],
+        "energy" : "11.0"
+      },
+      "target" : {
+        "type" : "primary",
+        "particle_type" : "2212",
+        "dir" : [ "0", "0", "-1" ],
+        "energy" : "0.9382721"
+      },
+      "photon" : {
+        "type" : "bremsstrahlung_realistic_target",
+        "model" : "exact",
+        "radiator" : {
+          "name" : "none",
+          "thickness" : "0",
+          "radiation_length" : "1",
+          "density" : "1"
         },
-        "detector": {
-            "type": "composite",
-            "components": {
-                "forward": {
-                    "id": "1",
-                    "name": "forward",
-                    "type": "barrel",
-                    "acceptance": {
-                        "acceptance": "1.0",
-                        "p": [
-                            "1",
-                            "11"
-                        ],
-                        "theta": [
-                            "8",
-                            "16"
-                        ],
-                        "pid": [
-                            "-11",
-                            "11",
-                            "2212"
-                        ]
-                    },
-                    "smearing": {
-                        "p": "0.0",
-                        "theta": "0.0",
-                        "phi": "0.0"
-                    }
-                },
-                "wide": {
-                    "id": "2",
-                    "name": "wide",
-                    "type": "barrel",
-                    "acceptance": {
-                        "acceptance": "1.0",
-                        "p": [
-                            "1",
-                            "11"
-                        ],
-                        "theta": [
-                            "18.3",
-                            "28.5"
-                        ],
-                        "pid": [
-                            "-11",
-                            "11",
-                            "2212"
-                        ]
-                    },
-                    "smearing": {
-                        "p": "0.0",
-                        "theta": "0.0",
-                        "phi": "0.0"
-                    }
-                }
-            }
+        "window" : {
+          "name" : "Loop 2 Entrance Window",
+          "radiation_length" : "24.01",
+          "density" : "2.699",
+          "thickness" : "0.015"
         },
-        "reconstruction": {
-            "require_leading": "true"
+        "target" : {
+          "name" : "SoLID LH2",
+          "radiation_length" : "63.06",
+          "density" : "0.0708",
+          "range" : [ "-7.5", "7.5" ]
         },
-        "decay": {
-            "vm_decay_lepton_type": "11",
-            "vm_branching_ratio": "0.05971",
-            "do_radiative_decay_vm": "true"
-        },
-        "run": "1",
-        "lumi": "1000"
+        "E_range" : [ "8", "11.0" ]
+      },
+      "process_0" : {
+        "type" : "brodsky_2vmX",
+        "vm_type" : "443",
+        "recoil_type" : "2212",
+        "photo_b" : "1.13",
+        "photo_c2g" : "6.499e3",
+        "photo_c3g" : "0.0",
+        "R_vm_c" : "2.164",
+        "R_vm_n" : "2.131",
+        "dipole_n" : "2.575"
+      }
     },
-    "defaults": {
-        "solid": ""
+    "detector" : {
+      "type" : "composite",
+      "components" : {
+        "forward" : {
+          "id" : "1",
+          "name" : "forward",
+          "type" : "barrel",
+          "acceptance" : {
+            "acceptance" : "1.0",
+            "p" : [ "1", "11" ],
+            "theta" : [ "8", "16" ],
+            "pid" : [ "-11", "11", "2212" ]
+          },
+          "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
+        },
+        "wide" : {
+          "id" : "2",
+          "name" : "wide",
+          "type" : "barrel",
+          "acceptance" : {
+            "acceptance" : "1.0",
+            "p" : [ "1", "11" ],
+            "theta" : [ "18.3", "28.5" ],
+            "pid" : [ "-11", "11", "2212" ]
+          },
+          "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
+        }
+      }
+    },
+    "reconstruction" : {"require_leading" : "true"},
+    "decay" : {
+      "vm_decay_lepton_type" : "11",
+      "vm_branching_ratio" : "0.05971",
+      "do_radiative_decay_vm" : "true"
     }
+  }
 }
