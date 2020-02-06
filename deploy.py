@@ -48,16 +48,17 @@ fi
 '''
 
 ## Generic module file
-MODULEFILE='''[
+MODULEFILE='''
 #%Module1.0#####################################################################
 ##
-## for {0}
-proc ModulesHelp { } {
+## for {0} {1}
+##
+proc ModulesHelp {{ }} {{
     puts stderr "This module sets up the environment for the {0} container"
-}
+}}
 module-whatis "{0} {1}"
 
-# For Tcl script use online
+# For Tcl script use only
 set version 4.1.4
 
 prepend-path    PATH    {2}
@@ -141,7 +142,7 @@ if __name__ == "__main__":
         print('Creating module dir if needed...')
         args.module_path = '{}/{}'.format(args.module_path, PROJECT_NAME)
         print(' -', args.module_path)
-        smart_mkdir(args.module_path)
+        _smart_mkdir(args.module_path)
 
     ## At this point we know we can write to our desired prefix and that we have a set of
     ## valid bind paths
@@ -160,7 +161,8 @@ if __name__ == "__main__":
         print('Destination:', container)
         urllib.request.urlretrieve(url, container)
     else:
-        print('WARNING: Container found at', container, 'run with -f to force a re-download')
+        print('WARNING: Container found at', container)
+        print(' ---> run with -f to force a re-download')
 
     ## configure the application launchers
     print('Configuring applications launchers: ')
@@ -173,11 +175,11 @@ if __name__ == "__main__":
         os.system('chmod +x {}'.format(fname))
 
     ## configure the module file
-    if (args.module_path)
+    if (args.module_path):
         fname = '{}/{}'.format(args.module_path, version)
         print('Creating and configuring modulefile:', fname)
-        with open(fname, 'w' as file):
-            modulefile = MODULEFILE.format(app, version, bindir)
+        with open(fname, 'w') as file:
+            modulefile = MODULEFILE.format(PROJECT_NAME, version, bindir)
             file.write(modulefile)
 
     print('Container deployment successful!')
