@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument(
             '-m', '--module-path',
             dest='module_path',
-            help='(opt.) Root module path if you want to install a modulefile'
+            help='(opt.) Root module path if you want to install a modulefile')
 
     args = parser.parse_args()
 
