@@ -47,11 +47,38 @@ else
 fi
 '''
 
+## Generic module file
+MODULEFILE='''[
+#%Module1.0#####################################################################
+##
+## for {0}
+proc ModulesHelp { } {
+    puts stderr "This module sets up the environment for the {0} container"
+}
+module-whatis "{0} {1}"
+
+# For Tcl script use online
+set version 4.1.4
+
+prepend-path    PATH    {2}
+'''
+
 class InvalidArgumentError(Exception):
     pass
 
+def _smart_mkdir(dir):
+    if not os.path.exists(dir):
+        try:
+            os.makedirs(dir)
+        except Exception as e:
+            print('ERROR: unable to create directory', dir)
+            raise e
+    if not os.access(dir, os.W_OK):
+        print('ERROR: We do not have the write privileges to', dir)
+        raise InvalidArgumentError()
 
-def project_version():
+
+def _project_version():
     ## Shell command to get the current git version
     git_version_cmd = 'git symbolic-ref -q --short HEAD || git describe --tags --exact-match'
     ## Strip will remove the leading \n character
@@ -66,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument(
             '-v', '--version',
             dest='version',
-            default=project_version(),
+            default=_project_version(),
             help='(opt.) project version. Default: current git branch/tag.')
     parser.add_argument(
             '-f', '--force',
@@ -78,6 +105,10 @@ if __name__ == "__main__":
             dest='bind_paths',
             action='append',
             help='(opt.) extra bind paths for singularity.')
+    parser.add_argument(
+            '-m', '--module-path',
+            dest='module_path',
+            help='(opt.) Root module path if you want to install a modulefile'
 
     args = parser.parse_args()
 
@@ -102,15 +133,15 @@ if __name__ == "__main__":
     bindir = '{}/bin'.format(args.prefix)
     for dir in [libdir, bindir]:
         print(' -', dir)
-        if not os.path.exists(dir):
-            try:
-                os.makedirs(dir)
-            except Exception as e:
-                print('ERROR: unable to create directory', dir)
-                raise e
-        if not os.access(dir, os.W_OK):
-            print('ERROR: We do not have the write privileges to', dir)
-            raise InvalidArgumentError()
+        _smart_mkdir(dir)
+
+    ## Create our module directory if needed and ensure it is writeble as well
+    if args.module_path:
+        print('Module path', args.module_path)
+        print('Creating module dir if needed...')
+        args.module_path = '{}/{}'.format(args.module_path, PROJECT_NAME)
+        print(' -', args.module_path)
+        smart_mkdir(args.module_path)
 
     ## At this point we know we can write to our desired prefix and that we have a set of
     ## valid bind paths
@@ -140,5 +171,13 @@ if __name__ == "__main__":
             script = LAUNCHER_SCRIPT.format(app, container, bind_directive)
             file.write(script)
         os.system('chmod +x {}'.format(fname))
+
+    ## configure the module file
+    if (args.module_path)
+        fname = '{}/{}'.format(args.module_path, version)
+        print('Creating and configuring modulefile:', fname)
+        with open(fname, 'w' as file):
+            modulefile = MODULEFILE.format(app, version, bindir)
+            file.write(modulefile)
 
     print('Container deployment successful!')
