@@ -1,23 +1,26 @@
 {
   "mc" : {
-    "type" : "pcsim",
+    "type" : "eic",
     "tag" : "disp-ups-97-muon",
     "lumi" : "10",
     "generator" : {
       "type" : "upsilon-10on100",
       "vertex" : {"type" : "origin"},
       "beam" : {
-        "type" : "primary",
-        "particle_type" : "11",
-        "dir" : [ "0", "0", "-1" ],
-        "energy" : "10"
+        "lepton" : {
+          "type" : "constant",
+          "particle_type" : "e-",
+          "dir" : [ "0", "0", "-1" ],
+          "energy" : "10"
+        },
+        "ion" : {
+          "type" : "constant",
+          "particle_type" : "proton",
+          "dir" : [ "0", "0", "1" ],
+          "energy" : "100"
+        }
       },
-      "target" : {
-        "type" : "primary",
-        "particle_type" : "2212",
-        "dir" : [ "0", "0", "1" ],
-        "energy" : "100"
-      },
+      "target": {"type": "primary"},
       "photon" : {
         "type" : "vphoton",
         "y_range" : [ "0.000001", "1" ],
@@ -25,7 +28,7 @@
       },
       "process_0" : {
         "type" : "oleksii_2vmp",
-        "vm_type" : "553",
+        "vm_type" : "Upsilon",
         "T0" : "97",
         "R_vm_c" : "2.164",
         "R_vm_n" : "2.131",

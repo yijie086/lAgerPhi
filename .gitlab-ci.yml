@@ -4,26 +4,27 @@ stages:
   - phase1
   - phase2
 
-liege_docker:
+docker:
   stage: phase1
   tags:
      - eic0 docker
   script:
      - cd containers/docker
      - make login
-     - make release 
+     - make release-cached
 
-liege_singularity:
+singularity:
   stage: phase2
   tags:
      - singularity
+  when: manual
   script:
-     - cp containers/singularity/liege.def .
+     - cp containers/singularity/lager.def .
      - /bin/bash .gitlabci/setup.sh
-     - /bin/bash .gitlabci/build.sh liege.def
+     - /bin/bash .gitlabci/build.sh lager.def
      - mkdir -p build 
-     - cp liege.sif build/.
-     - cp liege.def build/.
+     - cp lager.sif build/.
+     - cp lager.def build/.
 
   # This is where you can save job artifacts
   # https://docs.gitlab.com/ee/user/project/pipelines/job_artifacts.html
@@ -31,5 +32,5 @@ liege_singularity:
   # Don't forget to save your recipes too!
   artifacts:
       paths:
-        - build/liege.sif
-        - build/liege.def
+        - build/lager.sif
+        - build/lager.def

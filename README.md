@@ -1,26 +1,29 @@
-# Lepton-Ion Event Generator (liege)
-Generic event generator to simulate electro- and photo-production off nucleons and nuclei.
+# l/A-event Generator
+This is the Argonne generic l/A-event generator (`lAger`), a flexible MC generator system
+to simulate electro- and photo-production off nucleons and nuclei.
+
+Below you can find an overview of the release versions, as well as a short tutorial and
+copyright notice. If you use lAger to generate data used in a presentation or an article
+in a scientific publication, please cite:
+
+_S. Joosten, Argonne l/A-event Generator (2020), GitLab repository,
+https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
-v3.0.0 Stable release version
-
-## Old (depecrated)
-Liege used to be known as pcsim.
-v2.x (called is capable of simulating collider experiments, was used for first EIC/SoLID projections)
-v1.x was used for the Hall C pentaquark proposal
+* v3.1.0 First stable release version of `lAger`.
 
 # Tutorial
-## Setup of the liege singularity container on your system:
+## Setup of the lager singularity container on your system:
 The default mode to run the generator is through singularity. To setup the generator on
 your system, first ensure singularity is installed. Then follow these instructions:
-1. Clone this repository and checkout the desired stable release (e.g. v3.0.0)
+1. Clone this repository and checkout the desired stable release (e.g. v3.1.0)
 ```bash
-git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git
-cd liege && git checkout v3.0.0
+git clone https://eicweb.phy.anl.gov/monte_carlo/lager.git
+cd lager && git checkout v3.1.0
 ```
-2. Run `deploy.py` script to install the container to a prefix of your choice, e.g. `$HOME/local/opt/liege`.
+2. Run the `deploy.py` script to install the container to a prefix of your choice, e.g. `$HOME/local/opt/lager`.
 ```bash
-./deploy.py $HOME/local/opt/liege
+./deploy.py $HOME/local/opt/lager
 ```
 There are several flags supported by `deploy.py`. To get a full overview you can run `deploy.py -h`.
 Noteable flags:
@@ -29,23 +32,23 @@ Noteable flags:
   - Deploy a different version (e.g. master): `-v master`.
 
 3. If this all executed without issues you should now be able to run the generator from
-   the prefix. You can either refer directly to the launcher under `<PREFIX>/bin/liege` or
+   the prefix. You can either refer directly to the launcher under `<PREFIX>/bin/lager` or
    ideally add `<PREFIX>/bin` to your `$PATH` in your `bashrc` (or equivalent).
 
-4. You can now explore the command line flags for `liege` using the `-h` flag.
+4. You can now explore the command line flags for `lAger` using the `-h` flag.
 ```bash
-liege -h # if you have <PREFIX>/bin in your $PATH
-<PREFIX>/bin/liege -h # if you do not have the prefix in your $PATH
+lager -h # if you have <PREFIX>/bin in your $PATH
+<PREFIX>/bin/lager -h # if you do not have the prefix in your $PATH
 ```
 From now on, for simplicity it will be assumed you have `<PREFIX>/bin` in your `$PATH`. If
-you do not, substitute `liege` for the explicit path `<PREFIX>/bin/liege`.
+you do not, substitute `lager` for the explicit path `<PREFIX>/bin/lager`.
 
 ## Command-line interface
 
 These instructions assume you are working from the singularity container, but mostly also
 apply if you are using the docker container or a local build.
 
-The main command line options for `liege` are:
+The main command line options for `lager` are:
   - configuration json file: `-c your_configuration.json`
   - run number (also random seed, e.g. 1): `-r 1`
   - output directory: `-o $HOME/some_output_directory/`
@@ -65,7 +68,7 @@ parallel.
 
 ## JSON configuration file
 
-`liege` is mainly configured through a JSON file. You can find examples under
+`lAger` is mainly configured through a JSON file. You can find examples under
  `examples`. The entire configuration is placed under the `mc` key. As example, let's
  discuss `solid.ep-2gluon.json`.
 
@@ -78,7 +81,7 @@ parallel.
   "detector": {},
   "reconstruction: {}
 ```
-These are the 6 main fields to setup `liege`:
+These are the 6 main fields to setup `lAger`:
 1. `type`: This can be any name you want to use to identify this simulation. Here we use
    `solid` to identify this as a SoLID simulation. The first part of the output file name
    will be this type key.
@@ -94,7 +97,7 @@ These are the 6 main fields to setup `liege`:
    write out events that fit the reconstruction requirements. 
 
 ### Generator configuration
-The main appeal of `liege` lies into the flexibility of the generator as it is split in smaller
+The main appeal of `lAger` lies into the flexibility of the generator as it is split in smaller
 sub-generators that can be mixed and matched together to form a very powerful generation
 tool. Below you can see the generator setup for a solid-ep simulation performed for the
 SoLID pCDR document.
@@ -103,17 +106,20 @@ SoLID pCDR document.
   "type" : "ep-2gluon",
   "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
   "beam" : {
-    "type" : "primary",
-    "particle_type" : "11",
-    "dir" : [ "0", "0", "1" ],
-    "energy" : "11.0"
+    "lepton": {
+      "type" : "constant",
+      "particle_type" : "e-",
+      "dir" : [ "0", "0", "1" ],
+      "energy" : "11.0"
+    }, 
+    "ion": {
+      "type" : "constant",
+      "particle_type" : "proton",
+      "dir" : [ "0", "0", "-1" ],
+      "energy" : "0.9382721"
+    }
   },
-  "target" : {
-    "type" : "primary",
-    "particle_type" : "2212",
-    "dir" : [ "0", "0", "-1" ],
-    "energy" : "0.9382721"
-  },
+  "target" : {"type": "primary"},
   "photon" : {"type" : "vphoton", "y_range" : [ "0.6", "1" ]},
   "process_0" : {
     "type" : "brodsky_2vmX"
@@ -124,10 +130,10 @@ SoLID pCDR document.
 The generator is modular, and expects 6 keys to be present:
 1. `type`: some name you want to use to refer to this combination of detector elements
 2. `vertex`: your vertex definition, e.g. `linear` or `origin`
-3. `beam`: lepton beam definition. For a `primary` beam it requires particle type, beam
-   3-vector direction and beam energy
-4. `target`: ion beam definition. Primary beam definition is identical to the lepton beam,
-   but more complicated beams are also supported (e.g. nucleon in a nucleus).
+3. `beam`: Lepton and ion beam definitions. For a normal "constant" beam, it requires
+   particle type, beam 3-vector and beam energy.
+4. `target`: Actual target we use. In this case we use the primary ion beam as target
+   (`primary`).
 5. `photon`: Real or virtual photon intensity. Here it is a virtual photon with y between 0.6 and 1. Can be set to "flat" in case you do not want to fold in a photon intensity. For some processes (e.g. DVCS/BH) you may want to work around the photon.
 6. `process_0`: Your process, can be any of the supported processes. Most processes
    currently give sensible results for both electro- and photo-production.
@@ -136,11 +142,29 @@ The generator is modular, and expects 6 keys to be present:
 
 ## Running an example
 To run an example using the `solid.ep-2gluon.json` configuration, go into the `examples`
-directory and execute `liege` (make sure to fill in your desired output directory).
+directory and execute `lAger` (make sure to fill in your desired output directory).
 ```bash
 cd examples
-liege -c solid.ep-2gluon.json -r 1 -o <YOUR_OUTPUT_DIRECTORY>
+lager -c solid.ep-2gluon.json -r 1 -o <YOUR_OUTPUT_DIRECTORY>
 ```
 
-Please use the issue tracker on https://eicweb.phy.anl.gov/monte_carlo/liege to file bug
+Please use the issue tracker on https://eicweb.phy.anl.gov/monte_carlo/lager to file bug
 reports.
+
+# Copyright
+
+`lAger`: General Purpose l/A-event Generator
+Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
+
+`lAger` is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Shoftware Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+`lAger` is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with `lAger`.  If not, see <https://www.gnu.org/licenses/>.

@@ -6,18 +6,21 @@
     "generator" : {
       "type" : "bs-2gluon",
       "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
-      "beam" : {
-        "type" : "primary",
-        "particle_type" : "11",
-        "dir" : [ "0", "0", "1" ],
-        "energy" : "11.0"
+      "beam": {
+        "lepton" : {
+          "type" : "constant",
+          "particle_type" : "e-",
+          "dir" : [ "0", "0", "1" ],
+          "energy" : "11.0"
+        },
+        "ion" : {
+          "type" : "constant",
+          "particle_type" : "proton",
+          "dir" : [ "0", "0", "-1" ],
+          "energy" : "0.9382721"
+        }
       },
-      "target" : {
-        "type" : "primary",
-        "particle_type" : "2212",
-        "dir" : [ "0", "0", "-1" ],
-        "energy" : "0.9382721"
-      },
+      "target": {"type": "primary"},
       "photon" : {
         "type" : "bremsstrahlung_realistic_target",
         "model" : "exact",
@@ -43,8 +46,8 @@
       },
       "process_0" : {
         "type" : "brodsky_2vmX",
-        "vm_type" : "443",
-        "recoil_type" : "2212",
+        "vm_type" : "J/psi",
+        "recoil_type" : "proton",
         "photo_b" : "1.13",
         "photo_c2g" : "6.499e3",
         "photo_c3g" : "0.0",
@@ -59,24 +62,24 @@
         "forward" : {
           "id" : "1",
           "name" : "forward",
-          "type" : "barrel",
+          "type" : "cone",
           "acceptance" : {
             "acceptance" : "1.0",
             "p" : [ "1", "11" ],
             "theta" : [ "8", "16" ],
-            "pid" : [ "-11", "11", "2212" ]
+            "pid" : [ "e+", "e-", "proton" ]
           },
           "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
         },
         "wide" : {
           "id" : "2",
           "name" : "wide",
-          "type" : "barrel",
+          "type" : "cone",
           "acceptance" : {
             "acceptance" : "1.0",
             "p" : [ "1", "11" ],
             "theta" : [ "18.3", "28.5" ],
-            "pid" : [ "-11", "11", "2212" ]
+            "pid" : [ "e+", "e-", "proton" ]
           },
           "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
         }

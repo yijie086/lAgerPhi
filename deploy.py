@@ -1,5 +1,24 @@
 #!/usr/bin/env python3
 
+## lAger: General Purpose l/A-event Generator
+## Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
+## 
+## This file is part of lAger.
+## 
+## lAger is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Shoftware Foundation, either version 3 of the License, or
+## (at your option) any later version.
+## 
+## lAger is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License
+## along with lAger.  If not, see <https://www.gnu.org/licenses/>.
+## 
+
 '''
 Deploy the singularity container built by the CI for this version of the software.
 
@@ -15,11 +34,11 @@ import urllib.request
 
 ## Gitlab group and project/program name. 
 GROUP_NAME='monte_carlo'
-PROJECT_NAME='liege'
-PROGRAMS = ['liege', 'root']
+PROJECT_NAME='lager'
+PROGRAMS = ['lager', 'root']
 
 ## URL for the current container (git tag will be filled in by the script)
-CONTAINER_URL = r'https://eicweb.phy.anl.gov/{0}/{1}/-/jobs/artifacts/{2}/raw/build/{1}.sif?job={1}_singularity'
+CONTAINER_URL = r'https://eicweb.phy.anl.gov/{0}/{1}/-/jobs/artifacts/{2}/raw/build/{1}.sif?job=singularity'
 
 ## Singularity bind directive
 BIND_DIRECTIVE= '-B {0}:{0}'

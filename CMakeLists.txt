@@ -1,18 +1,18 @@
-## CMake project file for liege
+## CMake project file for lager
 
 ################################################################################
-## PROJECT: liege
+## PROJECT: lager
 ################################################################################
 cmake_minimum_required (VERSION 3.8)
-project (liege VERSION 3.0.0 LANGUAGES CXX )
+project (lager VERSION 3.1.0 LANGUAGES CXX )
 # note: the following is old-style cmake. But
-set (LIEGE_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
-set (LIEGE_MINOR_VERSION ${PROJECT_VERSION_MINOR})
-set (LIEGE_PATCH_VERSION ${PROJECT_VERSION_PATCH})
-set (LIEGE_TWEAK_VERSION ${PROJECT_VERSION_TWEAK})
-set (LIEGE_VERSION 
-  ${LIEGE_MAJOR_VERSION}.${LIEGE_MINOR_VERSION}.${LIEGE_PATCH_VERSION})
-set (LIEGE_SOVERSION ${LIEGE_MAJOR_VERSION})
+set (LAGER_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+set (LAGER_MINOR_VERSION ${PROJECT_VERSION_MINOR})
+set (LAGER_PATCH_VERSION ${PROJECT_VERSION_PATCH})
+set (LAGER_TWEAK_VERSION ${PROJECT_VERSION_TWEAK})
+set (LAGER_VERSION 
+  ${LAGER_MAJOR_VERSION}.${LAGER_MINOR_VERSION}.${LAGER_PATCH_VERSION})
+set (LAGER_SOVERSION ${LAGER_MAJOR_VERSION})
 
 option(COMPILE_FOR_BROADWELL "Enable the compiler flags for broadwell avx2 support" OFF)
 option(COMPILE_FOR_HASWELL   "Enable the compiler flags for haswell avx2 support" OFF)
@@ -25,16 +25,18 @@ include(cmake/options.cmake)
 include(cmake/compiler.cmake)
 include(cmake/rpath.cmake)
 
+add_definitions(-DLAGER_VERSION=\"${LAGER_VERSION}\")
+
 ################################################################################
 ## Add subdirectories
 ################################################################################
 set (TARGETS "")
 
-add_subdirectory(liege/core)
-add_subdirectory(liege/physics)
-add_subdirectory(liege/proc)
-add_subdirectory(liege/gen)
-add_subdirectory(program)
+add_subdirectory(src/lager/core)
+add_subdirectory(src/lager/physics)
+add_subdirectory(src/lager/proc)
+add_subdirectory(src/lager/gen)
+add_subdirectory(src/program)
 
 ################################################################################
 ## Prepare the project to be EXPORTed, generate configuration files

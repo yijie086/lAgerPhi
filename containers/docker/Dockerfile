@@ -1,13 +1,14 @@
 FROM  eicweb.phy.anl.gov:4567/containers/image_recipes/root_base:latest
 
 LABEL maintainer="Sylvester Joosten<sjoosten@anl.gov>" \
-      name="liege"        \
+      name="lager"        \
       group="monte_carlo" \
       march="native"      \
       basedist="ubuntu"   \
       base="root_base"
 
 ARG APP_VERSION
+ARG REPO_URL
 
 ENV PYTHONPATH=/usr/local/lib:$PYTHONPATH \
     LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -40,18 +41,18 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  3. Installing: LIEGE" \
+  && echo "  3. Installing: LAGER" \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
-  && git clone https://eicweb.phy.anl.gov/monte_carlo/liege.git \
-  && cd liege \
+  && git clone $REPO_URL lager \
+  && cd lager \
   && git checkout $APP_VERSION \
   && mkdir build && cd build \
   && cmake .. \
   && make -j20 \
   && make install \
   && cd /tmp \
-  && rm -r /tmp/liege
+  && rm -r /tmp/lager
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \

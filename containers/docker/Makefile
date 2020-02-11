@@ -12,7 +12,8 @@ export $(shell sed 's/=.*//' $(cnf))
 SHELL = bash
 # grep the version from the mix file
 VERSION=$(shell bash version.sh)
-
+# get the registry name
+GL_REG_GROUP=$(shell bash registry.sh)
 
 # help will output the help for each task
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
@@ -26,18 +27,18 @@ help: ## This help.
 # ==========================================================================
 #
 build: ## build the image
-	docker build --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --build-arg REPO_URL=$(REPO_URL) -t $(APP_NAME) .
 
 build-nc: ## Build the container without caching (from scratch)
-	docker build --build-arg APP_VERSION=$(APP_VERSION) --no-cache -t $(APP_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --build-arg REPO_URL=$(REPO_URL) --no-cache -t $(APP_NAME) .
 
 build-alt: ## build the container for various machine architectures (broadwell, haswell, knl)
 	@echo 'building for architecture: $(ALT_NAME)'
-	docker build --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --build-arg REPO_URL=$(REPO_URL) -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
 
 build-alt-nc: ## build the container for various machine architectures (broadwell, haswell, knl)
 	@echo 'build-alt-nc: building for architecture: $(ALT_NAME)'
-	docker build --build-arg APP_VERSION=$(APP_VERSION) --no-cache -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
+	docker build --build-arg APP_VERSION=$(APP_VERSION) --build-arg REPO_URL=$(REPO_URL) --no-cache -t $(APP_NAME)_$(ALT_NAME) -f Dockerfile.$(ALT_NAME) .
 
 # ==========================================================================
 #
@@ -74,7 +75,7 @@ tag-alt-version: ## Generate container `{version}` tag
 # ==========================================================================
 #
 login: ## Auto login to AWS-ECR unsing aws-cli
-	@docker login $(REG_URL) -u $(REG_USER) -p $(REG_TOKEN)
+	docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
 	echo "Login COMPLETE"
 
 release: build-nc publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
@@ -94,7 +95,7 @@ publish-latest: ## Publish the `latest` taged container to ECR
 	docker rmi  $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):latest
 
 publish-version: tag-version ## Publish the `{version}` taged container to ECR
-	@echo 'publish latest to $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)'
+	@echo 'publish $(VERSION) to $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)'
 	docker tag $(APP_NAME):latest $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)
 	docker push $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)
 	docker rmi  $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)
