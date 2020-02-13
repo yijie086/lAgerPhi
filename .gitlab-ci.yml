@@ -11,7 +11,7 @@ docker:
   script:
      - cd containers/docker
      - make login
-     - make release-cached
+     - make release
 
 singularity:
   stage: phase2
