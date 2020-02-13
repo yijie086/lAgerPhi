@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: eicweb.phy.anl.gov:4567/monte_carlo/lager/lager:latest
+From: eicweb.phy.anl.gov:4567/monte_carlo/lager/lager:3.1.1
 
 %help
   lager quarkonium generator container
