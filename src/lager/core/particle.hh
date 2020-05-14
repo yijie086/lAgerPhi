@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_CORE_PARTICLE_LOADED
 #define LAGER_CORE_PARTICLE_LOADED
@@ -49,7 +49,8 @@ public:
     BEAM = 11,
     SECONDARY_BEAM = 12,
     SCAT = 13,
-    SPECTATOR = 14,
+    RECOIL = 14,
+    SPECTATOR = 15,
     UNSTABLE = 21,
     UNSTABLE_SCHC = 22,
     FINAL = 30,
@@ -121,7 +122,8 @@ public:
   // final state particles (labeled FINAL or SCAT)
   bool final_state() const {
     return (status_ == status_code::FINAL || status_ == status_code::SCAT ||
-            status_ == status_code::SPECTATOR);
+            status_ == status_code::SPECTATOR ||
+            status_ == status_code::RECOIL);
   }
 
   // particle properties

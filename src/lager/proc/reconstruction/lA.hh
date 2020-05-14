@@ -46,6 +46,8 @@ private:
   const bool veto_leading_{false};
   const bool require_scat_{false};
   const bool veto_scat_{false};
+  const bool require_recoil_{false};
+  const bool veto_recoil_{false};
 };
 
 } // namespace reconstruction

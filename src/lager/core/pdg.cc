@@ -53,17 +53,17 @@ public:
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_wang_52p));
     db_->AddParticle("Pc_wang_52m", "P_{c} (5/2-)", 0, false, 0, 3,
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_wang_52m));
-    db_->AddParticle("Pc_wang_32p", "P_{c} (5/2+)", 0, false, 0, 3,
+    db_->AddParticle("Pc_wang_32p", "P_{c} (3/2+)", 0, false, 0, 3,
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_wang_32p));
-    db_->AddParticle("Pc_wang_32m", "P_{c} (5/2-)", 0, false, 0, 3,
+    db_->AddParticle("Pc_wang_32m", "P_{c} (3/2-)", 0, false, 0, 3,
                      "pentaquark", static_cast<int32_t>(pdg_id::Pc_wang_32m));
     db_->AddParticle("Pc_iso_52p", "P_{c} (5/2+)", 0, false, 0, 3, "pentaquark",
                      static_cast<int32_t>(pdg_id::Pc_iso_52p));
     db_->AddParticle("Pc_iso_52m", "P_{c} (5/2-)", 0, false, 0, 3, "pentaquark",
                      static_cast<int32_t>(pdg_id::Pc_iso_52m));
-    db_->AddParticle("Pc_iso_32p", "P_{c} (5/2+)", 0, false, 0, 3, "pentaquark",
+    db_->AddParticle("Pc_iso_32p", "P_{c} (3/2+)", 0, false, 0, 3, "pentaquark",
                      static_cast<int32_t>(pdg_id::Pc_iso_32p));
-    db_->AddParticle("Pc_iso_32m", "P_{c} (5/2-)", 0, false, 0, 3, "pentaquark",
+    db_->AddParticle("Pc_iso_32m", "P_{c} (3/2-)", 0, false, 0, 3, "pentaquark",
                      static_cast<int32_t>(pdg_id::Pc_iso_32m));
     // Unknown
     db_->AddParticle("Unknown", "Unknown", 0, true, 0, 0, "Unknown",

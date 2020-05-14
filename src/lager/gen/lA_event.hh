@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_GEN_LA_EVENT_LOADED
 #define LAGER_GEN_LA_EVENT_LOADED
@@ -96,7 +96,7 @@ public:
                   const int parent2 = -1);
   int add_leading(const particle& part);
   // add recoil particle
-  int add_recoil(const particle& part, const int parent1,
+  int add_recoil(particle part, const int parent1,
                  const int parent2 = -1);
   int add_recoil(const particle& part);
 
@@ -295,8 +295,9 @@ inline int lA_event::add_leading(const particle& part, const int parent1,
 inline int lA_event::add_leading(const particle& part) {
   return add_leading(part, photon_index(), target_index());
 }
-inline int lA_event::add_recoil(const particle& part, const int parent1,
+inline int lA_event::add_recoil(particle part, const int parent1,
                                 const int parent2) {
+  part.update_status(particle::status_code::RECOIL);
   recoil_index_ = add_daughter(part, parent1, parent2);
   return recoil_index();
 }
