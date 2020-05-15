@@ -1,31 +1,33 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
-#include <TFile.h>
-#include <TRandom3.h>
-#include <fstream>
 #include <lager/core/configuration.hh>
 #include <lager/core/framework.hh>
 #include <lager/core/logger.hh>
 #include <lager/core/progress_meter.hh>
 #include <lager/gen/lA_event.hh>
 #include <lager/gen/lA_generator.hh>
+
+#include <HepMC/IO_GenEvent.h>
+#include <TFile.h>
+#include <TRandom3.h>
+#include <fstream>
 #include <memory>
 
 // TODO fix this
@@ -103,12 +105,20 @@ int run_mc(const configuration& cf, const std::string& output) {
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
 
+  // check if we want hepmc output as well
+  std::unique_ptr<HepMC::IO_GenEvent> ohepmc;
+  auto do_hepmc = cf.get_optional<bool>("output_hepmc");
+  if (do_hepmc && *do_hepmc) {
+    LOG_INFO("lager", "Also outputting text output for HepMC");
+    ohepmc =
+        std::make_unique<HepMC::IO_GenEvent>((output + ".hepmc.dat").c_str());
+  }
   // check if we want gemc output as well
-  std::unique_ptr<std::ofstream> olund;
+  std::unique_ptr<std::ofstream> ogemc;
   auto do_gemc = cf.get_optional<bool>("output_gemc");
   if (do_gemc && *do_gemc) {
     LOG_INFO("lager", "Also outputting text output for GEMC");
-    olund = std::make_unique<std::ofstream>(output + ".gemc.dat");
+    ogemc = std::make_unique<std::ofstream>(output + ".gemc.dat");
   }
   // check if we want simc, in similar vein
   std::unique_ptr<std::ofstream> osimc;
@@ -118,7 +128,8 @@ int run_mc(const configuration& cf, const std::string& output) {
     osimc = std::make_unique<std::ofstream>(output + ".simc.dat");
   }
 
-  lA_out evbuf{ofile, std::move(olund), std::move(osimc), "lAger"};
+  lA_out evbuf{ofile, std::move(ohepmc), std::move(ogemc), std::move(osimc),
+               "lAger"};
   // get event generator
   LOG_INFO("lager", "Initializing the event generator");
   lA_generator gen{cf, "generator", r};

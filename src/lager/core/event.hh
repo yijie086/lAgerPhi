@@ -1,35 +1,39 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_CORE_EVENT_LOADED
 #define LAGER_CORE_EVENT_LOADED
+
+#include <lager/core/assert.hh>
+#include <lager/core/event.hh>
+#include <lager/core/generator.hh>
+#include <lager/core/particle.hh>
 
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
+
+#include <HepMC/IO_GenEvent.h>
+
 #include <fstream>
 #include <memory>
-#include <lager/core/assert.hh>
-#include <lager/core/event.hh>
-#include <lager/core/generator.hh>
-#include <lager/core/particle.hh>
 #include <string>
 #include <vector>
 
@@ -172,12 +176,17 @@ private:
 //      event type, the main event branches are added by this base class
 // =============================================================================
 
+// TODO needs refactoring of the output plugins
+//      --> migrate to config-based approach rather
+//          than hardcoded compontents
 namespace lager {
 class event_out {
 public:
   constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
 
-  event_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
+  event_out(std::shared_ptr<TFile> f,
+            std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+            std::unique_ptr<std::ofstream> ogemc,
             std::unique_ptr<std::ofstream> osimc, const std::string& name);
   ~event_out() { tree_->AutoSave(); }
 
@@ -193,7 +202,8 @@ public:
   TTree* tree() { return tree_; }
 
 private:
-  void write_lund(const event& e);
+  void write_hepmc(const event& e);
+  void write_gemc(const event& e);
   void write_simc(const event& e);
 
   // clear particle portion of the event buffer
@@ -209,8 +219,9 @@ private:
   // file and tree
   std::shared_ptr<TFile> file_;
   TTree* tree_; // raw pointer because the TFile will have ownership of the tree
-  std::unique_ptr<std::ofstream> olund_; // LUND output stream
-  std::unique_ptr<std::ofstream> osimc_; // SIMC output stream
+  std::unique_ptr<HepMC::IO_GenEvent> ohepmc_; // HEPMC output stream
+  std::unique_ptr<std::ofstream> ogemc_;       // GEMC output stream
+  std::unique_ptr<std::ofstream> osimc_;       // SIMC output stream
 
   // event data
   int32_t index_{0};
@@ -291,22 +302,22 @@ inline int event::add_tbeam(const particle& p) {
 }
 inline particle& event::ibeam() {
   tassert(ibeam_index_ >= 0, "trying to access beam data, but no beam "
-                            "data present in the event.");
+                             "data present in the event.");
   return part_[ibeam_index_];
 }
 inline const particle& event::ibeam() const {
   tassert(ibeam_index_ >= 0, "trying to access beam data, but no beam "
-                            "data present in the event.");
+                             "data present in the event.");
   return part_[ibeam_index_];
 }
 inline particle& event::tbeam() {
   tassert(tbeam_index_ >= 0, "trying to access target data, but no target "
-                              "data present in the event.");
+                             "data present in the event.");
   return part_[tbeam_index_];
 }
 inline const particle& event::tbeam() const {
   tassert(tbeam_index_ >= 0, "trying to access target data, but no target "
-                              "data present in the event.");
+                             "data present in the event.");
   return part_[tbeam_index_];
 }
 inline double event::s() const {

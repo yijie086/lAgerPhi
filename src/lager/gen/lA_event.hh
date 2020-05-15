@@ -20,10 +20,13 @@
 #ifndef LAGER_GEN_LA_EVENT_LOADED
 #define LAGER_GEN_LA_EVENT_LOADED
 
-#include <fstream>
 #include <lager/core/event.hh>
 #include <lager/core/generator.hh>
 #include <lager/gen/initial/data.hh>
+
+#include <HepMC/IO_GenEvent.h>
+#include <fstream>
+#include <memory>
 
 namespace lager {
 
@@ -96,8 +99,7 @@ public:
                   const int parent2 = -1);
   int add_leading(const particle& part);
   // add recoil particle
-  int add_recoil(particle part, const int parent1,
-                 const int parent2 = -1);
+  int add_recoil(particle part, const int parent1, const int parent2 = -1);
   int add_recoil(const particle& part);
 
   // get photon, scat, leading and recoil info
@@ -191,7 +193,8 @@ private:
 // =============================================================================
 class lA_out : public event_out {
 public:
-  lA_out(std::shared_ptr<TFile> f, std::unique_ptr<std::ofstream> olund,
+  lA_out(std::shared_ptr<TFile> f, std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+         std::unique_ptr<std::ofstream> ogemc,
          std::unique_ptr<std::ofstream> osimc, const std::string& name);
 
   void push(const lA_event& e);

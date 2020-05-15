@@ -117,13 +117,28 @@ public:
   void update_status(const status_code ns) { status_ = ns; }
   bool stable() const {
     return (status_ != status_code::UNSTABLE &&
-            status_ != status_code::UNSTABLE_SCHC);
+            status_ != status_code::UNSTABLE_SCHC &&
+            status_ != status_code::DECAYED &&
+            status_ != status_code::DECAYED_SCHC);
   }
-  // final state particles (labeled FINAL or SCAT)
+  bool decayed() const {
+    return (status_ != status_code::DECAYED &&
+            status_ != status_code::DECAYED_SCHC);
+  }
+
+  // final state particles (labeled FINAL or SCAT, RECOIL or SPECTATOR)
+  // Also includes undecayed unstable particles
   bool final_state() const {
     return (status_ == status_code::FINAL || status_ == status_code::SCAT ||
             status_ == status_code::SPECTATOR ||
-            status_ == status_code::RECOIL);
+            status_ == status_code::RECOIL ||
+            status_ == status_code::UNSTABLE ||
+            status_ == status_code::UNSTABLE_SCHC);
+  }
+
+  bool documentation() const {
+    return (status_ == status_code::INFO) ||
+           (status_ == status_code::INFO_PARENT_CM);
   }
 
   // particle properties
@@ -244,9 +259,8 @@ public:
   void update_status(const int ns) { status_ = ns; }
 
   const particle& generated() const {
-    tassert(
-        generated_,
-        "Associated generated particle to this detected particle is a nullptr");
+    tassert(generated_, "Associated generated particle to this detected "
+                        "particle is a nullptr");
     return *generated_;
   }
 
