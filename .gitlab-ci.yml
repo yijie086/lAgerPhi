@@ -1,4 +1,4 @@
-image: eicweb.phy.anl.gov:4567/containers/image_recipes/root_base:latest
+image: eicweb.phy.anl.gov:4567/containers/image_recipes/ubuntu_dind:latest
 #
 stages:
   - phase1
@@ -14,13 +14,14 @@ docker:
      - make release
 
 singularity:
+  image: eicweb.phy.anl.gov:4567/containers/image_recipes/ubuntu_dind:latest
   stage: phase2
   tags:
      - singularity
-  when: manual
+  #when: manual
   script:
      - cp containers/singularity/lager.def .
-     - /bin/bash .gitlabci/setup.sh
+    # - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh lager.def
      - mkdir -p build 
      - cp lager.sif build/.
