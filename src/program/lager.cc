@@ -35,6 +35,7 @@
 #include <lager/gen/initial/photon_gen.hh>
 #include <lager/gen/initial/target_gen.hh>
 #include <lager/gen/initial/vertex_gen.hh>
+#include <lager/gen/lA/lee_4He_jpsi_grid.hh>
 #include <lager/gen/lA/brodsky_2vmX.hh>
 #include <lager/gen/lA/oleksii_2vmp.hh>
 #include <lager/gen/lA/oleksii_jpsi_bh.hh>
@@ -66,6 +67,7 @@ void write_value_to_file(std::shared_ptr<TFile> ofile, const std::string& name,
 int run_mc(const configuration& cf, const std::string& output) {
 
   // TODO fix this
+  FACTORY_REGISTER2(lA::generator, lA::lee_4He_jpsi_grid, "lee_4He_jpsi_grid");
   FACTORY_REGISTER2(lA::generator, lA::brodsky_2vmX, "brodsky_2vmX");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_2vmp, "oleksii_2vmp");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_jpsi_bh, "oleksii_jpsi_bh");
