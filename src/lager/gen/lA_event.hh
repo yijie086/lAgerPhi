@@ -24,7 +24,7 @@
 #include <lager/core/generator.hh>
 #include <lager/gen/initial/data.hh>
 
-#include <HepMC/IO_GenEvent.h>
+#include <HepMC3/WriterAscii.h>
 #include <fstream>
 #include <memory>
 
@@ -193,7 +193,7 @@ private:
 // =============================================================================
 class lA_out : public event_out {
 public:
-  lA_out(std::shared_ptr<TFile> f, std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+  lA_out(std::shared_ptr<TFile> f, std::unique_ptr<HepMC3::WriterAscii> ohepmc,
          std::unique_ptr<std::ofstream> ogemc,
          std::unique_ptr<std::ofstream> osimc, const std::string& name);
 

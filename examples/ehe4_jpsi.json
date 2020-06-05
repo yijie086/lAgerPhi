@@ -1,5 +1,6 @@
 {
   "mc" : {
+    "output_hepmc": "true",
     "type" : "test",
     "tag" : "",
     "lumi" : "1000",

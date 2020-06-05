@@ -25,7 +25,7 @@ namespace lager {
 // IMPLEMENTATION: event_out
 // =============================================================================
 lA_out::lA_out(std::shared_ptr<TFile> f,
-               std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+               std::unique_ptr<HepMC3::WriterAscii> ohepmc,
                std::unique_ptr<std::ofstream> ogemc,
                std::unique_ptr<std::ofstream> osimc, const std::string& name)
     : event_out{f, std::move(ohepmc), std::move(ogemc), std::move(osimc),

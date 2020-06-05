@@ -24,7 +24,7 @@
 #include <lager/gen/lA_event.hh>
 #include <lager/gen/lA_generator.hh>
 
-#include <HepMC/IO_GenEvent.h>
+#include <HepMC3/WriterAscii.h>
 #include <TFile.h>
 #include <TRandom3.h>
 #include <fstream>
@@ -108,12 +108,12 @@ int run_mc(const configuration& cf, const std::string& output) {
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
 
   // check if we want hepmc output as well
-  std::unique_ptr<HepMC::IO_GenEvent> ohepmc;
+  std::unique_ptr<HepMC3::WriterAscii> ohepmc;
   auto do_hepmc = cf.get_optional<bool>("output_hepmc");
   if (do_hepmc && *do_hepmc) {
     LOG_INFO("lager", "Also outputting text output for HepMC");
     ohepmc =
-        std::make_unique<HepMC::IO_GenEvent>((output + ".hepmc.dat").c_str());
+        std::make_unique<HepMC3::WriterAscii>((output + ".hepmc.dat").c_str());
   }
   // check if we want gemc output as well
   std::unique_ptr<std::ofstream> ogemc;
