@@ -32,6 +32,13 @@ import os
 import argparse
 import urllib.request
 
+## copy-paste to disabel SSL verification as it fails on 
+## some HPC systems
+import os, ssl
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None)):
+    ssl._create_default_https_context = ssl._create_unverified_context
+## end of copy-paste
+
 ## Gitlab group and project/program name. 
 GROUP_NAME='monte_carlo'
 PROJECT_NAME='lager'
