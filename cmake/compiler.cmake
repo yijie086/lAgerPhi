@@ -56,10 +56,15 @@ include_directories(${GSL_INCLUDE_DIR})
 ## HepMC 2
 find_package(HepMC REQUIRED)
 include_directories(${HEPMC_INCLUDE_DIR})
+
+## HepMC 3
+find_package(HepMC3 REQUIRED)
+include_directories(${HEPMC3_INCLUDE_DIR})
+
+
 ## PHOTOS
 find_package(photospp REQUIRED)
 include_directories(${PHOTOSPP_INCLUDE_DIRS})
-message("${PHOTOSPP_INCLUDE_DIRS}/..")
 
 #if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #  add_to_rpath_macos("${ROOT_LIBRARY_DIR}")

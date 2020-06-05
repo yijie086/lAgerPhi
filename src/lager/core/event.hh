@@ -30,7 +30,7 @@
 #include <TParticle.h>
 #include <TTree.h>
 
-#include <HepMC/IO_GenEvent.h>
+#include <HepMC3/WriterAscii.h>
 
 #include <fstream>
 #include <memory>
@@ -185,7 +185,7 @@ public:
   constexpr static const int32_t PARTICLE_BUFFER_SIZE{1000};
 
   event_out(std::shared_ptr<TFile> f,
-            std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+            std::unique_ptr<HepMC3::WriterAscii> ohepmc,
             std::unique_ptr<std::ofstream> ogemc,
             std::unique_ptr<std::ofstream> osimc, const std::string& name);
   ~event_out() { tree_->AutoSave(); }
@@ -219,7 +219,7 @@ private:
   // file and tree
   std::shared_ptr<TFile> file_;
   TTree* tree_; // raw pointer because the TFile will have ownership of the tree
-  std::unique_ptr<HepMC::IO_GenEvent> ohepmc_; // HEPMC output stream
+  std::unique_ptr<HepMC3::WriterAscii> ohepmc_; // HEPMC output stream
   std::unique_ptr<std::ofstream> ogemc_;       // GEMC output stream
   std::unique_ptr<std::ofstream> osimc_;       // SIMC output stream
 

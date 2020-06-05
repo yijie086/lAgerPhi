@@ -21,7 +21,9 @@
 #include <cstring>
 #include <lager/core/logger.hh>
 
-#include <HepMC/GenEvent.h>
+#include <HepMC3/GenEvent.h>
+#include <HepMC3/GenParticle.h>
+#include <HepMC3/GenVertex.h>
 
 // =============================================================================
 // IMPLEMENTATION: event_out
@@ -29,7 +31,7 @@
 
 namespace lager {
 event_out::event_out(std::shared_ptr<TFile> f,
-                     std::unique_ptr<HepMC::IO_GenEvent> ohepmc,
+                     std::unique_ptr<HepMC3::WriterAscii> ohepmc,
                      std::unique_ptr<std::ofstream> ogemc,
                      std::unique_ptr<std::ofstream> osimc,
                      const std::string& name)
@@ -98,9 +100,9 @@ void event_out::write_hepmc(const event& e) {
   // event index
   static size_t index = 0;
   // create event
-  HepMC::GenEvent hevt{e.process(), index++};
+  HepMC3::GenEvent hevt(HepMC3::Units::GEV, HepMC3::Units::CM);
   // get vector of HepMC particles corresponding to our particles
-  std::vector<HepMC::GenParticle*> hepmc_part;
+  std::vector<HepMC3::GenParticlePtr> hepmc_part;
   std::transform(e.part().begin(), e.part().end(),
                  std::back_inserter(hepmc_part), [](const particle& part) {
                    // final state: 1
@@ -111,10 +113,10 @@ void event_out::write_hepmc(const event& e) {
                            ? 1
                            : (part.decayed() ? 2
                                              : (!part.documentation() ? 3 : 0));
-                   return new HepMC::GenParticle(
-                       HepMC::FourVector(part.p().X(), part.p().Y(),
-                                         part.p().Z(), part.p().E()),
-                       part.type<int>(), status);
+                   return HepMC3::GenParticlePtr(new HepMC3::GenParticle(
+                       HepMC3::FourVector(part.p().X(), part.p().Y(),
+                                          part.p().Z(), part.p().E()),
+                       part.type<int>(), status));
                  });
   // record of "processed" particles. A particle is processed once it is added
   // as incoming leg of a vertex
@@ -136,8 +138,8 @@ void event_out::write_hepmc(const event& e) {
     //    In principle the vertex member of a particle is the start vertex,
     //    so we get the relevant vertex from the first daughter particle instead
     auto raw_vertex = first_daughter.vertex();
-    auto vx = new HepMC::GenVertex(HepMC::FourVector(
-        raw_vertex.X(), raw_vertex.Y(), raw_vertex.Z(), raw_vertex.T()));
+    auto vx = HepMC3::GenVertexPtr(new HepMC3::GenVertex(HepMC3::FourVector(
+        raw_vertex.X(), raw_vertex.Y(), raw_vertex.Z(), raw_vertex.T())));
     // 3. Attach incoming lines to this vertex and mark them as "finished"
     //    Use the first daughter to get the full list of incoming lines
     for (int iin = first_daughter.parent_first();
@@ -153,7 +155,7 @@ void event_out::write_hepmc(const event& e) {
     hevt.add_vertex(vx);
   }
   // Now we are ready to write out the event
-  ohepmc_->write_event(&hevt);
+  ohepmc_->write_event(hevt);
 }
 
 void event_out::write_gemc(const event& e) {
