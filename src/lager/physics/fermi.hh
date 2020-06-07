@@ -17,40 +17,23 @@
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef LAGER_GEN_INITIAL_BEAM_GEN_LOADED
-#define LAGER_GEN_INITIAL_BEAM_GEN_LOADED
+#ifndef LAGER_PHYSICS_FERMI_LOADED
+#define LAGER_PHYSICS_FERMI_LOADED
 
-#include <lager/core/generator.hh>
-#include <lager/core/particle.hh>
-#include <lager/gen/initial/data.hh>
-#include <lager/gen/initial/generator.hh>
+// =============================================================================
+// Fermi momentum distributions
+// =============================================================================
 
 namespace lager {
-namespace initial {
+namespace physics {
 
 // =============================================================================
-// constant_beam: primary beam with constant energy
-//
-// constant 4-vector beam
-// =============================================================================
-class constant_beam : public beam_generator {
-public:
-  constant_beam(const configuration& cf, const string_path& path,
-                std::shared_ptr<TRandom> r);
-  virtual beam generate(const vertex& vx) {
-    particle ret = beam_;
-    ret.vertex() = vx;
-    return {ret};
-  }
-  virtual double max_cross_section() const { return 1.; }
-  virtual double phase_space() const { return 1.; }
+// 1987 NBS Fermi-momentum implementation
+// By J.S O'Connell and J.W. Lightbody, Jr
+// See fermi87f for full attribution
+double fermi87(double P, int A);
 
-protected:
-  particle get_beam(const configuration& cf, const string_path& path) const;
-  const particle beam_;
-};
-
-} // namespace initial
-} // namespace lager
+} // physics
+} // lager
 
 #endif
