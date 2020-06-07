@@ -20,7 +20,6 @@
 #ifndef LAGER_GEN_INITIAL_BEAM_GEN_LOADED
 #define LAGER_GEN_INITIAL_BEAM_GEN_LOADED
 
-#include <lager/core/factory.hh>
 #include <lager/core/generator.hh>
 #include <lager/core/particle.hh>
 #include <lager/gen/initial/data.hh>

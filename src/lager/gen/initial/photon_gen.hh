@@ -21,7 +21,6 @@
 #define LAGER_GEN_INITIAL_PHOTON_GEN_LOADED
 
 #include <TRandom.h>
-#include <lager/core/factory.hh>
 #include <lager/core/generator.hh>
 #include <lager/core/particle.hh>
 #include <lager/gen/initial/data.hh>
