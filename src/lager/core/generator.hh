@@ -183,9 +183,13 @@ public:
 
   event_generator(const configuration& cf, const string_path& path,
                   std::shared_ptr<TRandom> r)
-      : base_type{std::move(r)}, configurable{cf, path} {
+      : base_type{std::move(r)}
+      , configurable{cf, path}
+      , penalty_{cf.get<double>(path / "advanced/penalty", 1.0)} {
     init_process_list();
     init_lumi(cf);
+    LOG_INFO("event_generator",
+             "advanced/penalty: " + std::to_string(penalty_));
   }
 
   virtual std::vector<event_type> generate() {
@@ -228,22 +232,30 @@ public:
             LOG_JUNK(process.name,
                      "Cross section <= 0, skipping this trial cycle");
             continue;
-          } else if (event.cross_section() > initial_max_ * process.max) {
+          } else if (event.cross_section() >
+                     initial_max_ * process.max * penalty_) {
             LOG_WARNING(
                 process.name,
                 "Cross section maximum exceeded (" +
                     std::to_string(event.cross_section()) + " > " +
-                    std::to_string(initial_max_ * process.max) +
-                    "), please check "
-                    "the cross section maximum calculation. The MC "
-                    "distributions will be invalid if this happens too often.");
+                    std::to_string(initial_max_ * process.max * penalty_) +
+                    "), the distributions will be invalid if this "
+                    "happens too often.");
+            LOG_WARNING(
+                process.name,
+                "To mitigate, either increase "
+                "the configuration paramater generator/advanced/penalty "
+                "(which gets multiplied with the cross section maximum "
+                "during the accept-reject step), or fix the cross "
+                "section maximum estimation in the actual Physics "
+                "module.");
           }
           // accept/reject this event
           LOG_JUNK(process.name,
                    "Testing accept reject for xs: " +
                        std::to_string(event.cross_section()) + " (max: " +
                        std::to_string(process.max * initial_max_) + ")");
-          if (this->rng()->Uniform(0, initial_max_ * process.max) <
+          if (this->rng()->Uniform(0, initial_max_ * process.max * penalty_) <
               event.cross_section()) {
             LOG_JUNK(process.name, "Event accepted!");
             event.update_process(process.id);
@@ -432,6 +444,10 @@ private:
         , gen{g} {}
   };
 
+  // advanced settings
+  const double penalty_; // AR max penalty factor
+
+  // Generator state
   double initial_ps_{1.};   // initial state generator phase space
   double initial_max_{1.};  // initial state generator max cross section
   double proc_volume_{-1.}; // largest generation volume in process_list

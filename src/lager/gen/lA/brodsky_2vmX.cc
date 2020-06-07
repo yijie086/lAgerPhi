@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include "brodsky_2vmX.hh"
 #include <TMath.h>
@@ -135,7 +135,7 @@ double brodsky_2vmX::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
+  const particle target{"proton",
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set
@@ -160,12 +160,13 @@ double brodsky_2vmX::calc_max_xsec(const configuration& cf) const {
 //  * Q2 = 0 for the upper t bound (tmin)
 // =============================================================================
 interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
+  // hack
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
+  const particle target{"proton",
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set
@@ -178,6 +179,7 @@ interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
   const double M_nu = (photon.p()).Dot(target.p());
   const double Q2max = target.mass2() + 2 * M_nu - W2max;
   const double Q2min = 0.;
+
   // calculate the corresponding t range
   // in case of particles with non-zero width, we use M - 4 x sigma
   //

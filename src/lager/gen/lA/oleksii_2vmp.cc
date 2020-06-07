@@ -320,7 +320,7 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
+  const particle target{pdg_id::p,
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set
@@ -355,7 +355,7 @@ double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
+  const particle target{pdg_id::p,
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set
@@ -391,7 +391,7 @@ interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
+  const particle target{pdg_id::p,
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set

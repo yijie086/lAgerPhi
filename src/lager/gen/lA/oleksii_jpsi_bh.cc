@@ -157,10 +157,9 @@ oleksii_jpsi_bh::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{
-      cf.get<std::string>("beam/ion/particle_type"),
-      cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-      cf.get<double>("beam/ion/energy")};
+  const particle target{pdg_id::p,
+                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
+                        cf.get<double>("beam/ion/energy")};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)

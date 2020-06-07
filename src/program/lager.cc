@@ -35,8 +35,8 @@
 #include <lager/gen/initial/photon_gen.hh>
 #include <lager/gen/initial/target_gen.hh>
 #include <lager/gen/initial/vertex_gen.hh>
-#include <lager/gen/lA/lee_4He_jpsi_grid.hh>
 #include <lager/gen/lA/brodsky_2vmX.hh>
+#include <lager/gen/lA/lee_4He_jpsi_grid.hh>
 #include <lager/gen/lA/oleksii_2vmp.hh>
 #include <lager/gen/lA/oleksii_jpsi_bh.hh>
 #include <lager/gen/lA/resonance_qpq.hh>
@@ -80,6 +80,7 @@ int run_mc(const configuration& cf, const std::string& output) {
                     "constant");
   FACTORY_REGISTER2(initial::target_generator, initial::primary_target,
                     "primary");
+  FACTORY_REGISTER2(initial::target_generator, initial::fermi87, "fermi87");
 
   FACTORY_REGISTER2(initial::photon_generator, initial::no_photon, "no-photon");
   FACTORY_REGISTER2(initial::photon_generator, initial::bremsstrahlung,
