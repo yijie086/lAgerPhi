@@ -20,7 +20,6 @@
 #ifndef LAGER_GEN_BEAM_VERTEX_GEN_LOADED
 #define LAGER_GEN_BEAM_VERTEX_GEN_LOADED
 
-#include <lager/core/factory.hh>
 #include <lager/core/generator.hh>
 #include <lager/core/interval.hh>
 #include <lager/core/particle.hh>

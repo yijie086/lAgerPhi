@@ -1,32 +1,32 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_CORE_GENERATOR_LOADED
 #define LAGER_CORE_GENERATOR_LOADED
 
 #include <TRandom.h>
 #include <algorithm>
-#include <memory>
 #include <lager/core/assert.hh>
 #include <lager/core/configuration.hh>
 #include <lager/core/factory.hh>
 #include <lager/core/interval.hh>
+#include <memory>
 
 namespace lager {
 
@@ -118,7 +118,7 @@ public:
 
   static factory<process_generator, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
-      factory;
+      factory_instance;
 
   process_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 
@@ -128,7 +128,7 @@ public:
 template <class Event, class InitialData>
 factory<process_generator<Event, InitialData>, const configuration&,
         const string_path&, std::shared_ptr<TRandom>>
-    process_generator<Event, InitialData>::factory;
+    process_generator<Event, InitialData>::factory_instance;
 
 // =============================================================================
 // Base class for all event_processors (detectors/decay_handlers/...)
@@ -256,8 +256,9 @@ public:
       } while (event_list.empty());
 
       for (auto& event : event_list) {
-        LOG_JUNK("generator", "Processing event (process " +
-                                  std::to_string(event.process()) + ")");
+        LOG_JUNK("generator",
+                 "Processing event (process " +
+                     std::to_string(event.process()) + ")");
         build_event(event);
         if (event.weight() > 0) {
           LOG_JUNK("generator",
@@ -379,8 +380,9 @@ private:
                   "Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
             {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
-        LOG_DEBUG(path.str(), "Cross section max: " +
-                                  std::to_string(process_list_.back().max));
+        LOG_DEBUG(path.str(),
+                  "Cross section max: " +
+                      std::to_string(process_list_.back().max));
         LOG_DEBUG(path.str(),
                   "Phase space: " + std::to_string(process_list_.back().ps));
         // check if we have a larger generation volume, update if needed
