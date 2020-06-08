@@ -28,7 +28,20 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  2. Installing project dependency: PHOTOS++" \
+  && echo "  2. Installing project dependency: hepmc3" \
+  && echo "  -------------------------------------------------" \
+  && cd /tmp \
+  && git clone https://gitlab.cern.ch/hepmc/HepMC3.git hepmc3 \
+  && mkdir build-hepmc3 && cd build-hepmc3 \
+  && cmake ../hepmc3 -DROOT_DIR=`root-config --prefix` \
+  && make -j20 \
+  && make install \
+  && cd /tmp \
+  && rm -r /tmp/*hepmc3
+
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  3. Installing project dependency: PHOTOS++" \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
   && git clone https://eicweb.phy.anl.gov/monte_carlo/photospp.git \
@@ -41,7 +54,7 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  3. Installing: LAGER" \
+  && echo "  4. Installing: LAGER" \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
   && git clone $REPO_URL lager \
@@ -56,7 +69,7 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  4. Slimming down image" \
+  && echo "  5. Slimming down image" \
   && echo "  -------------------------------------------------" \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \

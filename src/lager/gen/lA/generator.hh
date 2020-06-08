@@ -20,7 +20,6 @@
 #ifndef LAGER_GEN_LA_GENERATOR_LOADED
 #define LAGER_GEN_LA_GENERATOR_LOADED
 
-#include <lager/core/factory.hh>
 #include <lager/core/generator.hh>
 #include <lager/gen/lA_event.hh>
 

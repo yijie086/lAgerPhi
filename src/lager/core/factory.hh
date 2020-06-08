@@ -46,16 +46,17 @@ public:
 #define FACTORY_REGISTER(gen, class, name)                                     \
   namespace {                                                                  \
   struct proxy_##class {                                                       \
-    proxy_##class() { gen::factory.add<class>(name); }                         \
+    proxy_##class() { gen::factory_instance.add<class>(name); }                \
   };                                                                           \
   const proxy_##class p_##class;                                               \
   }
-#define FACTORY_REGISTER2(gen, class, name) gen::factory.add<class>(name)
+#define FACTORY_REGISTER2(gen, class, name)                                    \
+  gen::factory_instance.add<class>(name)
 
 // construct a generator instance
 #define FACTORY_CREATE(gen, conf, path, rng)                                   \
-  gen::factory.create(conf.get<std::string>(string_path(path) / "type"), conf, \
-                      path, rng)
+  gen::factory_instance.create(                                                \
+      conf.get<std::string>(string_path(path) / "type"), conf, path, rng)
 
 // a generic factory base class
 template <class T, class... Args> class factory {

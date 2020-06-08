@@ -40,7 +40,7 @@ public:
 
   static factory<detector, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
-      factory;
+      factory_instance;
 
   detector(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 };

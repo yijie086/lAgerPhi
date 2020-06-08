@@ -1,31 +1,33 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
-#include <TFile.h>
-#include <TRandom3.h>
-#include <fstream>
 #include <lager/core/configuration.hh>
 #include <lager/core/framework.hh>
 #include <lager/core/logger.hh>
 #include <lager/core/progress_meter.hh>
 #include <lager/gen/lA_event.hh>
 #include <lager/gen/lA_generator.hh>
+
+#include <HepMC3/WriterAscii.h>
+#include <TFile.h>
+#include <TRandom3.h>
+#include <fstream>
 #include <memory>
 
 // TODO fix this
@@ -34,6 +36,7 @@
 #include <lager/gen/initial/target_gen.hh>
 #include <lager/gen/initial/vertex_gen.hh>
 #include <lager/gen/lA/brodsky_2vmX.hh>
+#include <lager/gen/lA/lee_4He_jpsi_grid.hh>
 #include <lager/gen/lA/oleksii_2vmp.hh>
 #include <lager/gen/lA/oleksii_jpsi_bh.hh>
 #include <lager/gen/lA/resonance_qpq.hh>
@@ -64,6 +67,7 @@ void write_value_to_file(std::shared_ptr<TFile> ofile, const std::string& name,
 int run_mc(const configuration& cf, const std::string& output) {
 
   // TODO fix this
+  FACTORY_REGISTER2(lA::generator, lA::lee_4He_jpsi_grid, "lee_4He_jpsi_grid");
   FACTORY_REGISTER2(lA::generator, lA::brodsky_2vmX, "brodsky_2vmX");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_2vmp, "oleksii_2vmp");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_jpsi_bh, "oleksii_jpsi_bh");
@@ -76,6 +80,7 @@ int run_mc(const configuration& cf, const std::string& output) {
                     "constant");
   FACTORY_REGISTER2(initial::target_generator, initial::primary_target,
                     "primary");
+  FACTORY_REGISTER2(initial::target_generator, initial::fermi87, "fermi87");
 
   FACTORY_REGISTER2(initial::photon_generator, initial::no_photon, "no-photon");
   FACTORY_REGISTER2(initial::photon_generator, initial::bremsstrahlung,
@@ -103,22 +108,31 @@ int run_mc(const configuration& cf, const std::string& output) {
   std::shared_ptr<TFile> ofile{
       std::make_shared<TFile>((output + ".root").c_str(), "recreate")};
 
+  // check if we want hepmc output as well
+  std::unique_ptr<HepMC3::WriterAscii> ohepmc;
+  auto do_hepmc = cf.get_optional<bool>("output_hepmc");
+  if (do_hepmc && *do_hepmc) {
+    LOG_INFO("lager", "Also outputting text output for HepMC");
+    ohepmc =
+        std::make_unique<HepMC3::WriterAscii>((output + ".hepmc").c_str());
+  }
   // check if we want gemc output as well
-  std::unique_ptr<std::ofstream> olund;
+  std::unique_ptr<std::ofstream> ogemc;
   auto do_gemc = cf.get_optional<bool>("output_gemc");
   if (do_gemc && *do_gemc) {
     LOG_INFO("lager", "Also outputting text output for GEMC");
-    olund = std::make_unique<std::ofstream>(output + ".gemc.dat");
+    ogemc = std::make_unique<std::ofstream>(output + ".gemc");
   }
   // check if we want simc, in similar vein
   std::unique_ptr<std::ofstream> osimc;
   auto do_simc = cf.get_optional<bool>("output_simc");
   if (do_simc && *do_simc) {
     LOG_INFO("lager", "Also outputting text output for SIMC");
-    osimc = std::make_unique<std::ofstream>(output + ".simc.dat");
+    osimc = std::make_unique<std::ofstream>(output + ".simc");
   }
 
-  lA_out evbuf{ofile, std::move(olund), std::move(osimc), "lAger"};
+  lA_out evbuf{ofile, std::move(ohepmc), std::move(ogemc), std::move(osimc),
+               "lAger"};
   // get event generator
   LOG_INFO("lager", "Initializing the event generator");
   lA_generator gen{cf, "generator", r};

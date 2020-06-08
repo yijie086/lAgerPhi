@@ -1,32 +1,32 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_CORE_GENERATOR_LOADED
 #define LAGER_CORE_GENERATOR_LOADED
 
 #include <TRandom.h>
 #include <algorithm>
-#include <memory>
 #include <lager/core/assert.hh>
 #include <lager/core/configuration.hh>
 #include <lager/core/factory.hh>
 #include <lager/core/interval.hh>
+#include <memory>
 
 namespace lager {
 
@@ -118,7 +118,7 @@ public:
 
   static factory<process_generator, const configuration&, const string_path&,
                  std::shared_ptr<TRandom>>
-      factory;
+      factory_instance;
 
   process_generator(std::shared_ptr<TRandom> r) : base_type{std::move(r)} {}
 
@@ -128,7 +128,7 @@ public:
 template <class Event, class InitialData>
 factory<process_generator<Event, InitialData>, const configuration&,
         const string_path&, std::shared_ptr<TRandom>>
-    process_generator<Event, InitialData>::factory;
+    process_generator<Event, InitialData>::factory_instance;
 
 // =============================================================================
 // Base class for all event_processors (detectors/decay_handlers/...)
@@ -183,9 +183,13 @@ public:
 
   event_generator(const configuration& cf, const string_path& path,
                   std::shared_ptr<TRandom> r)
-      : base_type{std::move(r)}, configurable{cf, path} {
+      : base_type{std::move(r)}
+      , configurable{cf, path}
+      , penalty_{cf.get<double>(path / "advanced/penalty", 1.0)} {
     init_process_list();
     init_lumi(cf);
+    LOG_INFO("event_generator",
+             "advanced/penalty: " + std::to_string(penalty_));
   }
 
   virtual std::vector<event_type> generate() {
@@ -228,22 +232,30 @@ public:
             LOG_JUNK(process.name,
                      "Cross section <= 0, skipping this trial cycle");
             continue;
-          } else if (event.cross_section() > initial_max_ * process.max) {
+          } else if (event.cross_section() >
+                     initial_max_ * process.max * penalty_) {
             LOG_WARNING(
                 process.name,
                 "Cross section maximum exceeded (" +
                     std::to_string(event.cross_section()) + " > " +
-                    std::to_string(initial_max_ * process.max) +
-                    "), please check "
-                    "the cross section maximum calculation. The MC "
-                    "distributions will be invalid if this happens too often.");
+                    std::to_string(initial_max_ * process.max * penalty_) +
+                    "), the distributions will be invalid if this "
+                    "happens too often.");
+            LOG_WARNING(
+                process.name,
+                "To mitigate, either increase "
+                "the configuration paramater generator/advanced/penalty "
+                "(which gets multiplied with the cross section maximum "
+                "during the accept-reject step), or fix the cross "
+                "section maximum estimation in the actual Physics "
+                "module.");
           }
           // accept/reject this event
           LOG_JUNK(process.name,
                    "Testing accept reject for xs: " +
                        std::to_string(event.cross_section()) + " (max: " +
                        std::to_string(process.max * initial_max_) + ")");
-          if (this->rng()->Uniform(0, initial_max_ * process.max) <
+          if (this->rng()->Uniform(0, initial_max_ * process.max * penalty_) <
               event.cross_section()) {
             LOG_JUNK(process.name, "Event accepted!");
             event.update_process(process.id);
@@ -256,8 +268,9 @@ public:
       } while (event_list.empty());
 
       for (auto& event : event_list) {
-        LOG_JUNK("generator", "Processing event (process " +
-                                  std::to_string(event.process()) + ")");
+        LOG_JUNK("generator",
+                 "Processing event (process " +
+                     std::to_string(event.process()) + ")");
         build_event(event);
         if (event.weight() > 0) {
           LOG_JUNK("generator",
@@ -379,8 +392,9 @@ private:
                   "Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
             {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
-        LOG_DEBUG(path.str(), "Cross section max: " +
-                                  std::to_string(process_list_.back().max));
+        LOG_DEBUG(path.str(),
+                  "Cross section max: " +
+                      std::to_string(process_list_.back().max));
         LOG_DEBUG(path.str(),
                   "Phase space: " + std::to_string(process_list_.back().ps));
         // check if we have a larger generation volume, update if needed
@@ -430,6 +444,10 @@ private:
         , gen{g} {}
   };
 
+  // advanced settings
+  const double penalty_; // AR max penalty factor
+
+  // Generator state
   double initial_ps_{1.};   // initial state generator phase space
   double initial_max_{1.};  // initial state generator max cross section
   double proc_volume_{-1.}; // largest generation volume in process_list

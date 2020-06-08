@@ -10,6 +10,7 @@ _S. Joosten, Argonne l/A-event Generator (2020), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
+* v3.2.0 Second stable release of `lAger`. Adds HepMC3 and fermi momentum.
 * v3.1.1 Minor updates to CI
 * v3.1.0 First stable release version of `lAger`.
 
