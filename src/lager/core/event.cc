@@ -105,14 +105,23 @@ void event_out::write_hepmc(const event& e) {
   std::vector<HepMC3::GenParticlePtr> hepmc_part;
   std::transform(e.part().begin(), e.part().end(),
                  std::back_inserter(hepmc_part), [](const particle& part) {
+                   // undefined: 0
                    // final state: 1
                    // decayed: 2
                    // documentation: 3
-                   const int status =
-                       part.final_state()
-                           ? 1
-                           : (part.decayed() ? 2
-                                             : (!part.documentation() ? 3 : 0));
+                   // incoming: 4
+                   int status = 0;
+                   if (part.final_state()) {
+                     status = 1;
+                   } else if (part.decayed()) {
+                     status = 2;
+                   } else if (part.documentation() ||
+                              part.status() ==
+                                  particle::status_code::SECONDARY_BEAM) {
+                     status = 3;
+                   } else if (part.status() == particle::status_code::BEAM) {
+                     status = 4;
+                   }
                    return HepMC3::GenParticlePtr(new HepMC3::GenParticle(
                        HepMC3::FourVector(part.p().X(), part.p().Y(),
                                           part.p().Z(), part.p().E()),
@@ -129,7 +138,7 @@ void event_out::write_hepmc(const event& e) {
       continue;
     }
     const auto& first_daughter = e.part(part.daughter_begin());
-    // 1. Check if event is already "processed"
+    // 1. Check if track is already "processed"
     if (std::any_of(finished.begin(), finished.end(),
                     [i](int j) { return (j == i); })) {
       continue;
@@ -142,8 +151,11 @@ void event_out::write_hepmc(const event& e) {
         raw_vertex.X(), raw_vertex.Y(), raw_vertex.Z(), raw_vertex.T())));
     // 3. Attach incoming lines to this vertex and mark them as "finished"
     //    Use the first daughter to get the full list of incoming lines
-    for (int iin = first_daughter.parent_first();
-         iin < first_daughter.parent_second(); ++iin) {
+    for (int iin :
+         {first_daughter.parent_first(), first_daughter.parent_second()}) {
+      if (iin < 0) {
+        continue;
+      }
       vx->add_particle_in(hepmc_part[iin]);
       finished.push_back(iin);
     }
