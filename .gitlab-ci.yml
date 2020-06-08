@@ -11,7 +11,7 @@ docker:
   script:
      - cd containers/docker
      - make login
-     - make release
+     - make release-cached
 
 singularity:
   image: eicweb.phy.anl.gov:4567/containers/image_recipes/ubuntu_dind:latest
