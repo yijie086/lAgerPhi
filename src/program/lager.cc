@@ -114,21 +114,21 @@ int run_mc(const configuration& cf, const std::string& output) {
   if (do_hepmc && *do_hepmc) {
     LOG_INFO("lager", "Also outputting text output for HepMC");
     ohepmc =
-        std::make_unique<HepMC3::WriterAscii>((output + ".hepmc.dat").c_str());
+        std::make_unique<HepMC3::WriterAscii>((output + ".hepmc").c_str());
   }
   // check if we want gemc output as well
   std::unique_ptr<std::ofstream> ogemc;
   auto do_gemc = cf.get_optional<bool>("output_gemc");
   if (do_gemc && *do_gemc) {
     LOG_INFO("lager", "Also outputting text output for GEMC");
-    ogemc = std::make_unique<std::ofstream>(output + ".gemc.dat");
+    ogemc = std::make_unique<std::ofstream>(output + ".gemc");
   }
   // check if we want simc, in similar vein
   std::unique_ptr<std::ofstream> osimc;
   auto do_simc = cf.get_optional<bool>("output_simc");
   if (do_simc && *do_simc) {
     LOG_INFO("lager", "Also outputting text output for SIMC");
-    osimc = std::make_unique<std::ofstream>(output + ".simc.dat");
+    osimc = std::make_unique<std::ofstream>(output + ".simc");
   }
 
   lA_out evbuf{ofile, std::move(ohepmc), std::move(ogemc), std::move(osimc),
