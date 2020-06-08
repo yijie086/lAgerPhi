@@ -115,9 +115,12 @@ void lA::quarkonium_schc(lA_event& e, const int i) const {
     radiative_decay_->process(e, i);
   }
 
+  // do not store the CM particles
+#if 0
   decay_products_cm.first.add_parent(i);
   decay_products_cm.second.add_parent(i);
   e.add_particle(decay_products_cm);
+#endif
 
   // mark the vm as decayed
   e[i].update_status(particle::status_code::DECAYED_SCHC);
@@ -240,10 +243,13 @@ void lA::pentaquark_qpq(lA_event& e, const int i) const {
     e.add_daughter(decay_products, i);
   }
 
+// do not store the CM particles
+#if 0
   // also add the Pc CM info particles
   decay_products_cm.first.add_parent(i);
   decay_products_cm.second.add_parent(i);
   e.add_particle(decay_products_cm);
+#endif
 
   // mark the Pc as decayed
   e[i].update_status(particle::status_code::DECAYED);

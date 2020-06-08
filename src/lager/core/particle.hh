@@ -51,11 +51,11 @@ public:
     SCAT = 13,
     RECOIL = 14,
     SPECTATOR = 15,
-    UNSTABLE = 21,
-    UNSTABLE_SCHC = 22,
+    DECAYED = 21,
+    DECAYED_SCHC = 22,
     FINAL = 30,
-    DECAYED = 31,
-    DECAYED_SCHC = 32,
+    UNSTABLE = 31,
+    UNSTABLE_SCHC = 32,
     INFO = 40,
     INFO_PARENT_CM = 41,
     OTHER = 99
@@ -122,8 +122,8 @@ public:
             status_ != status_code::DECAYED_SCHC);
   }
   bool decayed() const {
-    return (status_ != status_code::DECAYED &&
-            status_ != status_code::DECAYED_SCHC);
+    return (status_ == status_code::DECAYED ||
+            status_ == status_code::DECAYED_SCHC);
   }
 
   // final state particles (labeled FINAL or SCAT, RECOIL or SPECTATOR)
