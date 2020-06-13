@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_CORE_PDG_LOADED
 #define LAGER_CORE_PDG_LOADED
@@ -63,10 +63,15 @@ constexpr int32_t pdg_pentaquark_id(int q1, int q2, int q3, int q4, int qbar,
 #endif
 }
 
-// add possibility for nuclear id
-// prefixed by 4 9's
-constexpr int32_t pdg_nuclear_id(unsigned A, unsigned Z) {
-  return 999000000 + A * 1000 + Z;
+// add possibility for nuclear id as per PDG
+// Parameters:
+//  A: baryon number (#protons + #neutrons + #lambdas)
+//  Z: charge (#protons)
+//  L: Number of strange quark
+//  I: Isomer level, where 0 corresponds to the ground state
+constexpr int32_t pdg_nuclear_id(unsigned A, unsigned Z, unsigned L = 0,
+                                 unsigned I = 0) {
+  return 1000000000 + L * 10000000 + Z * 10000 + A * 10 + I;
 }
 
 // particle ID enum
@@ -164,6 +169,6 @@ enum class pdg_id : int32_t {
 TParticlePDG* pdg_particle(const pdg_id id);
 TParticlePDG* pdg_particle(const std::string& name);
 
-} // ns lager
+} // namespace lager
 
 #endif
