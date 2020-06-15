@@ -20,6 +20,7 @@
 #include "brodsky_2vmX.hh"
 #include <TMath.h>
 #include <lager/core/logger.hh>
+#include <lager/gen/initial/target_gen.hh>
 #include <lager/physics/kinematics.hh>
 #include <lager/physics/photon.hh>
 #include <lager/physics/vm.hh>
@@ -45,9 +46,9 @@ brodsky_2vmX::brodsky_2vmX(const configuration& cf, const string_path& path,
     , max_exp_bt_range_{exp(photo_b_ * max_t_range_.min),
                         exp(photo_b_ * max_t_range_.max)}
     , max_{calc_max_xsec(cf)} {
-  LOG_INFO("brodsky_2vmX",
-           "t range [GeV^2]: [" + std::to_string(max_t_range_.min) + ", " +
-               std::to_string(max_t_range_.max) + "]");
+  LOG_INFO("brodsky_2vmX", "t range [GeV^2]: [" +
+                               std::to_string(max_t_range_.min) + ", " +
+                               std::to_string(max_t_range_.max) + "]");
   LOG_INFO("brodsky_2vmX",
            "b parameter [1/GeV^2]: " + std::to_string(photo_b_));
   LOG_INFO("brodsky_2vmX",
@@ -74,10 +75,9 @@ lA_event brodsky_2vmX::generate(const lA_data& initial) {
 
   // check if enough energy available
   if (gamma.W2() < threshold2(vm, recoil)) {
-    LOG_JUNK(
-        "brodsky_2vmX",
-        "Not enough phase space available - W2: " + std::to_string(gamma.W2()) +
-            " < " + std::to_string(threshold2(vm, recoil)));
+    LOG_JUNK("brodsky_2vmX", "Not enough phase space available - W2: " +
+                                 std::to_string(gamma.W2()) + " < " +
+                                 std::to_string(threshold2(vm, recoil)));
     return lA_event{0.};
   }
 
@@ -135,9 +135,7 @@ double brodsky_2vmX::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{"proton",
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
@@ -145,7 +143,7 @@ double brodsky_2vmX::calc_max_xsec(const configuration& cf) const {
                                           (photon.p() + target.p()).M2())
                                    : (photon.p() + target.p()).M2();
   return dsigma_dexp_bt(W2max, target.mass()) * 1.0001;
-}
+} // namespace lA
 
 // =============================================================================
 // brodsky_2vmX::calc_max_t_range(cf)
@@ -166,9 +164,7 @@ interval<double> brodsky_2vmX::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{"proton",
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)

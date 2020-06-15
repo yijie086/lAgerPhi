@@ -20,6 +20,7 @@
 #include "lee_4He_jpsi_grid.hh"
 #include <TMath.h>
 #include <lager/core/logger.hh>
+#include <lager/gen/initial/target_gen.hh>
 #include <lager/physics/kinematics.hh>
 #include <lager/physics/photon.hh>
 #include <lager/physics/vm.hh>
@@ -711,9 +712,7 @@ double lee_4He_jpsi_grid::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{pdg_id::He4,
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
@@ -743,9 +742,7 @@ lee_4He_jpsi_grid::calc_max_t_range(const configuration& cf) const {
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
   // this model uses a fixed target
-  const particle target{pdg_id::He4,
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)

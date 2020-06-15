@@ -30,6 +30,10 @@
 namespace lager {
 namespace initial {
 
+// estimated target info from config file to be used by lA generators to
+// estimate phase-space and cross section ranges
+particle estimated_target(const configuration& cf);
+
 // simple target identical to the ion beam
 class primary_target : public target_generator {
 public:

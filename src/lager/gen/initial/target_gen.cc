@@ -31,10 +31,30 @@ int calc_A(const std::string& ion_name) {
   lager::particle ion{ion_name};
   return std::nearbyint(ion.mass() / .938272);
 }
-}
+} // namespace
 
 namespace lager {
 namespace initial {
+
+// estimated target info from config file to be used by lA generators to
+// estimate phase-space and cross section ranges
+particle estimated_target(const configuration& cf) {
+  const particle ion{cf.get<std::string>("beam/ion/particle_type"),
+                     cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
+                     cf.get<double>("beam/ion/energy")};
+  if (cf.get<std::string>("target/type") == "primary") {
+    return ion;
+    // right now only other option is fermi momentum. In that case scale target
+    // mass to proton mass and add extra 1.2GeV in fermi-momentum
+  } else {
+    particle proton{pdg_id::p,
+                    cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
+                    sqrt(.938372 * .938272 + 1.2 * 1.2)};
+    lager::particle::Boost boost_to_lab{-ion.p().BoostToCM()};
+    proton.boost(boost_to_lab);
+    return proton;
+  }
+}
 
 // =======================================================================================
 // target beam constructor
@@ -72,8 +92,8 @@ fermi87::fermi87(const configuration& cf, const string_path& path,
 }
 target fermi87::generate(const beam& ion) {
   // Generate a nucleon momentum, theta and phi
-  const double P = rand_f({0., k_max_}, [&](const double P) { return pdf(P); },
-                          xs_max_ * 1.01);
+  const double P = rand_f(
+      {0., k_max_}, [&](const double P) { return pdf(P); }, xs_max_ * 1.01);
   const double theta = acos(rng()->Uniform(-1, 1));
   const double phi = rng()->Uniform(0., TMath::TwoPi());
   LOG_DEBUG("initial::fermi87",

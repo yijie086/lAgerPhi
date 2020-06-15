@@ -1,25 +1,26 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include "oleksii_2vmp.hh"
 #include <TMath.h>
 #include <lager/core/logger.hh>
+#include <lager/gen/initial/target_gen.hh>
 #include <lager/physics/kinematics.hh>
 #include <lager/physics/photon.hh>
 #include <lager/physics/vm.hh>
@@ -168,9 +169,9 @@ private:
     IntegrandParam param{nu, this};
     F_.params = &param;
     gsl_integration_qagiu(&F_, v_el_, 0, 1e-5, 2048, w_, &result, &error);
-    return result +
-           ImT_nu(nu) / nu * std::log(std::fabs((v_el_ + nu) / (v_el_ - nu))) /
-               (2 * nu);
+    return result + ImT_nu(nu) / nu *
+                        std::log(std::fabs((v_el_ + nu) / (v_el_ - nu))) /
+                        (2 * nu);
   }
   const double T0_;
   const double v_el_;
@@ -194,9 +195,8 @@ public:
                     const double Q2 = par[1];
                     const auto tlim =
                         physics::t_range(W * W, Q2, kMp, ampl.Mv(), kMp);
-                    return B -
-                           this->B0(W) *
-                               (exp(B * tlim.max) - exp(B * tlim.min));
+                    return B - this->B0(W) *
+                                   (exp(B * tlim.max) - exp(B * tlim.min));
                   },
                   0, 10, 2}
       , fwrap_{equation_} {}
@@ -242,15 +242,13 @@ oleksii_2vmp::oleksii_2vmp(const configuration& cf, const string_path& path,
     , max_t_range_{calc_max_t_range(cf)}
     , max_exp_b0t_range_{exp(max_b_range_.max * max_t_range_.min), 1.}
     , max_{calc_max_xsec(cf)} {
-  LOG_INFO("oleksii_2vmp",
-           "t range [GeV^2]: [" + std::to_string(max_t_range_.min) + ", " +
-               std::to_string(max_t_range_.max) + "]");
-  LOG_INFO("oleksii_2vmp",
-           "b parameter lower limit [1/GeV^2]: " +
-               std::to_string(max_b_range_.min));
-  LOG_INFO("oleksii_2vmp",
-           "b parameter upper limit [1/GeV^2]: " +
-               std::to_string(max_b_range_.max));
+  LOG_INFO("oleksii_2vmp", "t range [GeV^2]: [" +
+                               std::to_string(max_t_range_.min) + ", " +
+                               std::to_string(max_t_range_.max) + "]");
+  LOG_INFO("oleksii_2vmp", "b parameter lower limit [1/GeV^2]: " +
+                               std::to_string(max_b_range_.min));
+  LOG_INFO("oleksii_2vmp", "b parameter upper limit [1/GeV^2]: " +
+                               std::to_string(max_b_range_.max));
   LOG_INFO("oleksii_2vmp", "subtraction constant T0: " + std::to_string(T0_));
   LOG_INFO("oleksii_2vmp", "R_vm c-parameter: " + std::to_string(R_vm_c_));
   LOG_INFO("oleksii_2vmp",
@@ -272,10 +270,9 @@ lA_event oleksii_2vmp::generate(const lA_data& initial) {
 
   // check if enough energy available
   if (gamma.W2() < threshold2(vm, recoil)) {
-    LOG_JUNK(
-        "oleksii_2vmp",
-        "Not enough phase space available - W2: " + std::to_string(gamma.W2()) +
-            " < " + std::to_string(threshold2(vm, recoil)));
+    LOG_JUNK("oleksii_2vmp", "Not enough phase space available - W2: " +
+                                 std::to_string(gamma.W2()) + " < " +
+                                 std::to_string(threshold2(vm, recoil)));
     return lA_event{0.};
   }
 
@@ -320,9 +317,7 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{pdg_id::p,
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
@@ -355,9 +350,7 @@ double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{pdg_id::p,
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
@@ -391,9 +384,7 @@ interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{pdg_id::p,
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W (where the t-range is the largest)
