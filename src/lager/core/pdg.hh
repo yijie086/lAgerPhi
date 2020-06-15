@@ -148,6 +148,7 @@ enum class pdg_id : int32_t {
   He4 = pdg_nuclear_id(4, 2),
   C12 = pdg_nuclear_id(12, 6),
   N14 = pdg_nuclear_id(14, 7),
+  Al27 = pdg_nuclear_id(27, 13),
   // LHCb pentaquark hypetheses (from different models (impacts decay
   // distributions))
   Pc_wang_52p = pdg_pentaquark_id(4, 2, 2, 1, 4, 5, 1, 1),
