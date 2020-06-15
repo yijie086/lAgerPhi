@@ -268,9 +268,8 @@ public:
       } while (event_list.empty());
 
       for (auto& event : event_list) {
-        LOG_JUNK("generator",
-                 "Processing event (process " +
-                     std::to_string(event.process()) + ")");
+        LOG_JUNK("generator", "Processing event (process " +
+                                  std::to_string(event.process()) + ")");
         build_event(event);
         if (event.weight() > 0) {
           LOG_JUNK("generator",
@@ -374,7 +373,9 @@ private:
   virtual double phase_space() const { return -1; }
 
   // update the total generation volume
-  void update_volume() { volume_ = initial_ps_ * initial_max_ * proc_volume_; }
+  void update_volume() {
+    volume_ = initial_ps_ * initial_max_ * proc_volume_ * penalty_;
+  }
 
   // initialize the process list
   // the factory will construct a new process generator for each of the
@@ -392,9 +393,8 @@ private:
                   "Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
             {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
-        LOG_DEBUG(path.str(),
-                  "Cross section max: " +
-                      std::to_string(process_list_.back().max));
+        LOG_DEBUG(path.str(), "Cross section max: " +
+                                  std::to_string(process_list_.back().max));
         LOG_DEBUG(path.str(),
                   "Phase space: " + std::to_string(process_list_.back().ps));
         // check if we have a larger generation volume, update if needed
