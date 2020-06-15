@@ -10,16 +10,14 @@ _S. Joosten, Argonne l/A-event Generator (2020), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
-* v3.2.1 Bugfix to nuclear PDG codes.
-* v3.2.0 Second stable release of `lAger`. Adds HepMC3 and fermi momentum.
-* v3.1.1 Minor updates to CI
-* v3.1.0 First stable release version of `lAger`.
+* v3.2.x Adds HepMC3 and fermi momentum and misc fixes
+* v3.1.x First stable relase of `lAger`
 
 # Tutorial
 ## Setup of the lager singularity container on your system:
 The default mode to run the generator is through singularity. To setup the generator on
 your system, first ensure singularity is installed. Then follow these instructions:
-1. Clone this repository and checkout the desired stable release (e.g. v3.1.1)
+1. Clone this repository and checkout the desired stable release (e.g. v3.2.2)
 ```bash
 git clone https://eicweb.phy.anl.gov/monte_carlo/lager.git
 cd lager && git checkout v3.1.1
