@@ -1,26 +1,27 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include "resonance_qpq.hh"
 #include <TF1.h>
 #include <TMath.h>
 #include <lager/core/logger.hh>
+#include <lager/gen/initial/target_gen.hh>
 #include <lager/physics/photon.hh>
 #include <lager/physics/vm.hh>
 
@@ -104,8 +105,9 @@ lA_event resonance_qpq::generate(const lA_data& initial) {
 // desired "amplitude".
 // =============================================================================
 double resonance_qpq::calc_normalization() const {
-  TF1 f("fraw", [=](double* W, double*) { return sigma(W[0] * W[0]); }, 0,
-        mass_ - 3 * width_, mass_ + 3 * width_);
+  TF1 f(
+      "fraw", [=](double* W, double*) { return sigma(W[0] * W[0]); }, 0,
+      mass_ - 3 * width_, mass_ + 3 * width_);
   LOG_INFO("resonance_qpq",
            "Raw BW maximum found: " + std::to_string(f.GetMaximum()));
   const double norm = amplitude_ / f.GetMaximum();
@@ -130,9 +132,7 @@ double resonance_qpq::calc_max_xsec(const configuration& cf) const {
   const particle photon{pdg_id::gamma,
                         cf.get_vector3<particle::XYZVector>("beam/lepton/dir"),
                         cf.get<double>("beam/lepton/energy")};
-  const particle target{cf.get<std::string>("beam/ion/particle_type"),
-                        cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
-                        cf.get<double>("beam/ion/energy")};
+  const particle target{initial::estimated_target(cf)};
   // check if we have a user-defined W-range set
   const auto opt_W_range = cf.get_optional_range<double>("photon/W_range");
   // get the maximum W
