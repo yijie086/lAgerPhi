@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include <TDatabasePDG.h>
 #include <lager/core/pdg.hh>
@@ -47,6 +47,8 @@ public:
                      static_cast<int32_t>(pdg_id::C12));
     db_->AddParticle("N-14", "Nitrogen-14", 13.0403, true, 0, 21, "nucleus",
                      static_cast<int32_t>(pdg_id::N14));
+    db_->AddParticle("Al-27", "Aluminum-27", 25.1166, true, 0, 21, "nucleus",
+                     static_cast<int32_t>(pdg_id::Al27));
     // pentaquarks (mass and width not used internally as this changes for each
     // assumption)
     db_->AddParticle("Pc_wang_52p", "P_{c} (5/2+)", 0, false, 0, 3,
