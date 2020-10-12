@@ -3,6 +3,7 @@
     "type" : "eic",
     "tag" : "disp-ups-97-muon",
     "lumi" : "10",
+    "output_hepmc": "true",
     "generator" : {
       "type" : "upsilon-10on100",
       "vertex" : {"type" : "origin"},
