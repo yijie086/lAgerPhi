@@ -81,8 +81,16 @@ login: ## Auto login to AWS-ECR unsing aws-cli
 release: build-nc publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
 	@echo "Cleaning up"
 	docker rmi $(APP_NAME):latest
+staging: build-nc publish-staging ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
+	@echo "Cleaning up"
+	docker rmi $(APP_NAME):latest
+develop: build-nc publish-dev ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
+	@echo "Cleaning up"
+	docker rmi $(APP_NAME):latest
 
 release-cached: build publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
+develop-cached: build publish-dev ## Same for develop
+staging-cached: build publish-staging ## Same for staging
 
 publish: login publish-latest publish-version #publish-version ## Publish the `{version}` ans `latest` tagged containers to ECR
 	@echo "Publishing done"
@@ -93,6 +101,18 @@ publish-latest: ## Publish the `latest` taged container to ECR
 	docker tag $(APP_NAME):latest $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):latest
 	docker push $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):latest
 	docker rmi  $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):latest
+
+publish-staging: ## Publish the `latest` taged container to ECR
+	@echo 'publish testing to $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME)'
+	docker tag $(APP_NAME):latest $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):testing
+	docker push $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):testing
+	docker rmi  $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):testing
+
+publish-dev: ## Publish the `latest` taged container to ECR
+	@echo 'publish unstable to $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME)'
+	docker tag $(APP_NAME):latest $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):unstable
+	docker push $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):unstable
+	docker rmi  $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):unstable
 
 publish-version: tag-version ## Publish the `{version}` taged container to ECR
 	@echo 'publish $(VERSION) to $(REG_NAME)/$(GL_REG_GROUP)/$(APP_NAME):$(VERSION)'

@@ -45,7 +45,8 @@ PROJECT_NAME='lager'
 PROGRAMS = ['lager', 'root']
 
 ## URL for the current container (git tag will be filled in by the script)
-CONTAINER_URL = r'https://eicweb.phy.anl.gov/{0}/{1}/-/jobs/artifacts/{2}/raw/build/{1}.sif?job=singularity'
+CONTAINER_URL =
+r'https://eicweb.phy.anl.gov/{0}/{1}/-/jobs/artifacts/{2}/raw/build/{1}.sif?job=release:singularity'
 
 ## Singularity bind directive
 BIND_DIRECTIVE= '-B {0}:{0}'

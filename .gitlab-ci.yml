@@ -1,37 +1,59 @@
 image: eicweb.phy.anl.gov:4567/containers/image_recipes/ubuntu_dind:latest
 #
 stages:
-  - phase1
-  - phase2
+  - build
+  - singularity
 
-docker:
-  stage: phase1
+release:build:
+  stage: build
   tags:
      - silicon
+  only:
+     - master
+     - tags
   script:
      - cd containers/docker
      - make login
      - make release-cached
+staging:build:
+  stage: build
+  tags:
+     - silicon
+  only:
+     - staging
+  script:
+     - cd containers/docker
+     - make login
+     - make staging-cached
+develop:build:
+  stage: build
+  tags:
+     - silicon
+  except:
+     - staging
+     - master
+     - tags
+  script:
+     - cd containers/docker
+     - make login
+     - make develop-cached
 
-singularity:
+release:singularity:
   image: eicweb.phy.anl.gov:4567/containers/image_recipes/ubuntu_dind:latest
-  stage: phase2
+  stage: singularity
+  only:
+     - tags
   tags:
      - singularity
-  #when: manual
+  needs: ['release:build']
   script:
      - cp containers/singularity/lager.def .
-    # - /bin/bash .gitlabci/setup.sh
      - /bin/bash .gitlabci/build.sh lager.def
      - mkdir -p build 
      - cp lager.sif build/.
      - cp lager.def build/.
-
-  # This is where you can save job artifacts
-  # https://docs.gitlab.com/ee/user/project/pipelines/job_artifacts.html
-  # You can specify the path to containers or the build folder to save.
-  # Don't forget to save your recipes too!
   artifacts:
-      paths:
-        - build/lager.sif
-        - build/lager.def
+    expire_in: 90 days
+    paths:
+      - build/lager.sif
+      - build/lager.def
