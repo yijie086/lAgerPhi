@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_GEN_INITIAL_PHOTON_GEN_LOADED
 #define LAGER_GEN_INITIAL_PHOTON_GEN_LOADED
@@ -24,6 +24,7 @@
 #include <lager/core/generator.hh>
 #include <lager/core/particle.hh>
 #include <lager/gen/initial/data.hh>
+#include <lager/gen/initial/fixed_target.hh>
 #include <lager/gen/initial/generator.hh>
 #include <lager/physics/photon.hh>
 #include <memory>
@@ -78,14 +79,9 @@ public:
 
 protected:
   double intensity(const double E, const double beam, const double vz) const;
-  double total_rl(const double vz) const;
 
 private:
-  const double rl_radiator_;            // RL for the radiator
-  const double rl_window_;              // RL for the target window
-  const double extra_rl_per_cm_;        // extra RL/cm in the target
-  const interval<double> target_range_; // target range in cm
-
+  const realistic_target target_;  // target RL info
   const double E_beam_;            // (maximum) electron beam energy
   const interval<double> E_range_; // photon energy range
   const double max_;               // the maximum intensity.

@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include "photon_gen.hh"
 #include <TF1.h>
@@ -73,27 +73,27 @@ inline double bremsstrahlung_intensity_010_param(const double E0,
 // interpolation results above
 inline double bremsstrahlung_intensity_exact(const double rad_len,
                                              const double E0, const double k) {
-  static TF1 integrand("I_g_gen1_integrand",
-                       [](double* ttprime, double* uu) {
-                         const double tprime = ttprime[0];
-                         const double u = uu[0]; // u = k/E0
-                         const double ln_u_inv = std::log(1 / u);
-                         const double a = 4. * tprime / 3.;
-                         const double fact0 =
-                             std::exp(7. * tprime / 9.) / tgamma(a + 1);
-                         const double fact1 = std::pow(ln_u_inv, a);
-                         const double term0 = u;
-                         double term1 = 0;
-                         // first 10 terms of perturbative expansion in eq 24
-                         for (int i = 0; i < 10; ++i) {
-                           double val = 1. / (tgamma(i + 1) * (i + a + 1));
-                           val *= ((4. / 3.) * std::pow(-1, i)) - u * u;
-                           val *= std::pow(ln_u_inv, i + 1);
-                           term1 += val;
-                         }
-                         return fact0 * fact1 * (term0 + term1);
-                       },
-                       0, 2, 1);
+  static TF1 integrand(
+      "I_g_gen1_integrand",
+      [](double* ttprime, double* uu) {
+        const double tprime = ttprime[0];
+        const double u = uu[0]; // u = k/E0
+        const double ln_u_inv = std::log(1 / u);
+        const double a = 4. * tprime / 3.;
+        const double fact0 = std::exp(7. * tprime / 9.) / tgamma(a + 1);
+        const double fact1 = std::pow(ln_u_inv, a);
+        const double term0 = u;
+        double term1 = 0;
+        // first 10 terms of perturbative expansion in eq 24
+        for (int i = 0; i < 10; ++i) {
+          double val = 1. / (tgamma(i + 1) * (i + a + 1));
+          val *= ((4. / 3.) * std::pow(-1, i)) - u * u;
+          val *= std::pow(ln_u_inv, i + 1);
+          term1 += val;
+        }
+        return fact0 * fact1 * (term0 + term1);
+      },
+      0, 2, 1);
   integrand.SetParameter(0, k / E0);
   const double integral = integrand.Integral(0, rad_len);
   return std::exp(-7. * rad_len / 9.) * integral / k;
@@ -123,9 +123,8 @@ bremsstrahlung::bremsstrahlung(const configuration& cf, const string_path& path,
     , E_range_{cf.get_range<double>(path / "E_range")}
     , max_{intensity(E_range_.min, E_beam_)} {
   // initial info
-  LOG_INFO("bremsstrahlung",
-           "Maximum primary electron beam energy [GeV]: " +
-               std::to_string(E_beam_));
+  LOG_INFO("bremsstrahlung", "Maximum primary electron beam energy [GeV]: " +
+                                 std::to_string(E_beam_));
   LOG_INFO("bremsstrahlung",
            "Photon energy range [GeV]: " + std::to_string(E_range_.min) + ", " +
                std::to_string(E_range_.max) + "]");
@@ -216,19 +215,10 @@ bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
     const configuration& cf, const string_path& path,
     std::shared_ptr<TRandom> r)
     : photon_generator{std::move(r)}
-    , rl_radiator_{cf.get<double>(path / "radiator" / "thickness") /
-                   (cf.get<double>(path / "radiator" / "radiation_length") /
-                    cf.get<double>(path / "radiator" / "density"))}
-    , rl_window_{cf.get<double>(path / "window" / "thickness") /
-                 (cf.get<double>(path / "window" / "radiation_length") /
-                  cf.get<double>(path / "window" / "density"))}
-    , extra_rl_per_cm_{1.0 /
-                       (cf.get<double>(path / "target" / "radiation_length") /
-                        cf.get<double>(path / "target" / "density"))}
-    , target_range_{cf.get_range<double>(path / "target" / "range")}
+    , target_{cf, path}
     , E_beam_{cf.get<double>("beam/lepton/energy")}
     , E_range_{cf.get_range<double>(path / "E_range")}
-    , max_{intensity(E_range_.min, E_beam_, target_range_.max)} {
+    , max_{intensity(E_range_.min, E_beam_, target_.back())} {
   // initial info
   LOG_INFO("bremsstrahlung_realistic_target",
            "Maximum primary electron beam energy [GeV]: " +
@@ -242,42 +232,8 @@ bremsstrahlung_realistic_target::bremsstrahlung_realistic_target(
   tassert(E_range_.width() > 0,
           "Ensure Emin < Emax for the photon energy range");
   tassert(E_range_.min > 0, "Ensure Emin > 0 for the photon beam energy");
-  tassert(target_range_.width() >= 0,
+  tassert(target_.length() >= 0,
           "Ensure min <= max for the target z-coordinate range");
-  // radiation length
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "Radiator RL (calculated) [%]: " +
-               std::to_string(rl_radiator_ * 100.));
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "Window RL (calculated) [%]: " + std::to_string(rl_window_ * 100.));
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "Target RL (for 1cm of target material) [%]: " +
-               std::to_string(extra_rl_per_cm_ * 100.));
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "Target RL (for all target material) [%]: " +
-               std::to_string(extra_rl_per_cm_ * target_range_.width() * 100.));
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "RL at front of target [%]" +
-               std::to_string(total_rl(target_range_.min) * 100.));
-  LOG_INFO("bremsstrahlung_realistic_target",
-           "RL at back of target [%]" +
-               std::to_string(total_rl(target_range_.max) * 100.));
-}
-
-// =======================================================================================
-// Calculate the effictive radiation length at a z vertex position
-// =======================================================================================
-double bremsstrahlung_realistic_target::total_rl(const double vz) const {
-  double rl = rl_radiator_ + rl_window_;
-  if (target_range_.min <= vz && vz <= target_range_.max) {
-    rl += extra_rl_per_cm_ * (vz - target_range_.min);
-  } else if (vz > target_range_.max) {
-    rl += extra_rl_per_cm_ * target_range_.width();
-  }
-  LOG_JUNK2("bremsstrahlung_realistic_target",
-            "Calculated RL for z-vertex position at " + std::to_string(vz) +
-                " cm [%]: " + std::to_string(rl * 100.));
-  return rl;
 }
 
 // =======================================================================================
@@ -316,7 +272,7 @@ photon bremsstrahlung_realistic_target::generate(const beam& lepton,
 double bremsstrahlung_realistic_target::intensity(const double E,
                                                   const double E_beam,
                                                   const double vz) const {
-  return bremsstrahlung_intensity_exact(total_rl(vz), E_beam, E);
+  return bremsstrahlung_intensity_exact(target_.total_rl(vz), E_beam, E);
 }
 
 // =======================================================================================
@@ -332,22 +288,18 @@ vphoton::vphoton(const configuration& cf, const string_path& path,
     , W2_range_{calc_max_W2_range(cf)}
     , max_{calc_max_flux(cf)} {
   // initial info
-  LOG_INFO("vphoton",
-           "Q2 range [GeV^2]: [" + std::to_string(Q2_range_.min) + ", " +
-               std::to_string(Q2_range_.max) + "]");
-  LOG_INFO("vphoton",
-           "y range [GeV^2]: [" + std::to_string(y_range_.min) + ", " +
-               std::to_string(y_range_.max) + "]");
+  LOG_INFO("vphoton", "Q2 range [GeV^2]: [" + std::to_string(Q2_range_.min) +
+                          ", " + std::to_string(Q2_range_.max) + "]");
+  LOG_INFO("vphoton", "y range [GeV^2]: [" + std::to_string(y_range_.min) +
+                          ", " + std::to_string(y_range_.max) + "]");
   if (cf.get_optional_range<double>("W_range")) {
-    LOG_INFO("vphoton",
-             "W range (optional) [GeV}: [" +
-                 std::to_string(sqrt(W2_range_.min)) + ", " +
-                 std::to_string(sqrt(W2_range_.max)) + "]");
+    LOG_INFO("vphoton", "W range (optional) [GeV}: [" +
+                            std::to_string(sqrt(W2_range_.min)) + ", " +
+                            std::to_string(sqrt(W2_range_.max)) + "]");
   } else {
-    LOG_INFO("vphoton",
-             "W range (default) [GeV}: [" +
-                 std::to_string(sqrt(W2_range_.min)) + ", " +
-                 std::to_string(sqrt(W2_range_.max)) + "]");
+    LOG_INFO("vphoton", "W range (default) [GeV}: [" +
+                            std::to_string(sqrt(W2_range_.min)) + ", " +
+                            std::to_string(sqrt(W2_range_.max)) + "]");
   }
   // validate the setup
   tassert(y_range_.min > 0, "Ensure ymin > 0");
@@ -381,9 +333,9 @@ photon vphoton::generate(const beam& lepton, const target& targ) {
                            flux(Q2, y, lepton.particle(), targ.particle()),
                            rng()->Uniform(0, TMath::TwoPi()));
 
-  LOG_JUNK("vphoton",
-           "nu: " + std::to_string(pd.nu()) + " W2: " +
-               std::to_string(pd.W2()) + " x: " + std::to_string(pd.x()));
+  LOG_JUNK("vphoton", "nu: " + std::to_string(pd.nu()) +
+                          " W2: " + std::to_string(pd.W2()) +
+                          " x: " + std::to_string(pd.x()));
 
   // check if the invariants are in the range we want
   if (W2_range_.excludes(pd.W2())) {
@@ -392,9 +344,8 @@ photon vphoton::generate(const beam& lepton, const target& targ) {
     return pd;
   }
 
-  LOG_JUNK("vphoton",
-           "xsec: " + std::to_string(pd.cross_section()) + "( < " +
-               std::to_string(max_) + ")");
+  LOG_JUNK("vphoton", "xsec: " + std::to_string(pd.cross_section()) + "( < " +
+                          std::to_string(max_) + ")");
 
   // bail if our cross section is not positive
   if (pd.cross_section() < 0) {
@@ -415,11 +366,12 @@ double vphoton::calc_max_flux(const configuration& cf) const {
   const particle target{cf.get<std::string>("beam/ion/particle_type"),
                         cf.get_vector3<particle::XYZVector>("beam/ion/dir"),
                         cf.get<double>("beam/ion/energy")};
-  TF2 fflux("flux",
-            [=](double* Q2y, double* par = 0x0) {
-              return this->flux(Q2y[0], Q2y[1], beam, target);
-            },
-            Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);
+  TF2 fflux(
+      "flux",
+      [=](double* Q2y, double* par = 0x0) {
+        return this->flux(Q2y[0], Q2y[1], beam, target);
+      },
+      Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);
   double Q2, y;
   fflux.GetMaximumXY(Q2, y);
   return flux(Q2, y, beam, target) * 1.01;
