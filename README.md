@@ -20,7 +20,7 @@ your system, first ensure singularity is installed. Then follow these instructio
 1. Clone this repository and checkout the desired stable release (e.g. v3.2.2)
 ```bash
 git clone https://eicweb.phy.anl.gov/monte_carlo/lager.git
-cd lager && git checkout v3.1.1
+cd lager && git checkout v3.2.5
 ```
 2. Run the `deploy.py` script to install the container to a prefix of your choice, e.g. `$HOME/local/opt/lager`.
 ```bash
