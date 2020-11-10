@@ -69,8 +69,10 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  5. Slimming down image" \
+  && echo "  5. Adding missing packages and slimming down image" \
   && echo "  -------------------------------------------------" \
+  && apt-get -yqq update \
+  && apt-get install -yqq parallel \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && echo "  -------------------------------------------------" \
