@@ -7,7 +7,7 @@ stages:
 docker:
   stage: phase1
   tags:
-     - eic0 docker
+     - silicon
   script:
      - cd containers/docker
      - make login
