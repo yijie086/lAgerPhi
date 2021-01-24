@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #ifndef LAGER_PHYSICS_VM_LOADED
 #define LAGER_PHYSICS_VM_LOADED
@@ -31,14 +31,14 @@ namespace lager {
 namespace physics {
 
 // =============================================================================
-// R VM parameterization 
+// R VM parameterization
 //
-// from 
+// from
 //      Martynov, et. al., “Photoproduction of Vector Mesons in the Soft Dipole
 //      Pomeron Model.” PRD 67 (7), 2003. doi:10.1103/PhysRevD.67.074023.
 // eq. 31.
 //
-// J/psi parameters c(or a) and n 
+// J/psi parameters c(or a) and n
 //  * c: 2.164
 //  * n: 2.131
 // from eq. 18:
@@ -149,7 +149,54 @@ inline double dsigma_dexp_bt_vm_brodsky(const double s, const double Mt,
   return (A2g + A3g) * ff * jacobian;
 }
 
-} // physics
-} // lager
+// =============================================================================
+// General VM decay distributions in the VM helicity frame for the
+// cases of  (1) VM --> Scaler+scaler
+//       and (2) VM -> fermion+fermion
+// Note that case (1) corresponds equation 31 (for W0) in
+//     K. Schilling et al, Nucl.Phys.B 15 (1970) 397-412
+// while case (2) has the corresponding formula for decay in spin-1/2 particles
+//
+// Both expressions are a function of the decay angles in the VM helicity frame
+//  cth: cosine of the polar angle
+//  phi: azimuthal angle with the VM production plane
+//  sdme_04_00:  r^04_00 (=rho^0_00 for photoproduction)
+//  sdme_04_10:  Re(r^04_10) (=Re(rho^0_10) for photoproduction)
+//  sdme_04_1m1: r^04_1-1 (=rho^0_1-1 for photoproduction)
+// =============================================================================
+inline double vm_decay_scalars(const double cth, const double phi,
+                               const double sdme_04_00, const double sdme_04_10,
+                               const double sdme_04_1m1) {
+  const double theta = acos(cth);
+  const double sth = sin(theta);
+  const double factor = 3 / (4. * TMath::Pi());
+  const double t1 = 0.5 * (1 - sdme_04_00);
+  const double t2 = 0.5 * (3 * sdme_04_00 - 1) * cth * cth;
+  const double t3 =
+      -1 * TMath::Sqrt2() * sdme_04_10 * sin(2 * theta) * cos(phi);
+  const double t4 = -1 * sdme_04_1m1 * sth * sth * cos(2 * phi);
+  return t1 + t2 + t3 + t4;
+}
+inline double vm_decay_fermions(const double cth, const double phi,
+                                const double sdme_04_00,
+                                const double sdme_04_10,
+                                const double sdme_04_1m1) {
+  const double theta = acos(cth);
+  const double sth = sin(theta);
+  const double factor = 3 / (4. * TMath::Pi());
+  const double t1 = 0.5 * (1 + sdme_04_00);
+  const double t2 = -0.5 * (3 * sdme_04_00 - 1) * cth * cth;
+  const double t3 = 1 * TMath::Sqrt2() * sdme_04_10 * sin(2 * theta) * cos(phi);
+  const double t4 = 1 * sdme_04_1m1 * sth * sth * cos(2 * phi);
+  LOG_JUNK2("vm_decay_fermions",
+            "cos(theta): " + std::to_string(cth) +
+                ", theta: " + std::to_string(theta) +
+                ", t1: " + std::to_string(t1) + ", t2: " + std::to_string(t2) +
+                ", t3: " + std::to_string(t3) + ", t4: " + std::to_string(t4));
+  return t1 + t2 + t3 + t4;
+}
+
+} // namespace physics
+} // namespace lager
 
 #endif

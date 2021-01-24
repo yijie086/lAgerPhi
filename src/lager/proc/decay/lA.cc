@@ -1,21 +1,21 @@
 // lAger: General Purpose l/A-event Generator
 // Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
-// 
+//
 // This file is part of lAger.
-// 
+//
 // lAger is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Shoftware Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // lAger is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
-// 
+//
 
 #include "lA.hh"
 #include <cmath>
@@ -38,9 +38,8 @@ lA::lA(const configuration& conf, const string_path& path,
     , vm_decay_lminus_{static_cast<pdg_id>(
           abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
     , vm_decay_br_{conf.get<double>(path / "vm_branching_ratio", 1)} {
-  LOG_INFO("decay",
-           "VM decays into " + vm_decay_lplus_.name() +
-               vm_decay_lminus_.name());
+  LOG_INFO("decay", "VM decays into " + vm_decay_lplus_.name() +
+                        vm_decay_lminus_.name());
   LOG_INFO("decay",
            "VM Branching ratio set to: " + std::to_string(vm_decay_br_));
   auto do_radiative_decay_vm =
@@ -59,11 +58,21 @@ void lA::process(lA_event& e) const {
       LOG_JUNK2("decay::lA", "Particle does not need to be decayed");
       continue;
     }
-    // SCHC leptonic e+e- decay of vms
-    if (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
-        e[i].type() == pdg_id::phi) {
+    // SCHC leptonic decay of vms
+    if (e[i].status() == particle::status_code::UNSTABLE_SCHC &&
+        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
+         e[i].type() == pdg_id::phi)) {
       LOG_JUNK2("decay::lA", "Performing SCHC decay for VMs");
       quarkonium_schc(e, i);
+    }
+    // Assume actual decay already done, and we just need to add radcor if
+    // desired
+    if (e[i].status() == particle::status_code::UNSTABLE_RADCOR_ONLY &&
+        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
+         e[i].type() == pdg_id::phi)) {
+      LOG_JUNK2("decay::lA", "Performing minimal decay bookkeeping only (decay "
+                             "already done earlier).");
+      quarkonium_radcor_only(e, i);
     }
     // Pc decay according to wang et al.
     else if (e[i].type() == pdg_id::Pc_wang_52p ||
@@ -77,9 +86,8 @@ void lA::process(lA_event& e) const {
       LOG_JUNK2("decay::lA", "Pc decay");
       pentaquark_qpq(e, i);
     } else {
-      LOG_DEBUG("decay::lA",
-                "Unstable particle " + e[i].name() +
-                    ", but no decay path implemented");
+      LOG_DEBUG("decay::lA", "Unstable particle " + e[i].name() +
+                                 ", but no decay path implemented");
     }
   }
   // that's all
@@ -96,12 +104,12 @@ void lA::quarkonium_schc(lA_event& e, const int i) const {
   const double epsilon_R = e.epsilon() * e.R();
   const double r04 = epsilon_R / (1 + epsilon_R);
   const double phi = rng()->Uniform(0., TMath::TwoPi());
-  const double ctheta =
-      rand_f({-1, 1},
-             [=](const double ctheta) {
-               return ((1. + r04) + (1. - 3. * r04) * ctheta * ctheta);
-             },
-             2.001);
+  const double ctheta = rand_f(
+      {-1, 1},
+      [=](const double ctheta) {
+        return ((1. + r04) + (1. - 3. * r04) * ctheta * ctheta);
+      },
+      2.001);
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
 
@@ -184,51 +192,53 @@ void lA::pentaquark_qpq(lA_event& e, const int i) const {
   if (e[i].type() == pdg_id::Pc_wang_52p) {
     // result from a pol6 fit to a digitized version of figure 6c from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      const double x3 = x2 * x;
-                      const double x4 = x3 * x;
-                      const double x5 = x4 * x;
-                      const double x6 = x5 * x;
-                      return .149211 - 0.194418 * x - 0.563191 * x2 +
-                             0.374024 * x3 + 0.658942 * x4 + 0.110057 * x5 +
-                             0.0931712 * x6;
-                    },
-                    0.63);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          const double x3 = x2 * x;
+          const double x4 = x3 * x;
+          const double x5 = x4 * x;
+          const double x6 = x5 * x;
+          return .149211 - 0.194418 * x - 0.563191 * x2 + 0.374024 * x3 +
+                 0.658942 * x4 + 0.110057 * x5 + 0.0931712 * x6;
+        },
+        0.63);
   } else if (e[i].type() == pdg_id::Pc_wang_52m) {
     // result from a pol7 fit to a digitized version of figure 5c from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      const double x3 = x2 * x;
-                      const double x4 = x3 * x;
-                      const double x5 = x4 * x;
-                      const double x6 = x5 * x;
-                      const double x7 = x6 * x;
-                      return 1.31241 - 1.19802 * x + 1.58351 * x2 +
-                             17.1514 * x3 + 20.8306 * x4 - 4.43848 * x5 +
-                             2.67151 * x6 + 6.06378 * x7;
-                    },
-                    44.06);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          const double x3 = x2 * x;
+          const double x4 = x3 * x;
+          const double x5 = x4 * x;
+          const double x6 = x5 * x;
+          const double x7 = x6 * x;
+          return 1.31241 - 1.19802 * x + 1.58351 * x2 + 17.1514 * x3 +
+                 20.8306 * x4 - 4.43848 * x5 + 2.67151 * x6 + 6.06378 * x7;
+        },
+        44.06);
   } else if (e[i].type() == pdg_id::Pc_wang_32p) {
     // result from a expo fit to a digitized version of figure 5b from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1}, [](const double x) { return exp(-5.944 - x); },
-                    0.00713);
+    ctheta = rand_f(
+        {-1, 1}, [](const double x) { return exp(-5.944 - x); }, 0.00713);
   } else if (e[i].type() == pdg_id::Pc_wang_32m) {
     // result from a pol2 fit to a digitized version of figure 6b from
     // PRD92-034022(2015)
-    ctheta = rand_f({-1, 1},
-                    [](const double x) {
-                      const double x2 = x * x;
-                      return 0.00845846 - 0.0128146 * x + 0.00526053 * x2;
-                    },
-                    0.0266);
+    ctheta = rand_f(
+        {-1, 1},
+        [](const double x) {
+          const double x2 = x * x;
+          return 0.00845846 - 0.0128146 * x + 0.00526053 * x2;
+        },
+        0.0266);
   } else {
     // isotropic decay (flat in cos theta)
-    ctheta = rand_f({-1, 1}, [](const double x) { return 1.; }, 1.);
+    ctheta = rand_f(
+        {-1, 1}, [](const double x) { return 1.; }, 1.);
   }
   const double theta = acos(ctheta);
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
@@ -253,7 +263,17 @@ void lA::pentaquark_qpq(lA_event& e, const int i) const {
 
   // mark the Pc as decayed
   e[i].update_status(particle::status_code::DECAYED);
-} // namespace decay
+}
+// Assume actual decay already done, and we just need to add radcor if desired
+void lA::quarkonium_radcor_only(lA_event& e, const int i) const {
+  // electron or muon BR only
+  e.update_weight(vm_decay_br_);
+  if (radiative_decay_) {
+    radiative_decay_->process(e, i);
+  }
+  // mark the vm as decayed
+  e[i].update_status(particle::status_code::DECAYED_RADCOR_ONLY);
+}
 
 } // namespace decay
 } // namespace lager

@@ -54,7 +54,21 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  4. Installing: LAGER" \
+  && echo "  5. Installing: jpacPhoto" \
+  && echo "  -------------------------------------------------" \
+  && cd /tmp \
+  && git clone https://eicweb.phy.anl.gov/monte_carlo/jpacPhoto.git jpac \
+  && cd jpac && git checkout v1.0.1 \
+  && mkdir build && cd build \
+  && cmake .. \
+  && make -j20 \
+  && make install \
+  && cd /tmp \
+  && rm -r /tmp/jpac
+
+RUN source /usr/local/bin/thisroot.sh \
+  && echo "  -------------------------------------------------" \
+  && echo "  5. Installing: LAGER" \
   && echo "  -------------------------------------------------" \
   && cd /tmp \
   && git clone $REPO_URL lager \
@@ -69,7 +83,7 @@ RUN source /usr/local/bin/thisroot.sh \
 
 RUN source /usr/local/bin/thisroot.sh \
   && echo "  -------------------------------------------------" \
-  && echo "  5. Adding missing packages and slimming down image" \
+  && echo "  6. Adding missing packages and slimming down image" \
   && echo "  -------------------------------------------------" \
   && apt-get -yqq update \
   && apt-get install -yqq parallel \

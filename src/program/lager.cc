@@ -36,6 +36,8 @@
 #include <lager/gen/initial/target_gen.hh>
 #include <lager/gen/initial/vertex_gen.hh>
 #include <lager/gen/lA/brodsky_2vmX.hh>
+#include <lager/gen/lA/jpacPhoto_pentaquark.hh>
+#include <lager/gen/lA/jpacPhoto_pomeron.hh>
 #include <lager/gen/lA/lee_4He_jpsi_grid.hh>
 #include <lager/gen/lA/oleksii_2vmp.hh>
 #include <lager/gen/lA/oleksii_jpsi_bh.hh>
@@ -72,6 +74,9 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(lA::generator, lA::oleksii_2vmp, "oleksii_2vmp");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_jpsi_bh, "oleksii_jpsi_bh");
   FACTORY_REGISTER2(lA::generator, lA::resonance_qpq, "resonance_1qpq");
+  FACTORY_REGISTER2(lA::generator, lA::jpacPhoto_pomeron, "jpacPhoto_pomeron");
+  FACTORY_REGISTER2(lA::generator, lA::jpacPhoto_pentaquark,
+                    "jpacPhoto_pentaquark");
   FACTORY_REGISTER2(initial::vertex_generator, initial::origin_vertex,
                     "origin");
   FACTORY_REGISTER2(initial::vertex_generator, initial::linear_vertex,
@@ -113,8 +118,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   auto do_hepmc = cf.get_optional<bool>("output_hepmc");
   if (do_hepmc && *do_hepmc) {
     LOG_INFO("lager", "Also outputting text output for HepMC");
-    ohepmc =
-        std::make_unique<HepMC3::WriterAscii>((output + ".hepmc").c_str());
+    ohepmc = std::make_unique<HepMC3::WriterAscii>((output + ".hepmc").c_str());
   }
   // check if we want gemc output as well
   std::unique_ptr<std::ofstream> ogemc;
@@ -148,15 +152,12 @@ int run_mc(const configuration& cf, const std::string& output) {
   }
 
   LOG_INFO("lager", "Event generation complete");
-  LOG_INFO("lager",
-           "Total number of generated events: " +
-               std::to_string(gen.n_events()));
-  LOG_INFO("lager",
-           "Total accepted cross section [nb]: " +
-               to_string_exp(gen.cross_section()));
-  LOG_INFO("lager",
-           "Partial accepted cross section with BR [nb]: " +
-               to_string_exp(gen.partial_cross_section()));
+  LOG_INFO("lager", "Total number of generated events: " +
+                        std::to_string(gen.n_events()));
+  LOG_INFO("lager", "Total accepted cross section [nb]: " +
+                        to_string_exp(gen.cross_section()));
+  LOG_INFO("lager", "Partial accepted cross section with BR [nb]: " +
+                        to_string_exp(gen.partial_cross_section()));
   LOG_INFO("lager",
            " --> Acceptance [%]: " + std::to_string(100 * gen.acceptance()));
   // write generation statistics to file as 1D histograms

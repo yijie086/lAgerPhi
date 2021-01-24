@@ -1,0 +1,68 @@
+{
+  "mc" : {
+    "type" : "debug",
+    "tag" : "",
+    "lumi" : "100",
+    "generator" : {
+      "type" : "bs-2gluon",
+      "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
+      "beam": {
+        "lepton" : {
+          "type" : "constant",
+          "particle_type" : "e-",
+          "dir" : [ "0", "0", "1" ],
+          "energy" : "11.0"
+        },
+        "ion" : {
+          "type" : "constant",
+          "particle_type" : "proton",
+          "dir" : [ "0", "0", "-1" ],
+          "energy" : "0.9382721"
+        }
+      },
+      "target": {"type": "primary"},
+      "photon" : {
+        "type" : "bremsstrahlung_realistic_target",
+        "model" : "exact",
+        "radiator" : {
+          "name" : "none",
+          "thickness" : "0",
+          "radiation_length" : "1",
+          "density" : "1"
+        },
+        "window" : {
+          "name" : "Loop 2 Entrance Window",
+          "radiation_length" : "24.01",
+          "density" : "2.699",
+          "thickness" : "0.015"
+        },
+        "target" : {
+          "name" : "SoLID LH2",
+          "radiation_length" : "63.06",
+          "density" : "0.0708",
+          "range" : [ "-7.5", "7.5" ]
+        },
+        "E_range" : [ "8", "11.0" ]
+      },
+      "process_0" : {
+        "type" : "brodsky_2vmX",
+        "vm_type" : "J/psi",
+        "recoil_type" : "proton",
+        "photo_b" : "1.13",
+        "photo_c2g" : "6.499e3",
+        "photo_c3g" : "0.0",
+        "R_vm_c" : "2.164",
+        "R_vm_n" : "2.131",
+        "dipole_n" : "2.575"
+      }
+    },
+    "detector" : {
+      "type" : "4pi"
+    },
+    "decay" : {
+      "vm_decay_lepton_type" : "11",
+      "vm_branching_ratio" : "0.05971",
+      "do_radiative_decay_vm" : "true"
+    }
+  }
+}
