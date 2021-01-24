@@ -33,7 +33,7 @@ public:
     double rl = rl_pre_;
     if (target_range_.includes(vz)) {
       rl += rl_per_cm_ * (vz - target_range_.min);
-    } else if (vz > target_range_.max) {
+    } else if (vz >= target_range_.max) {
       rl += rl_per_cm_ * target_range_.width();
     }
     LOG_JUNK2("realistic_target", "Calculated RL for z-vertex position at " +
