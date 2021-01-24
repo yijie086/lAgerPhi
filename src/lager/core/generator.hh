@@ -94,6 +94,25 @@ protected:
 
     return x;
   }
+  // same for 2D functions
+  template <class Func2D>
+  std::pair<double, double> rand_f(const interval<double>& range1,
+                                   const interval<double>& range2, Func2D f,
+                                   double fmax) const {
+    const double x = rng()->Uniform(range1.min, range1.max);
+    const double y = rng()->Uniform(range2.min, range2.max);
+    const double test = rng()->Uniform(0, fmax);
+    const double fxy = f(x, y);
+    // if the test fails, try again (accept-reject)
+    if (test > fxy) {
+      return rand_f(range1, range2, f, fmax);
+    }
+    // ensure a proper fmax
+    tassert(fxy <= fmax, "fmax set too small in rand_f call (" +
+                             std::to_string(fxy) + ">" + std::to_string(fmax) +
+                             ")");
+    return {x, y};
+  }
 
 private:
   std::shared_ptr<TRandom> rng_;
@@ -162,7 +181,8 @@ private:
 // Keeps track of the generated cross section
 //
 // Usage:
-//    * the user should derive from this class, and provide a definition of the
+//    * the user should derive from this class, and provide a definition of
+//    the
 //      virtual member functions
 //        - InitialData generate_initial();
 //        - void build_event(Event&);
@@ -195,8 +215,9 @@ public:
   virtual std::vector<event_type> generate() {
     // buffer for the final events we return
     // this is needed because we do one additional accept-reject step where we
-    // remove events to compensate for a weight smaller than 1, which can occur
-    // when, e.g., the event builder only simulates one particular decay channel
+    // remove events to compensate for a weight smaller than 1, which can
+    // occur when, e.g., the event builder only simulates one particular decay
+    // channel
     std::vector<event_type> good_event_list;
     do {
 
@@ -226,8 +247,8 @@ public:
           }
           // generate one event
           auto event = process.gen->generate(initial);
-          // go to the next process have a bad cross section, print a warning if
-          // the cross section maximum was violated
+          // go to the next process have a bad cross section, print a warning
+          // if the cross section maximum was violated
           if (event.cross_section() <= 0) {
             LOG_JUNK(process.name,
                      "Cross section <= 0, skipping this trial cycle");
@@ -299,9 +320,9 @@ public:
   // (phase_space * max_cross_section) times the fraction of accepted events
   // compared to the number of trials
   //
-  // THis is true for all processes, as we rescaled the number of trials T2 for
-  // a process with less generation volume V2 compared to the prime process by a
-  // factor of V2/V1, i.e. T2 = V2/V1 * T1
+  // THis is true for all processes, as we rescaled the number of trials T2
+  // for a process with less generation volume V2 compared to the prime
+  // process by a factor of V2/V1, i.e. T2 = V2/V1 * T1
   //
   // Therefore we get that
   // sigma_2 = G2 / T2 * V2 = G2 / T1 * V1

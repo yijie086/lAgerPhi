@@ -173,6 +173,7 @@ private:
   double y_{0.};
   double epsilon_{0.};
   double R_{0.};
+
   int target_index_{-1};
   int photon_index_{-1};
   int scat_index_{-1};

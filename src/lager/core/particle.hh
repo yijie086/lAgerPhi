@@ -53,9 +53,11 @@ public:
     SPECTATOR = 15,
     DECAYED = 21,
     DECAYED_SCHC = 22,
+    DECAYED_RADCOR_ONLY = 23,
     FINAL = 30,
     UNSTABLE = 31,
     UNSTABLE_SCHC = 32,
+    UNSTABLE_RADCOR_ONLY = 33,
     INFO = 40,
     INFO_PARENT_CM = 41,
     OTHER = 99
@@ -118,12 +120,15 @@ public:
   bool stable() const {
     return (status_ != status_code::UNSTABLE &&
             status_ != status_code::UNSTABLE_SCHC &&
+            status_ != status_code::UNSTABLE_RADCOR_ONLY &&
             status_ != status_code::DECAYED &&
-            status_ != status_code::DECAYED_SCHC);
+            status_ != status_code::DECAYED_SCHC &&
+            status_ != status_code::DECAYED_RADCOR_ONLY);
   }
   bool decayed() const {
     return (status_ == status_code::DECAYED ||
-            status_ == status_code::DECAYED_SCHC);
+            status_ == status_code::DECAYED_SCHC ||
+            status_ == status_code::DECAYED_RADCOR_ONLY);
   }
 
   // final state particles (labeled FINAL or SCAT, RECOIL or SPECTATOR)
@@ -133,7 +138,8 @@ public:
             status_ == status_code::SPECTATOR ||
             status_ == status_code::RECOIL ||
             status_ == status_code::UNSTABLE ||
-            status_ == status_code::UNSTABLE_SCHC);
+            status_ == status_code::UNSTABLE_SCHC ||
+            status_ == status_code::UNSTABLE_RADCOR_ONLY);
   }
 
   bool documentation() const {
@@ -370,10 +376,9 @@ inline void particle::add_parent(const int index) {
   } else if (parent_.max < 0) {
     parent_.max = index;
   } else {
-    tassert(false,
-            "A particle can have only have up to 2 parents"
-            "(tried to add additional parent to particle '" +
-                name() + "')");
+    tassert(false, "A particle can have only have up to 2 parents"
+                   "(tried to add additional parent to particle '" +
+                       name() + "')");
   }
 }
 

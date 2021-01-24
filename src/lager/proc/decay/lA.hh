@@ -53,6 +53,7 @@ public:
 
 private:
   void quarkonium_schc(lA_event& e, const int index) const;
+  void quarkonium_radcor_only(lA_event& e, const int index) const;
   void pentaquark_qpq(lA_event& e, const int index) const;
 
   const particle vm_decay_lplus_;
