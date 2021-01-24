@@ -10,6 +10,7 @@ _S. Joosten, Argonne l/A-event Generator (2020), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
+* v3.3.x Adds photoproduction generators based on JPAC pomeron and baryon resonance calculations
 * v3.2.x Adds HepMC3 and fermi momentum and misc fixes
 * v3.1.x First stable relase of `lAger`
 
@@ -20,7 +21,7 @@ your system, first ensure singularity is installed. Then follow these instructio
 1. Clone this repository and checkout the desired stable release (e.g. v3.2.2)
 ```bash
 git clone https://eicweb.phy.anl.gov/monte_carlo/lager.git
-cd lager && git checkout v3.2.5
+cd lager && git checkout v3.3.0
 ```
 2. Run the `deploy.py` script to install the container to a prefix of your choice, e.g. `$HOME/local/opt/lager`.
 ```bash
