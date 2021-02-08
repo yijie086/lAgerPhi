@@ -6,7 +6,7 @@ Below you can find an overview of the release versions, as well as a short tutor
 copyright notice. If you use lAger to generate data used in a presentation or an article
 in a scientific publication, please cite:
 
-_S. Joosten, Argonne l/A-event Generator (2020), GitLab repository,
+_S. Joosten, Argonne l/A-event Generator (2021), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
@@ -156,7 +156,7 @@ reports.
 # Copyright
 
 `lAger`: General Purpose l/A-event Generator
-Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
+Copyright (C) 2016-2021 Sylvester Joosten <sjoosten@anl.gov>
 
 `lAger` is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
