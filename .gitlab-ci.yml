@@ -44,7 +44,7 @@ release:singularity:
   only:
      - tags
   tags:
-     - singularity
+     - silicon
   needs: ['release:build']
   script:
      - cp containers/singularity/lager.def .
