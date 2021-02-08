@@ -1,5 +1,5 @@
 lAger: General Purpose l/A-event Generator
-Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
+Copyright (C) 2016-2021 Sylvester Joosten <sjoosten@anl.gov>
 
 This file is part of lAger.
 

@@ -30,24 +30,87 @@ Author: Sylvester Joosten <sjoosten@anl.gov>
 
 import os
 import argparse
-import re
 import urllib.request
-from deploy import make_launcher, make_modulefile
-from deploy.util import smart_mkdir, project_version, InvalidArgumentError
+
+## copy-paste to disabel SSL verification as it fails on 
+## some HPC systems
+import os, ssl
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None)):
+    ssl._create_default_https_context = ssl._create_unverified_context
+## end of copy-paste
 
 ## Gitlab group and project/program name. 
 GROUP_NAME='monte_carlo'
 PROJECT_NAME='lager'
 PROJECT_ID='301'
-IMAGE_ROOT='lager'
-
-PROGRAMS = ['lager']
+PROGRAMS = ['lager', 'root']
 
 ## URL for the current container (git tag will be filled in by the script)
-CONTAINER_URL = r'https://eicweb.phy.anl.gov/api/v4/projects/{id}/jobs/artifacts/{version}/raw/build/{img}.sif?job=release:singularity'
+CONTAINER_URL = r'https://eicweb.phy.anl.gov/api/v4/projects/{id}/jobs/artifacts/{version}/raw/build/{img}.sif?job=singularity'
 
 ## Singularity bind directive
 BIND_DIRECTIVE= '-B {0}:{0}'
+
+## generic launcher bash script to launch the application
+LAUNCHER_SCRIPT='''
+#!/bin/bash
+
+piped_args=
+if [ -p /dev/stdin ]; then
+  # If we want to read the input line by line
+  while IFS= read line; do
+    if [ -z "$piped_args" ]; then
+       piped_args="$line"
+    else 
+       piped_args="$piped_args\n$line"
+    fi
+  done
+fi
+
+if [ $piped_args ]  ; then
+  echo -e $piped_args | singularity exec {2} {1} {0} $@
+else
+  singularity exec {2} {1} {0} $@
+fi
+'''
+
+## Generic module file
+MODULEFILE='''#%Module1.0#####################################################################
+##
+## for {0} {1}
+##
+proc ModulesHelp {{ }} {{
+    puts stderr "This module sets up the environment for the {0} container"
+}}
+module-whatis "{0} {1}"
+
+# For Tcl script use only
+set version 4.1.4
+
+prepend-path    PATH    {2}
+'''
+
+class InvalidArgumentError(Exception):
+    pass
+
+def _smart_mkdir(dir):
+    if not os.path.exists(dir):
+        try:
+            os.makedirs(dir)
+        except Exception as e:
+            print('ERROR: unable to create directory', dir)
+            raise e
+    if not os.access(dir, os.W_OK):
+        print('ERROR: We do not have the write privileges to', dir)
+        raise InvalidArgumentError()
+
+
+def _project_version():
+    ## Shell command to get the current git version
+    git_version_cmd = 'git symbolic-ref -q --short HEAD || git describe --tags --exact-match'
+    ## Strip will remove the leading \n character
+    return os.popen(git_version_cmd).read().strip()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -57,8 +120,8 @@ if __name__ == "__main__":
     parser.add_argument(
             '-v', '--version',
             dest='version',
-            default=project_version(),
-            help='(opt.) project version. Default: current version (in repo).')
+            default=_project_version(),
+            help='(opt.) project version. Default: current git branch/tag.')
     parser.add_argument(
             '-f', '--force',
             action='store_true',
@@ -72,7 +135,7 @@ if __name__ == "__main__":
     parser.add_argument(
             '-m', '--module-path',
             dest='module_path',
-            help='(opt.) Root module path where you want to install a modulefile.')
+            help='(opt.) Root module path if you want to install a modulefile')
 
     args = parser.parse_args()
 
@@ -89,64 +152,37 @@ if __name__ == "__main__":
                 raise InvalidArgumentError()
         bind_directive = ' '.join([BIND_DIRECTIVE.format(path) for path in args.bind_paths])
 
-    ## Naming schemes:
-    ## We need to deduce both the correct git branch and an appropriate
-    ## local version number from the desired version number
-    ## by default we use whatever version number is given in VERSION, but we want
-    ## to allow users to specify either X.Y.Z or vX.Y.Z for versions (same for stable
-    ## branches).
-    ## 
-    ## Policy:
-    ## numbered releases: (v)X.Y.Z --> git vX.Y.Z and local X.Y.Z
-    ## stable branches: (v)X.Y-stable --> git vX.Y-stable and local X.Y-stable
-    ## master branch: latest/master --> git master and local stable
-    ## for other branches --> git <BRANCH> and local unstable
-
-    version_local = None
-    version_repo = None
-    if args.version in ('master', 'latest'):
-        version_local = 'latest'
-        version_repo = 'master'
-    elif re.search('[0-9]+\.[0-9]+\.[0-9]|[0-9]+\.[0-9]-stable', args.version) is not None:
-        version_local = args.version
-        version_repo = args.version
-        if version_local[0] == 'v':
-            version_local = version_local[1:]
-        if version_repo[0].isdigit():
-            version_repo = 'v{}'.format(args.version)
-    else:
-        version_local = 'unstable'
-        version_repo = args.version
-
     ## Create our install prefix if needed and ensure it is writable
     args.prefix = os.path.abspath(args.prefix)
     print('Install prefix:', args.prefix)
     print('Creating install prefix if needed...')
-    bindir = '{}/bin'.format(args.prefix)
     libdir = '{}/lib'.format(args.prefix)
-    libexecdir = '{}/libexec'.format(args.prefix)
-    root_prefix = os.path.abspath('{}/..'.format(args.prefix))
-    moduledir = '{}/{}'.format(args.module_path, PROJECT_NAME)
-    dirs = [bindir, libdir, libexecdir]
-    if args.module_path:
-        dirs.append(moduledir)
-    for dir in dirs:
+    bindir = '{}/bin'.format(args.prefix)
+    for dir in [libdir, bindir]:
         print(' -', dir)
-        smart_mkdir(dir)
+        _smart_mkdir(dir)
+
+    ## Create our module directory if needed and ensure it is writeble as well
+    if args.module_path:
+        print('Module path', args.module_path)
+        print('Creating module dir if needed...')
+        args.module_path = '{}/{}'.format(args.module_path, PROJECT_NAME)
+        print(' -', args.module_path)
+        _smart_mkdir(args.module_path)
 
     ## At this point we know we can write to our desired prefix and that we have a set of
     ## valid bind paths
 
     ## Get the container
     ## We want to slightly modify our version specifier: if it leads with a 'v' drop the v
-    img = IMAGE_ROOT
-    ## Builder SIF is not built anymore, deprecated
-    #if args.builder:
-        #img += "_builder"
-    container = '{}/{}.sif.{}'.format(libdir, img, version_local)
+    version = '{}'.format(args.version)
+    if version[0] is 'v':
+        version = version[1:]
+    if args.version[0].isdigit():
+        args.version = 'v{}'.format(args.version)
+    container = '{}/{}.sif.{}'.format(libdir, PROJECT_NAME, version)
     if not os.path.exists(container) or args.force:
-        url = CONTAINER_URL.format(group=GROUP_NAME, project=PROJECT_NAME, id=PROJECT_ID,
-                version=version_repo, img=img)
+        url = CONTAINER_URL.format(GROUP_NAME, PROJECT_NAME, args.version)
         print('Downloading container from:', url)
         print('Destination:', container)
         urllib.request.urlretrieve(url, container)
@@ -154,20 +190,22 @@ if __name__ == "__main__":
         print('WARNING: Container found at', container)
         print(' ---> run with -f to force a re-download')
 
-    if args.module_path:
-        make_modulefile(PROJECT_NAME, version_local, moduledir, bindir)
-
     ## configure the application launchers
     print('Configuring applications launchers: ')
-    for prog in PROGRAMS:
-        app = prog
-        exe = prog
-        if type(prog) == tuple:
-            app = prog[0]
-            exe = prog[1]
-        make_launcher(app, container, bindir,
-                      bind=bind_directive,
-                      exe=exe)
+    for app in PROGRAMS:
+        fname = '{}/{}'.format(bindir, app)
+        print(' - creating', fname)
+        with open(fname, 'w') as file:
+            script = LAUNCHER_SCRIPT.format(app, container, bind_directive)
+            file.write(script)
+        os.system('chmod +x {}'.format(fname))
+
+    ## configure the module file
+    if (args.module_path):
+        fname = '{}/{}'.format(args.module_path, version)
+        print('Creating and configuring modulefile:', fname)
+        with open(fname, 'w') as file:
+            modulefile = MODULEFILE.format(PROJECT_NAME, version, bindir)
+            file.write(modulefile)
 
     print('Container deployment successful!')
-

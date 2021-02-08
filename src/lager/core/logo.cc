@@ -1,5 +1,5 @@
 // lAger: General Purpose l/A-event Generator
-// Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>
+// Copyright (C) 2016-2021 Sylvester Joosten <sjoosten@anl.gov>
 // 
 // This file is part of lAger.
 // 
@@ -70,13 +70,13 @@ void info() {
   std::cerr
       << "   Argonne generic l/A-event generator\n"
          "   Version: " LAGER_VERSION "\n"
-         "   Copyright (C) 2016-2020 Sylvester Joosten <sjoosten@anl.gov>\n\n"
+         "   Copyright (C) 2016-2021 Sylvester Joosten <sjoosten@anl.gov>\n\n"
          "   If you have questions, or want to raise an issue, please go "
          "to:\n"
          "   https://eicweb.phy.anl.gov/monte_carlo/lager\n\n"
          "   If you used lAger to generate data used in a presentation or\n"
          "   an article in a scientific publication, please cite:\n\n"
-         "   'S. Joosten, Argonne l/A-event Generator (2020), GitLab\n"
+         "   'S. Joosten, Argonne l/A-event Generator (2021), GitLab\n"
          "    repository, https://eicweb.phy.anl.gov/monte_carlo/lager'\n";
 }
 }
