@@ -183,7 +183,7 @@ double jpacPhoto_pentaquark::calc_max_xsec(const configuration& cf) /*const */ {
     const double local_max = tf_xsec.GetMaximum();
     max = std::max(max, local_max);
   }
-  return max * 1.0001;
+  return max * 1.1;
 } // namespace lA
 
 // =============================================================================
