@@ -60,16 +60,16 @@ void lA::process(lA_event& e) const {
     }
     // SCHC leptonic decay of vms
     if (e[i].status() == particle::status_code::UNSTABLE_SCHC &&
-        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
-         e[i].type() == pdg_id::phi)) {
+        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::psi_prime ||
+         e[i].type() == pdg_id::upsilon || e[i].type() == pdg_id::phi)) {
       LOG_JUNK2("decay::lA", "Performing SCHC decay for VMs");
       quarkonium_schc(e, i);
     }
     // Assume actual decay already done, and we just need to add radcor if
     // desired
     if (e[i].status() == particle::status_code::UNSTABLE_RADCOR_ONLY &&
-        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::upsilon ||
-         e[i].type() == pdg_id::phi)) {
+        (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::psi_prime ||
+         e[i].type() == pdg_id::upsilon || e[i].type() == pdg_id::phi)) {
       LOG_JUNK2("decay::lA", "Performing minimal decay bookkeeping only (decay "
                              "already done earlier).");
       quarkonium_radcor_only(e, i);

@@ -134,6 +134,7 @@ enum class pdg_id : int32_t {
   K_star_minus = -323,
   phi = 333,
   J_psi = 443,
+  psi_prime = 100443,
   upsilon = 553,
   // baryons
   n = 2112,
