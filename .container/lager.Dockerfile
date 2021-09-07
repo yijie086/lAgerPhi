@@ -67,6 +67,9 @@ RUN --mount=type=cache,target=/var/cache/apt                            \
  && apt-get -yqq autoremove                                             \
  && rm -rf /var/lib/apt/lists/*                                         
 
+## random cleanup that's somehow necessary
+RUN rm -rf /etc/profile.d/debuginfod.*
+
 ## ========================================================================================
 ## STAGE2: Builder image
 ## ========================================================================================
@@ -256,9 +259,6 @@ COPY singularity.d /.singularity.d
 ## Add minio client into /usr/local/bin
 ADD https://dl.min.io/client/mc/release/linux-amd64/mc /usr/local/bin
 RUN chmod a+x /usr/local/bin/mc
-
-## random cleanup that's somehow necessary
-RUN rm -rf /etc/profile.d/debuginfod.*
 
 ## ========================================================================================
 ## STAGE 4: Release image
