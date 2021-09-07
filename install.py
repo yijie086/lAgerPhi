@@ -230,7 +230,7 @@ if __name__ == "__main__":
 
     version_docker = None
     version_gitlab = None
-    build_job = '{}:singularity:default'.format(args.container)
+    build_job = '{}:deploy'.format(args.container)
     if args.version in ('master', 'testing'):
         version_docker = 'testing'
         version_gitlab = 'master'
@@ -244,18 +244,14 @@ if __name__ == "__main__":
     elif args.version[:3] == 'mr-':
         version_docker = 'unstable'
         version_gitlab = 'refs/merge-requests/{}/head'.format(args.version[3:])
-    elif args.version == 'nightly':
-        version_docker = 'nightly'
-        version_gitlab = 'master'
-        build_job = '{}:singularity:nightly'.format(args.container)
+    #elif args.version == 'nightly':
+        #version_docker = 'nightly'
+        #version_gitlab = 'master'
+        #build_job = '{}:singularity:nightly'.format(args.container)
     else:
         ## fixme add proper error handling
         print('Unknown requested version:', args.version)
         raise UnknownVersionError()
-
-    ## when working with the old container, the build job is just 'singularity'
-    if args.container == 'eic':
-        build_job = 'singularity'
 
     ## Create our install prefix if needed and ensure it is writable
     args.prefix = os.path.abspath(args.prefix)

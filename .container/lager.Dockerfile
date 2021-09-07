@@ -282,10 +282,6 @@ RUN --mount=from=staging,target=/staging                                \
  && cp /staging/etc/lager_info /etc/lager_info                          \
  && cp -r /staging/.singularity.d /.singularity.d                        
 
-ARG JUG_VERSION=1
-RUN echo "" >> /etc/jug_info                                            \
- && echo " - jug_dev: ${JUG_VERSION}" >> /etc/jug_info
-
 ## make sure we have the entrypoints setup correctly
 ENTRYPOINT ["/usr/local/sbin/entrypoint.sh"]
 CMD ["bash", "--rcfile", "/etc/profile", "-l"]

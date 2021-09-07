@@ -93,7 +93,7 @@ lager:build:
     ## calculate a hash based on the spack.yaml file and the spack directory
     ## and use this spack as a docker variable to force a rebuild when there
     ## is a change (versus rerun from cache)
-    - PACKAGE_HASH=$(tar cf - .container/spack | sha1sum | head -c40)
+    - PACKAGE_HASH=$(tar cf - .container/spack/* | sha1sum | head -c40)
     - echo "PACKAGE_HASH= ${PACKAGE_HASH}"
     - |
       if [ $FORCE_NOCACHE = 1 ]; then
@@ -104,9 +104,9 @@ lager:build:
     - docker build -t ${CI_REGISTRY_IMAGE}/${BUILD_IMAGE}:${INTERNAL_TAG} 
                    -f .container/lager.Dockerfile
                    --build-arg SPACK_VERSION=${SPACK_VERSION}
+                   --build-arg CACHE_BUST=${PACKAGE_HASH}
                    --build-arg LAGER_VERSION=${CI_COMMIT_REF_NAME}
                    --build-arg REPO_URL=${CI_REPOSITORY_URL} 
-                   --build-arg CACHE_BUST=${PACKAGE_HASH}
                    .container
     ## standard exports
     - ./.gitlabci/docker_push.sh -i ${BUILD_IMAGE} -l ${INTERNAL_TAG} 
