@@ -10,40 +10,39 @@ _S. Joosten, Argonne l/A-event Generator (2021), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
+* v3.5.x New container/installer setup
+* v3.4.x Add support for psi prime
 * v3.3.x Adds photoproduction generators based on JPAC pomeron and baryon resonance calculations
 * v3.2.x Adds HepMC3 and fermi momentum and misc fixes
 * v3.1.x First stable relase of `lAger`
 
 # Tutorial
-## Setup of the lager singularity container on your system:
-The default mode to run the generator is through singularity. To setup the generator on
-your system, first ensure singularity is installed. Then follow these instructions:
-1. Clone this repository and checkout the desired stable release (e.g. v3.2.2)
-```bash
-git clone https://eicweb.phy.anl.gov/monte_carlo/lager.git
-cd lager && git checkout v3.3.2
-```
-2. Run the `deploy.py` script to install the container to a prefix of your choice, e.g. `$HOME/local/opt/lager`.
-```bash
-./deploy.py $HOME/local/opt/lager
-```
-There are several flags supported by `deploy.py`. To get a full overview you can run `deploy.py -h`.
-Noteable flags:
-  - Print all available options: `-h`.
-  - Add a custom bind path (e.g. /site) to the launcher: `-b /site`.
-  - Deploy a different version (e.g. master): `-v master`.
 
-3. If this all executed without issues you should now be able to run the generator from
-   the prefix. You can either refer directly to the launcher under `<PREFIX>/bin/lager` or
-   ideally add `<PREFIX>/bin` to your `$PATH` in your `bashrc` (or equivalent).
+Simple Installation
+------------
+1. Create a local directory that you want to work in, e.g `$HOME/lager`, and go into this
+   directory.
+```bash
+mkdir $HOME/lager
+cd $HOME/lager
+```
 
-4. You can now explore the command line flags for `lAger` using the `-h` flag.
+2. Execute the following line in your terminal to setup your environment in this directory
+   to install the latest stable container
+```bash
+curl https://eicweb.phy.anl.gov/monte_carlo/lager/-/raw/master/install.sh | bash
+```
+
+3. You can start `lager` by using the installed launcher script from your top-level
+   working directory. There is also a `lager-shell` launcher that opens a shell within the
+   singularity container, useful for expert usage. Finally, some example configuration
+   files are downloaded into the `examples` directory.
+
+4. You can now explore the command line flags for `lager` using the `-h` flag.
 ```bash
 lager -h # if you have <PREFIX>/bin in your $PATH
 <PREFIX>/bin/lager -h # if you do not have the prefix in your $PATH
 ```
-From now on, for simplicity it will be assumed you have `<PREFIX>/bin` in your `$PATH`. If
-you do not, substitute `lager` for the explicit path `<PREFIX>/bin/lager`.
 
 ## Command-line interface
 
@@ -70,7 +69,7 @@ parallel.
 
 ## JSON configuration file
 
-`lAger` is mainly configured through a JSON file. You can find examples under
+`lager` is mainly configured through a JSON file. You can find examples under
  `examples`. The entire configuration is placed under the `mc` key. As example, let's
  discuss `solid.ep-2gluon.json`.
 
@@ -99,7 +98,7 @@ These are the 6 main fields to setup `lAger`:
    write out events that fit the reconstruction requirements. 
 
 ### Generator configuration
-The main appeal of `lAger` lies into the flexibility of the generator as it is split in smaller
+The main appeal of `lager` lies into the flexibility of the generator as it is split in smaller
 sub-generators that can be mixed and matched together to form a very powerful generation
 tool. Below you can see the generator setup for a solid-ep simulation performed for the
 SoLID pCDR document.

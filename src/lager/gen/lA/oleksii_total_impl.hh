@@ -20,6 +20,8 @@
 #ifndef OLEKSII_TOTAL_IMPL_LOADED
 #define OLEKSII_TOTAL_IMPL_LOADED
 
+#include <complex>
+
 namespace oleksii_total_impl {
 
 std::complex<double> fT1(const double q2, const double Egamma);

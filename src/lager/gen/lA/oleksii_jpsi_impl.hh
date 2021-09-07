@@ -20,6 +20,8 @@
 #ifndef OLEKSII_JPSI_IMPL_LOADED
 #define OLEKSII_JPSI_IMPL_LOADED
 
+#include <complex>
+
 namespace oleksii_jpsi_impl {
 
 std::complex<double> fT1(const double q2, const double Egamma);
