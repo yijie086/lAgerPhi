@@ -23,7 +23,7 @@ while [ $# -gt 0 ]; do
   key=$1
   case $key in
     -p|--prefix)
-      PREFIX=$2
+      PREFIX=`realpath $2`
       shift
       shift
       ;;
