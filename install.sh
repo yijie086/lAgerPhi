@@ -62,6 +62,8 @@ if [ ! -d $PREFIX ]; then
   exit 1
 fi
 
+pushd $PREFIX
+
 echo "Setting up development environment for eicweb/$CONTAINER:$VERSION"
 
 ## Simple setup script that installs the container
@@ -70,7 +72,7 @@ echo "Setting up development environment for eicweb/$CONTAINER:$VERSION"
 ## that launches the container for this working directory
 ## to the $PREFIX/local directory
 
-mkdir -p local/lib || exit 1
+mkdir -p $PREFIX/local/lib || exit 1
 
 SINGULARITY=
 ## check for a singularity install
@@ -290,3 +292,5 @@ echo " - Downloaded examples into $PWD/examples"
 echo "Environment setup succesfull"
 echo "You can start the lager by running ./lager (see ./lager --help for more info)."
 echo "You can start a full development environment by running './lager-shell'"
+
+popd
