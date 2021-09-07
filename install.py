@@ -176,7 +176,7 @@ if __name__ == "__main__":
             dest='container',
             default=DEFAULT_IMG,
             help='(opt.) Container to install. '
-                 'D: {}'.format(DEFAULT_IMG)
+                 'D: {}'.format(DEFAULT_IMG))
     parser.add_argument(
             '-v', '--version',
             dest='version',

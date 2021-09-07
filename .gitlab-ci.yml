@@ -21,7 +21,6 @@ variables:
   ## Force a rebuild without using cache
   FORCE_NOCACHE: 0
 
-
 stages:
   - config
   - build
