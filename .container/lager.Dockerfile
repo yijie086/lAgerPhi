@@ -257,6 +257,8 @@ COPY singularity.d /.singularity.d
 ADD https://dl.min.io/client/mc/release/linux-amd64/mc /usr/local/bin
 RUN chmod a+x /usr/local/bin/mc
 
+## random cleanup that's somehow necessary
+RUN rm -rf /etc/profile.d/debuginfod.*
 
 ## ========================================================================================
 ## STAGE 4: Release image
