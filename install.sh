@@ -183,7 +183,7 @@ for dir in /work /scratch /volatile /cache; do
 done
 
 
-mkdir $PREFIX/bin
+mkdir -p $PREFIX/bin
 
 ## create a new top-level lager-shell launcher script
 ## that starts a shell within the lager container
@@ -285,7 +285,7 @@ chmod +x $PREFIX/bin/lager
 
 ## also get some example configs
 git clone --depth=1 https://eicweb.phy.anl.gov/monte_carlo/lager.git lager-tmp \
-  && mkdir $PREFIX/share \
+  && mkdir -p $PREFIX/share \
   && mv lager-tmp/examples share/lager-examples \
   && rm -rf lager-tmp
 
