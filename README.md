@@ -34,10 +34,11 @@ cd $HOME/lager
 curl https://eicweb.phy.anl.gov/monte_carlo/lager/-/raw/master/install.sh | bash
 ```
 
-3. You can start `lager` by using the installed launcher script from your top-level
-   working directory. There is also a `lager-shell` launcher that opens a shell within the
+3. The launchers are installed in the `bin` directory. 
+   You can start `lager` by using the installed `bin/lager` launcher script. 
+   There is also a `lager-shell` launcher that opens a shell within the
    singularity container, useful for expert usage. Finally, some example configuration
-   files are downloaded into the `examples` directory.
+   files are downloaded into the `share/lager-examples` directory.
 
 4. You can now explore the command line flags for `lager` using the `-h` flag.
 ```bash
