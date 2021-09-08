@@ -175,7 +175,7 @@ echo " - Determining additional bind paths"
 PREFIX_ROOT="/$(realpath $PREFIX | cut -d "/" -f2)"
 BINDPATH=$PREFIX_ROOT
 echo "   --> $PREFIX_ROOT"
-for dir in /work /scratch /volatile /cache; do
+for dir in /work /scratch /volatile /cache /gpfs /gpfs01 /gpfs02; do
   ## only add directories once
   if [[ ${BINDPATH} =~ `basename $dir` ]]; then
     continue
