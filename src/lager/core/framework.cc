@@ -33,6 +33,10 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/filesystem.hpp>
 
+#ifndef LAGER_VERSION
+#define LAGER_VERSION "XXX"
+#endif
+
 // useful aliases
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
@@ -123,7 +127,7 @@ framework::framework(int argc, char* argv[],
   global::logger.set_output(log_file_);
 
   // Communicate LAGER commit hash for this run
-  LOG_INFO("lager", "LAGER version: " + get_lager_version());
+  LOG_INFO("lager", "LAGER version: " LAGER_VERSION);
 }
 catch (const framework_help& h) {
   std::cerr << h.what() << std::endl;

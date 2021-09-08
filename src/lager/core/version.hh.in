@@ -22,6 +22,8 @@
 
 #include <string>
 
+// unused
+
 namespace lager {
 inline std::string get_lager_version() { return "@LAGER_GIT_VERSION@"; }
 } // namespace lager

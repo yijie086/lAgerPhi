@@ -10,6 +10,7 @@ _S. Joosten, Argonne l/A-event Generator (2021), GitLab repository,
 https://eicweb.phy.anl.gov/monte_carlo/lager_
 
 # Versions
+* v3.6.x Tweaked VMD formalism and better examples for DVMP at EIC
 * v3.5.x New container/installer setup
 * v3.4.x Add support for psi prime
 * v3.3.x Adds photoproduction generators based on JPAC pomeron and baryon resonance calculations
