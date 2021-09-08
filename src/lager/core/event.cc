@@ -115,10 +115,17 @@ void event_out::write_hepmc(const event& e) {
                      status = 1;
                    } else if (part.decayed()) {
                      status = 2;
-                   } else if (part.documentation() ||
-                              part.status() ==
-                                  particle::status_code::SECONDARY_BEAM) {
+                   } else if (part.documentation()) {
                      status = 3;
+                   } else if (part.status() ==
+                              particle::status_code::SECONDARY_BEAM) {
+                     // virtual photon
+                     if (part.type() == pdg_id::gamma) {
+                       status = 13;
+                       // nucleon in nucleus
+                     } else {
+                       status = 2;
+                     }
                    } else if (part.status() == particle::status_code::BEAM) {
                      status = 4;
                    }
