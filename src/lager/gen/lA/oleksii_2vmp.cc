@@ -25,6 +25,8 @@
 #include <lager/physics/photon.hh>
 #include <lager/physics/vm.hh>
 
+#include <fmt/format.h>
+
 #include <Math/RootFinderAlgorithms.h>
 #include <Math/WrappedTF1.h>
 #include <TF1.h>
@@ -97,7 +99,7 @@ public:
   oleksii_2vmp_amplitude(pdg_id id, double subtraction_constant)
       : T0_{subtraction_constant}
       , v_el_{id == pdg_id::upsilon ? kv_el_upsilon : kv_el_jpsi}
-      , v_in_{id == pdg_id::upsilon ? kv_in_upsilon : kv_el_jpsi}
+      , v_in_{id == pdg_id::upsilon ? kv_in_upsilon : kv_in_jpsi}
       , C_el_{id == pdg_id::upsilon ? kC_el_upsilon : kC_el_jpsi}
       , C_in_{id == pdg_id::upsilon ? kC_in_upsilon : kC_in_jpsi}
       , Mv_{id == pdg_id::upsilon ? kMu : kMj}
@@ -144,7 +146,7 @@ public:
     const double T2 = std::norm(T(W));
     const double factor =
         std::pow(sqrt(4. * TMath::Pi() * kalpha) * fv_ / Mv_, 2) * 1 /
-        (64 * TMath::Pi() * s * qgp(s) * qgp(s));
+        (64 * TMath::Pi() * s * qvp(s, Mv_) * qvp(s, Mv_));
     return factor * T2 * khbarc2;
   }
   // total integrated photo-production cross section (nb)
@@ -195,6 +197,11 @@ public:
                     const double Q2 = par[1];
                     const auto tlim =
                         physics::t_range(W * W, Q2, kMp, ampl.Mv(), kMp);
+                    LOG_JUNK2("oleksii_2vmp_slope",
+                              fmt::format("tlim: {} -> {}, W: {}, Q2: "
+                                          "{}, Mp: {}, Mv: {}, B0: {}",
+                                          tlim.min, tlim.max, W, Q2, kMp,
+                                          ampl.Mv(), this->B0(W)));
                     return B - this->B0(W) *
                                    (exp(B * tlim.max) - exp(B * tlim.min));
                   },
@@ -203,6 +210,9 @@ public:
 
   double B0(const double W) const {
     const double sigma = ampl_.sigma_el(W);
+    LOG_JUNK2("oleksii_2vmp_slope",
+              fmt::format("W: {}, sigma: {}, ds/dt_t0: {}, ratio: {}", W, sigma,
+                          ampl_.dsdt_t0(W), ampl_.dsdt_t0(W) / sigma));
     if (sigma > 0) {
       const double result = ampl_.dsdt_t0(W) / sigma;
       return result;
@@ -309,9 +319,11 @@ lA_event oleksii_2vmp::generate(const lA_data& initial) {
 }
 
 interval<double> oleksii_2vmp::calc_max_b_range(const configuration& cf) const {
+  LOG_JUNK("oleksii_2vmp", "calc_max_b_range()");
   return {calc_min_b(), calc_max_b(cf)};
 }
 double oleksii_2vmp::calc_max_b(const configuration& cf) const {
+  LOG_JUNK("oleksii_2vmp", "calc_max_b()");
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,
@@ -326,11 +338,13 @@ double oleksii_2vmp::calc_max_b(const configuration& cf) const {
                   : (photon.p() + target.p()).M();
   // get our b
   const double result = slope_->B(Wmax, 0);
-  std::cout << result << std::endl;
+  LOG_DEBUG("oleksi_2vmp", "Wmax: " + std::to_string(Wmax) +
+                               ", Bmax value: " + std::to_string(result));
   return result;
 }
 // Get smallest possible b value (in case of no binding && at threshold)
 double oleksii_2vmp::calc_min_b() const {
+  LOG_JUNK("oleksii_2vmp", "calc_min_b()");
   oleksii_2vmp_amplitude nb_ampl{vm_.type(), 0};
   oleksii_2vmp_slope nb_slope{nb_ampl};
   return nb_slope.B((vm_.mass() + kMp) * 1.05, 0);
@@ -345,6 +359,7 @@ double oleksii_2vmp::calc_min_b() const {
 //
 // =============================================================================
 double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
+  LOG_JUNK("oleksii_2vmp", "calc_max_xsec()");
   // get the extreme beam/lepton parameters (where the photon carries all of the
   // lepton beam/lepton energy
   const particle photon{pdg_id::gamma,
@@ -379,6 +394,7 @@ double oleksii_2vmp::calc_max_xsec(const configuration& cf) const {
 //  * Q2 = 0 for the upper t bound (tmin)
 // =============================================================================
 interval<double> oleksii_2vmp::calc_max_t_range(const configuration& cf) const {
+  LOG_JUNK("oleksii_2vmp", "calc_max_t_range()");
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,

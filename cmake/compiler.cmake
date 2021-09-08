@@ -70,6 +70,10 @@ include_directories(${PHOTOSPP_INCLUDE_DIRS})
 find_package(jpacPhoto REQUIRED)
 include_directories(${JPACPHOTO_INCLUDE_DIRS})
 
+## fmt
+find_package(fmt REQUIRED)
+include_directories(${FMT_INCLUDE_DIRS})
+
 #if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #  add_to_rpath_macos("${ROOT_LIBRARY_DIR}")
 #  add_to_rpath_macos("${Boost_LIBRARY_DIRS}")

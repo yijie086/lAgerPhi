@@ -13,7 +13,7 @@ function (BUILD_PROGRAM PROG)
     lager_core lager_physics lager_proc lager_gen
     lager_core lager_physics lager_proc lager_gen
     ${PHOTOSPP_LIBRARIES}
-    ${ROOT_LIBRARIES} ${Boost_LIBRARIES} ${JPACPHOTO_LIBRARIES})
+    ${ROOT_LIBRARIES} ${Boost_LIBRARIES} ${JPACPHOTO_LIBRARIES} fmt::fmt)
 #target_compile_options(${PROG} PUBLIC "$<$<CONFIG:DEBUG>:${MY_DEBUG_OPTIONS}>")
   target_compile_options(${PROG} PUBLIC "$<$<CONFIG:RELEASE>:${PROJECT_EXTRA_CXX_FLAGS}>")
   ## install instructions
