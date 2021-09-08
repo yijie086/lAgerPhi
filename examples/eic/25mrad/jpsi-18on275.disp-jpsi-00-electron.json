@@ -1,7 +1,7 @@
 {
     "mc": {
         "type": "lager-vmp-25mrad",
-        "tag": "disp-jpsi-00-muon",
+        "tag": "disp-jpsi-00-electron",
         "run": "1",
         "lumi": "1",
         "info": "lumi in fb^-1",
