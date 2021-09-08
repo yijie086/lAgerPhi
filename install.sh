@@ -284,10 +284,15 @@ chmod +x $PREFIX/bin/lager-shell
 chmod +x $PREFIX/bin/lager
 
 ## also get some example configs
+if [ -d $PREFIX/share/lager-examples ]; then
+  rm -rf $PREFIX/share/lager-examples
+fi
+
 git clone --depth=1 https://eicweb.phy.anl.gov/monte_carlo/lager.git lager-tmp \
   && mkdir -p $PREFIX/share \
-  && mv lager-tmp/examples share/lager-examples \
-  && rm -rf lager-tmp
+  && mv lager-tmp/examples share/lager-examples
+## always cleanup
+rm -rf lager-tmp
 
 echo " - Created custom lager excecutable"
 echo " - Created custom lager-shell excecutable"
