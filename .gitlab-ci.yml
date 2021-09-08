@@ -90,23 +90,10 @@ lager:build:
   variables:
     BUILD_IMAGE: "lager"
   script:
-    ## calculate a hash based on the spack.yaml file and the spack directory
-    ## and use this spack as a docker variable to force a rebuild when there
-    ## is a change (versus rerun from cache)
-    #- PACKAGE_HASH=$(tar cf - .container/spack/* | sha1sum | head -c40)
-    # #DISABLED hashing as somehow it leads to a full rebuild every time
-    - PACHAGE_HASH="no-hashing"
-    - |
-      if [ $FORCE_NOCACHE = 1 ]; then
-        echo "FORCE_NOCACHE set"
-        export PACKAGE_HASH=`date +%s`
-      fi   
-    - echo "PACKAGE_HASH= ${PACKAGE_HASH}"
     ## now build our image
     - docker build -t ${CI_REGISTRY_IMAGE}/${BUILD_IMAGE}:${INTERNAL_TAG} 
                    -f .container/lager.Dockerfile
                    --build-arg SPACK_VERSION=${SPACK_VERSION}
-                   --build-arg CACHE_BUST=${PACKAGE_HASH}
                    --build-arg LAGER_VERSION=${CI_COMMIT_REF_NAME}
                    --build-arg REPO_URL=${CI_REPOSITORY_URL} 
                    .container
