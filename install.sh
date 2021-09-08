@@ -303,7 +303,7 @@ echo " - Created custom lager-shell excecutable"
 echo " - Downloaded examples into $PREFIX/share/lager-examples"
 
 echo "Environment setup succesfull"
-echo "You can start the lager by running ./lager (see ./lager --help for more info)."
-echo "You can start a full development environment by running './lager-shell'"
+echo "You can start the lager by running $PREFIX/bin/lager (see lager --help for more info)."
+echo "You can start a full development environment by running '$PREFIX/bin/lager-shell'"
 
 popd
