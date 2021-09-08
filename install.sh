@@ -176,6 +176,10 @@ PREFIX_ROOT="/$(realpath $PREFIX | cut -d "/" -f2)"
 BINDPATH=$PREFIX_ROOT
 echo "   --> $PREFIX_ROOT"
 for dir in /work /scratch /volatile /cache; do
+  ## only add directories once
+  if [[ ${BINDPATH} =~ `basename $dir` ]]; then
+    continue
+  fi
   if [ -d $dir ]; then
     echo "   --> $dir"
     BINDPATH="${BINDPATH},$dir"
