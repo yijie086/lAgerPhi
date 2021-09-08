@@ -67,12 +67,12 @@ pushd $PREFIX
 echo "Setting up development environment for eicweb/$CONTAINER:$VERSION"
 
 ## Simple setup script that installs the container
-## in your local environment under $PREFIX/local/lib
+## in your local environment under $PREFIX/lib
 ## and creates a simple top-level launcher script
 ## that launches the container for this working directory
-## to the $PREFIX/local directory
+## to the $PREFIX directory
 
-mkdir -p $PREFIX/local/lib || exit 1
+mkdir -p $PREFIX/lib || exit 1
 
 SINGULARITY=
 ## check for a singularity install
@@ -109,7 +109,7 @@ echo " - Found singularity at $SINGULARITY"
 SINGULARITY_VERSION=`$SINGULARITY --version`
 SIF=
 if [ ${SINGULARITY_VERSION:0:1} = 2 ]; then
-  SIF="$PREFIX/local/lib/${CONTAINER}-${VERSION}.simg"
+  SIF="$PREFIX/lib/${CONTAINER}-${VERSION}.simg"
 
   echo "WARNING: your singularity version $SINGULARITY_VERSION is ancient, we strongly recommend using version 3.x"
   echo "We will attempt to use a fall-back SIMG image to be used with this singularity version"
@@ -127,9 +127,9 @@ if [ ${SINGULARITY_VERSION:0:1} = 2 ]; then
 ## we are in sane territory, yay!
 else
   ## check if we can just use cvmfs for the image
-  SIF="$PREFIX/local/lib/${CONTAINER}-${VERSION}.sif"
+  SIF="$PREFIX/lib/${CONTAINER}-${VERSION}.sif"
   if [ -z "$DISABLE_CVMFS_USAGE" -a -d /cvmfs/singularity.opensciencegrid.org/eicweb/${CONTAINER}:${VERSION} ]; then
-    SIF="$PREFIX/local/lib/${CONTAINER}-${VERSION}"
+    SIF="$PREFIX/lib/${CONTAINER}-${VERSION}"
     ## need to cleanup in this case, else it will try to make a subdirectory
     rm -rf ${SIF}
     ln -sf /cvmfs/singularity.opensciencegrid.org/eicweb/${CONTAINER}:${VERSION} ${SIF}
@@ -182,9 +182,12 @@ for dir in /work /scratch /volatile /cache; do
   fi
 done
 
+
+mkdir $PREFIX/bin
+
 ## create a new top-level lager-shell launcher script
 ## that starts a shell within the lager container
-cat << EOF > lager-shell
+cat << EOF > $PREFIX/bin/lager-shell
 #!/bin/bash
 
 ## capture environment setup for upgrades
@@ -271,18 +274,19 @@ $SINGULARITY exec $SIF lager-shell \$@
 EOF
 
 ## raw launcher for lager
-cat << EOF > lager
+cat << EOF > $PREFIX/bin/lager
 #!/bin/bash
 export SINGULARITY_BINDPATH=$BINDPATH
 $SINGULARITY exec $SIF lager \$@
 EOF
 
-chmod +x lager-shell
-chmod +x lager
+chmod +x $PREFIX/bin/lager-shell
+chmod +x $PREFIX/bin/lager
 
 ## also get some example configs
 git clone --depth=1 https://eicweb.phy.anl.gov/monte_carlo/lager.git lager-tmp \
-  && mv lager-tmp/examples . \
+  && mkdir $PREFIX/share \
+  && mv lager-tmp/examples share/lager-examples \
   && rm -rf lager-tmp
 
 echo " - Created custom lager excecutable"
