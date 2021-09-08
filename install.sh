@@ -296,7 +296,7 @@ rm -rf lager-tmp
 
 echo " - Created custom lager excecutable"
 echo " - Created custom lager-shell excecutable"
-echo " - Downloaded examples into $PWD/examples"
+echo " - Downloaded examples into $PREFIX/share/lager-examples"
 
 echo "Environment setup succesfull"
 echo "You can start the lager by running ./lager (see ./lager --help for more info)."
