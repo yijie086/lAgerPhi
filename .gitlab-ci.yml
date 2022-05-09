@@ -30,7 +30,7 @@ stages:
 
 default:
   tags:
-    - silicon
+    - docker-new
   before_script:
     - ./.gitlabci/docker_login.sh -u $DH_REGISTRY -p $DH_EICWEB_TOKEN
                                    -n $DOCKER_NTRIES -t $DOCKER_WAIT_TIME

@@ -22,53 +22,56 @@ RUN --mount=type=cache,target=/var/cache/apt                            \
     rm -f /etc/apt/apt.conf.d/docker-clean                              \
  && apt-get -yqq update                                                 \
  && apt-get -yqq install --no-install-recommends                        \
+        bc                                                              \
         ca-certificates                                                 \
+        clang-format                                                    \
+        clang-tidy                                                      \
         curl                                                            \
         file                                                            \
         build-essential                                                 \
-        g++-10                                                          \
-        gcc-10                                                          \
+        g++-11                                                          \
+        gcc-11                                                          \
         gdb                                                             \
-        gfortran-10                                                     \
+        gfortran-11                                                     \
+        ghostscript                                                     \
         git                                                             \
         gnupg2                                                          \
+        gv                                                              \
         iproute2                                                        \
         iputils-ping                                                    \
+        iputils-tracepath                                               \
+        less                                                            \
+        libcbor-xs-perl                                                 \
+        libjson-xs-perl                                                 \
+        libyaml-cpp-dev                                                 \
         locales                                                         \
         lua-posix                                                       \
         make                                                            \
-        unzip                                                           \
         nano                                                            \
-        vim-nox                                                         \
-        less                                                            \
-        clang-format                                                    \
         openssh-client                                                  \
-        wget                                                            \
-        ghostscript                                                     \
-        gv                                                              \
-        poppler-utils                                                   \
         parallel                                                        \
+        poppler-utils                                                   \
         time                                                            \
+        unzip                                                           \
         valgrind                                                        \
+        vim-nox                                                         \
+        wget                                                            \
  && localedef -i en_US -f UTF-8 en_US.UTF-8                             \
- && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100  \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100  \
+ && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100  \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100  \
  && update-alternatives --install /usr/bin/gfortran gfortran            \
-                                  /usr/bin/gfortran-10 100              \
+                                  /usr/bin/gfortran-11 100              \
  && cc --version                                                        \
  && curl -L                                                             \
     "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" \
     | bash                                                              \
- && sed -i "s/bullseye/buster/"                                         \
+ && sed -i "s/bookworm/buster/"                                         \
            /etc/apt/sources.list.d/runner_gitlab-runner.list            \
  && apt-get -yqq update                                                 \
  && apt-get -yqq install --no-install-recommends                        \
         gitlab-runner                                                   \
  && apt-get -yqq autoremove                                             \
  && rm -rf /var/lib/apt/lists/*                                         
-
-## random cleanup that's somehow necessary
-RUN rm -rf /etc/profile.d/debuginfod.*
 
 ## ========================================================================================
 ## STAGE2: Builder image
@@ -82,22 +85,24 @@ RUN --mount=type=cache,target=/var/cache/apt                            \
  && apt-get -yqq update                                                 \
  && apt-get -yqq install --no-install-recommends                        \
         python3                                                         \
-        python3-pip                                                     \
-        python3-setuptools                                              \
-        tcl                                                             \
-        uuid-dev                                                        \
-        libfcgi-dev                                                     \
-        x11proto-xext-dev                                               \
- && pip3 install boto3                                                  \ 
+        python3-dev                                                     \
+        python3-distutils                                               \
+        python-is-python3                                               \
  && rm -rf /var/lib/apt/lists/*
 
 ## Setup spack
 ## parts:
 ENV SPACK_ROOT=/opt/spack
 ARG SPACK_VERSION="develop"
+ARG SPACK_CHERRYPICKS=""
 RUN echo "Part 1: regular spack install (as in containerize)"           \
  && git clone https://github.com/spack/spack.git /tmp/spack-staging     \
- && cd /tmp/spack-staging && git checkout $SPACK_VERSION && cd -        \
+ && cd /tmp/spack-staging                                               \
+ && git checkout $SPACK_VERSION                                         \
+ && if [ -n "$SPACK_CHERRYPICKS" ] ; then                               \
+      git cherry-pick -n $SPACK_CHERRYPICKS ;                           \
+    fi                                                                  \
+ && cd -                                                                \
  && mkdir -p $SPACK_ROOT/opt/spack                                      \
  && cp -r /tmp/spack-staging/bin $SPACK_ROOT/bin                        \
  && cp -r /tmp/spack-staging/etc $SPACK_ROOT/etc                        \
@@ -132,65 +137,61 @@ RUN echo "Part 1: regular spack install (as in containerize)"           \
 SHELL ["docker-shell"]
 
 ## Setup spack buildcache mirrors, including an internal
-## spack mirror using the docker build cache, and
-## a backup mirror on the internal B010 network
+## spack mirror using the docker build cache
 RUN --mount=type=cache,target=/var/cache/spack-mirror                   \
     export PATH=$PATH:$SPACK_ROOT/bin                                   \
- && wget 10.10.241.24/spack-mirror/sodium.pub --no-check-certificate    \
- && spack gpg trust sodium.pub                                          \
- && spack mirror add silicon http://10.10.241.24/spack-mirror           \
  && spack mirror add docker /var/cache/spack-mirror                     \
  && spack mirror list
 
 ## Setup our custom environment and package overrides
 COPY spack $SPACK_ROOT/eic-spack
-RUN echo "repos:" > $SPACK_ROOT/etc/spack/repos.yaml                    \
- && echo " - $SPACK_ROOT/eic-spack" >> $SPACK_ROOT/etc/spack/repos.yaml \
+RUN spack repo add --scope site "$SPACK_ROOT/eic-spack"                 \
  && mkdir /opt/spack-environment                                        \
- && mv $SPACK_ROOT/eic-spack/spack.yaml /opt/spack-environment/spack.yaml
+ && cd /opt/spack-environment                                           \
+ && mv $SPACK_ROOT/eic-spack/spack.yaml .                               \
+ && rm -r /usr/local                                                    \
+ && spack env activate .                                                \
+ && spack concretize
 
 ## This variable will change whenevery either spack.yaml or our spack package
 ## overrides change, triggering a rebuild
 ARG CACHE_BUST="hash"
+
 ## Now execute the main build (or fetch from cache if possible)
 ## note, no-check-signature is needed to allow the quicker signature-less
 ## packages from the internal (docker) buildcache
-RUN --mount=type=cache,target=/var/cache/spack-mirror                   \
-    cd /opt/spack-environment                                           \
- && ls /var/cache/spack-mirror                                          \
- && rm -r /usr/local                                                    \
- && spack env activate .                                                \
- && spack install -j64 --no-check-signature                             \
- && spack clean -a                                                  
-
+##
+## Optional, nuke the buildcache after install, before (re)caching
+## This is useful when going to completely different containers,
+## or intermittently to keep the buildcache step from taking too much time
+##
 ## Update the local build cache if needed. Consists of 3 steps:
 ## 1. Remove the B010 network buildcache (silicon)
 ## 2. Get a list of all packages, and compare with what is already on
 ##    the buildcache (using package hash)
 ## 3. Add packages that need to be added to buildcache if any
 RUN --mount=type=cache,target=/var/cache/spack-mirror                   \
-    spack mirror remove silicon                                         \
- && spack buildcache list --allarch --long                              \
-     | grep -v -e '---'                                                 \
-     | sed "s/@.\+//"                                                   \
-     | sort > tmp.buildcache.txt                                        \
- && spack find --no-groups --long                                       \
-     | tail -n +2                                                       \
-     | grep -v "==>"                                                    \
-     | sed "s/@.\+//"                                                   \
-     | sort > tmp.manifest.txt                                          \
- && comm -23 tmp.manifest.txt tmp.buildcache.txt                        \
-     > tmp.needsupdating.txt                                            \
- && if [ $(wc -l < tmp.needsupdating.txt) -ge 1 ]; then                 \
-     cat tmp.needsupdating.txt                                          \
-        | awk '{print($2);}'                                            \
-        | tr '\n' ' '                                                   \
-        | xargs spack buildcache create -uaf -d /var/cache/spack-mirror \
-     && spack buildcache update-index -d /var/cache/spack-mirror;       \
-    fi                                                                  \
- && rm tmp.manifest.txt                                                 \
- && rm tmp.buildcache.txt                                               \
- && rm tmp.needsupdating.txt
+    cd /opt/spack-environment                                           \
+ && ls /var/cache/spack-mirror                                          \
+ && spack env activate .                                                \
+ && status=0                                                            \
+ && spack install -j64 --no-check-signature                             \
+    || spack install -j64 --no-check-signature                          \
+    || spack install -j64 --no-check-signature                          \
+    || status=$?                                                        \
+ && mkdir -p /var/cache/spack-mirror/build_cache                        \
+ && spack buildcache update-index -d /var/cache/spack-mirror            \
+ && spack buildcache list --allarch --very-long                         \
+    | sed '/^$/d;/^--/d;s/@.\+//;s/\([a-z0-9]*\) \(.*\)/\2\/\1/'        \
+    | sort > tmp.buildcache.txt                                         \
+ && spack find --format {name}/{hash} | sort                            \
+    | comm -23 - tmp.buildcache.txt                                     \
+    | xargs --no-run-if-empty                                           \
+      spack buildcache create --allow-root --only package --unsigned    \
+                              --directory /var/cache/spack-mirror       \
+                              --rebuild-index                           \
+ && spack clean -a                                                      \
+ && exit $status
 
 ## extra post-spack steps
 ## Including some small fixes:
@@ -227,12 +228,18 @@ RUN cd /opt/spack-environment && spack env activate . && spack gc -y
 # note that we do not strip python libraries as can cause issues in some cases
 RUN find -L /usr/local/*                                                \
          -type d -name site-packages -prune -false -o                   \
-         -type f -not -name "zdll.lib"                                  \
+         -type f -not -name "zdll.lib" -not -name libtensorflow-lite.a  \
          -exec realpath '{}' \;                                      \
       | xargs file -i                                                   \
       | grep 'charset=binary'                                           \
       | grep 'x-executable\|x-archive\|x-sharedlib'                     \
       | awk -F: '{print $1}' | xargs strip -s
+
+## Bugfix to address issues loading the Qt5 libraries on Linux kernels prior to 3.15
+## See
+#https://askubuntu.com/questions/1034313/ubuntu-18-4-libqt5core-so-5-cannot-open-shared-object-file-no-such-file-or-dir
+## and links therin for more info
+RUN strip --remove-section=.note.ABI-tag /usr/local/lib/libQt5Core.so
 
 ## Address eic_container Issue #72
 ## missing precompiled headers for cppyy due to missing symlink in root
