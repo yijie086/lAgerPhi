@@ -3,7 +3,7 @@
 ## ========================================================================================
 ## STAGE1: Debian base image
 ## ========================================================================================
-FROM  amd64/debian:testing-20210408-slim as base
+FROM  amd64/debian:testing-20211220-slim as base
 LABEL maintainer="Sylvester Joosten <sjoosten@anl.gov>" \
       name="debian_base" \
       march="amd64"
