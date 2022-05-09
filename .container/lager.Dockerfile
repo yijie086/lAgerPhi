@@ -235,12 +235,6 @@ RUN find -L /usr/local/*                                                \
       | grep 'x-executable\|x-archive\|x-sharedlib'                     \
       | awk -F: '{print $1}' | xargs strip -s
 
-## Bugfix to address issues loading the Qt5 libraries on Linux kernels prior to 3.15
-## See
-#https://askubuntu.com/questions/1034313/ubuntu-18-4-libqt5core-so-5-cannot-open-shared-object-file-no-such-file-or-dir
-## and links therin for more info
-RUN strip --remove-section=.note.ABI-tag /usr/local/lib/libQt5Core.so
-
 ## Address eic_container Issue #72
 ## missing precompiled headers for cppyy due to missing symlink in root
 ## install (should really be addressed by ROOT spack package)
