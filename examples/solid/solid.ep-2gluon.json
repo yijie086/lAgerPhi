@@ -27,8 +27,8 @@
         "vm_type" : "J/psi",
         "recoil_type" : "proton",
         "photo_b" : "1.13",
-        "photo_c2g" : "6.499e3",
-        "photo_c3g" : "0.0",
+        "photo_c2g" : "6.55489e3",
+        "photo_c3g" : "3.53511e3",
         "R_vm_c" : "2.164",
         "R_vm_n" : "2.131",
         "dipole_n" : "2.575"
