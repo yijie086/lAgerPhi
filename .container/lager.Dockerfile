@@ -334,3 +334,6 @@ RUN  echo "  -------------------------------------------------"           \
            >> /etc/lager_info                                             \
   && popd                                                                 \
   && rm -rf build lager
+
+## extra bugfix - should be done earlier
+RUN rm -f /etc/profile.d/debuginfod.*

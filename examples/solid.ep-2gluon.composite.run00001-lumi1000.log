@@ -1,0 +1,59 @@
+[1617030825, lager, info] LAGER version: v3.2.5-8-g1bbcaf5
+[1617030825, lager, info] Starting event generator...
+[1617030825, lager, info] Initializing LAGER for lp-gamma processes
+[1617030825, lager, info] Initializing the RNG with seed 1
+[1617030825, lager, info] Initializing the output buffer
+[1617030825, event_out, info] Initializing ROOT output stream
+[1617030825, lager, info] Initializing the event generator
+[1617030825, event_generator, info] Initializing the process list
+[1617030825, brodsky_2vmX, info] t range [GeV^2]: [-9.425102, -0.399032]
+[1617030825, brodsky_2vmX, info] b parameter [1/GeV^2]: 1.130000
+[1617030825, brodsky_2vmX, info] 2-gluon parameter [1/GeV^2]: 6499.000000
+[1617030825, brodsky_2vmX, info] 3-gluon parameter [1/GeV^2]: 0.000000
+[1617030825, brodsky_2vmX, info] R_vm c-parameter: 2.164000
+[1617030825, brodsky_2vmX, info] R_vm n-parameter (power): 2.131000
+[1617030825, brodsky_2vmX, info] 'Dipole' FF power: 2.575000
+[1617030825, brodsky_2vmX, info] VM: J/psi
+[1617030825, brodsky_2vmX, info] recoil: proton
+[1617030825, event_generator, info] advanced/penalty: 1.000000
+[1617030825, initial::linear_vertex, info] Vertex generator initialized
+[1617030825, initial::linear_vertex, info] Vertex range [cm]: [-7.500000, 7.500000]
+[1617030825, initial::constant_beam, info] type: e-
+[1617030825, initial::constant_beam, info] energy [GeV]: 11.000000
+[1617030825, initial::constant_beam, info] type: proton
+[1617030825, initial::constant_beam, info] energy [GeV]: 0.938272
+[1617030825, primary_target, info] Using primary ion beam as target
+[1617030825, vphoton, info] Q2 range [GeV^2]: [0.000000, 19.807149]
+[1617030825, vphoton, info] y range [GeV^2]: [0.600000, 1.000000]
+[1617030825, vphoton, info] W range (default) [GeV}: [0.938272, 4.640245]
+[1617030825, decay, info] VM decays into e+e-
+[1617030825, decay, info] VM Branching ratio set to: 0.059710
+[1617030825, decay, info] Simulating radiative decay for VM particles
+[1617030825, composite, info] Constructing child detector: detector/components/forward
+[1617030825, forward, info] ID: 1
+[1617030825, forward, info] Theta range [rad]: [0.139626, 0.279253]
+[1617030825, forward, info] p range [GeV]: [1.000000, 11.000000]
+[1617030825, forward, info] Acceptance: 1.000000
+[1617030825, forward, info] PID: -11, 11, 2212
+[1617030825, forward, info] No smearing
+[1617030825, composite, info] Constructing child detector: detector/components/wide
+[1617030825, wide, info] ID: 2
+[1617030825, wide, info] Theta range [rad]: [0.319395, 0.497419]
+[1617030825, wide, info] p range [GeV]: [1.000000, 11.000000]
+[1617030825, wide, info] Acceptance: 1.000000
+[1617030825, wide, info] PID: -11, 11, 2212
+[1617030825, wide, info] No smearing
+[1617030825, reconstruction, info] Require leading hadron: true
+[1617030825, reconstruction, info] Require scattered lepton: false
+[1617030825, reconstruction, info] Require recoil: false
+[1617030825, reconstruction, info] Veto leading hadron: false
+[1617030825, reconstruction, info] Veto scattered lepton: false
+[1617030825, reconstruction, info] Veto recoil: false
+[1617030825, lager, info] Starting the main generation loop
+[1617030826, lager, info] Event generation complete
+[1617030826, lager, info] Total number of generated events: 7383
+[1617030826, lager, info] Total accepted cross section [nb]: 1.236505e-04
+[1617030826, lager, info] Partial accepted cross section with BR [nb]: 7.383173e-06
+[1617030826, lager, info]  --> Acceptance [%]: 21.129300
+[1617030826, lager, info] Writing generation statistics to output file
+[1617030826, lager, info] Finished.
