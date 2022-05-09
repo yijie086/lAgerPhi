@@ -335,6 +335,8 @@ function install_macos() {
   done
   echo " - Docker mount directive: '$MOUNT'"
 
+  mkdir -p $PREFIX/bin
+
   ## create a new top-level lager-shell launcher script
   ## that sets the ATHENA_PREFIX and then starts singularity
 cat << EOF > $PREFIX/bin/lager-shell
