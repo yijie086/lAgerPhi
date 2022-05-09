@@ -403,7 +403,7 @@ EOF
   ## raw launcher for lager
 cat << EOF > $PREFIX/bin/lager
 #!/bin/bash
-dokcer run $MOUNT -w=$PWD -it --rm $IMG lager \$@
+docker run $MOUNT -w=$PWD -it --rm $IMG lager \$@
 EOF
 
   chmod +x $PREFIX/bin/lager
