@@ -4,7 +4,7 @@
 ## PROJECT: lager
 ################################################################################
 cmake_minimum_required (VERSION 3.8)
-project (lager VERSION 3.6.1 LANGUAGES CXX )
+project (lager VERSION 3.6.2 LANGUAGES CXX )
 # note: the following is old-style cmake. But
 set (LAGER_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set (LAGER_MINOR_VERSION ${PROJECT_VERSION_MINOR})
