@@ -110,7 +110,7 @@ target fermi87::generate(const beam& ion) {
 
 // fermi87 private
 double fermi87::calc_norm() const {
-  TF1 f{"tmp", [=](double* pp, double*) { return physics::fermi87(pp[0], A_); },
+  TF1 f{"tmp", [=, this](double* pp, double*) { return physics::fermi87(pp[0], A_); },
         0, k_max_, 0};
   double integral = f.Integral(0, k_max_);
   tassert(integral > 0,
@@ -122,7 +122,7 @@ double fermi87::pdf(const double P) const {
 }
 // maximum is reached for nucleons at rest
 double fermi87::calc_max() const {
-  TF1 f{"tmp", [=](double* pp, double*) { return pdf(pp[0]); }, 0, k_max_, 0};
+  TF1 f{"tmp", [=, this](double* pp, double*) { return pdf(pp[0]); }, 0, k_max_, 0};
   return f.GetMaximum(0, k_max_);
 }
 

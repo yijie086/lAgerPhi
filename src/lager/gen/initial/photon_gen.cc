@@ -368,7 +368,7 @@ double vphoton::calc_max_flux(const configuration& cf) const {
                         cf.get<double>("beam/ion/energy")};
   TF2 fflux(
       "flux",
-      [=](double* Q2y, double* par = 0x0) {
+      [=, this](double* Q2y, double* par = 0x0) {
         return this->flux(Q2y[0], Q2y[1], beam, target);
       },
       Q2_range_.min, Q2_range_.max, y_range_.min, y_range_.max, 0);

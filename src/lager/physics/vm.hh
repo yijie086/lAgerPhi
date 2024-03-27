@@ -23,6 +23,8 @@
 #include <TMath.h>
 #include <cmath>
 
+#include <lager/physics/kinematics.hh>
+
 // =============================================================================
 // VM Physics routines
 // =============================================================================
@@ -59,7 +61,8 @@ inline double R_vm_martynov(const double Q2, const double Mv, const double c,
 }
 
 // =============================================================================
-// Dipole form factor to relate real photo-production cross section to sigma_T
+// Dipole (multipole) form factor to relate real photo-production cross section
+// to sigma_T
 //
 // This form deviates from the classical VMD form (which has a fixed power of
 // 2), to better fit the world data for rho0 production.
@@ -84,6 +87,10 @@ inline double R_vm_martynov(const double Q2, const double Mv, const double c,
 inline double dipole_ff_vm(const double Q2, const double Mv, const double n) {
   const double Mv2 = Mv * Mv;
   return pow(Mv2 / (Mv2 + Q2), n);
+}
+inline double multipole_ff_vm(const double Q2, const double Mv,
+                              const double n) {
+  return dipole_ff_vm(Q2, Mv, n);
 }
 
 // =============================================================================
@@ -150,14 +157,60 @@ inline double dsigma_dexp_bt_vm_brodsky(const double s, const double Mt,
 }
 
 // =============================================================================
+// Electroproduction of phi mesons according the formalism
+// of the CLAS12 exclusive phi meson electroproduction proposal
+// https://www.jlab.org/exp_prog/proposals/12/PR12-12-007.pdf
+//
+// This is the transverse part of the cross section, also valid for
+// photoproduction. Note that this is the integrated cross section, which needs
+// to be multiplied with a normalized form factor F(t)/F_int for a differential
+// cross section
+// =============================================================================
+inline double sigmaT_phi_clas(const double Q2, const double W, const double Mt,
+                              const double Mv, const double alpha_1,
+                              const double alpha_2, const double alpha_3,
+                              const double nu_T) { //, const double B0,
+  // double alpha_prime) {
+  const double Wth = Mt + Mv;
+  const double cT =
+      alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3);
+  const double sigmaT = cT * multipole_ff_vm(Q2, Mv, nu_T);
+  return sigmaT;
+}
+inline double R_phi_clas(const double Q2, const double Mv, const double c_R) {
+  const double Mv2 = Mv * Mv;
+  return c_R * Q2 / Mv2;
+}
+
+inline double exp_ff_normalized(const double Q2, const double W, const double t,
+                                const double Mt, const double Mv,
+                                const double B0, const double alphaP) {
+  const double B = B0 + 4 * alphaP * std::log(W);
+  const double F = exp(B * t);
+  const double t_min = t_range(W * W, Q2, Mt, Mv, Mt).max;
+  const double F_int = exp(B * t_min) / B;
+  return F / F_int;
+}
+inline double dipole_ff_normalized(const double Q2, const double W,
+                                   const double t, const double Mt,
+                                   const double Mv, const double Mg2) {
+  const double Mg8 = pow(Mg2, 4);
+  const double F = Mg8 / pow(Mg2 - t, 4);
+  const double t_min = t_range(W * W, Q2, Mt, Mv, Mt).max;
+  const double F_int = Mg8 / (3 * pow(Mg2 - t_min, 3));
+  return F / F_int;
+}
+// =============================================================================
 // General VM decay distributions in the VM helicity frame for the
 // cases of  (1) VM --> Scaler+scaler
 //       and (2) VM -> fermion+fermion
 // Note that case (1) corresponds equation 31 (for W0) in
 //     K. Schilling et al, Nucl.Phys.B 15 (1970) 397-412
-// while case (2) has the corresponding formula for decay in spin-1/2 particles
+// while case (2) has the corresponding formula for decay in spin-1/2
+// particles
 //
-// Both expressions are a function of the decay angles in the VM helicity frame
+// Both expressions are a function of the decay angles in the VM helicity
+// frame
 //  cth: cosine of the polar angle
 //  phi: azimuthal angle with the VM production plane
 //  sdme_04_00:  r^04_00 (=rho^0_00 for photoproduction)

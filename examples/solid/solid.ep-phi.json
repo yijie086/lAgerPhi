@@ -1,0 +1,82 @@
+{
+  "mc" : {
+    "type" : "solid",
+    "tag" : "",
+    "generator" : {
+      "type" : "ep-phi",
+      "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
+      "beam": {
+        "lepton" : {
+          "type" : "constant",
+          "particle_type" : "e-",
+          "dir" : [ "0", "0", "1" ],
+          "energy" : "11.0"
+        },
+        "ion" : {
+          "type" : "constant",
+          "particle_type" : "proton",
+          "dir" : [ "0", "0", "-1" ],
+          "energy" : "0.9382721"
+        }
+      },
+      "target": {"type": "primary"},
+      "photon" : {
+        "type" : "vphoton", 
+        "y_range" : [ "0.3", "0.9" ], 
+        "Q2_range": ["2.", "5."]
+      },
+      "process_0" : {
+        "type" : "phi_clas12",
+        "vm_type" : "phi",
+        "recoil_type" : "proton",
+        "alpha_1": "400.",
+        "alpha_2": "1.0", 
+        "alpha_3": "0.32",
+        "nu_T": "3.0",
+        "c_R": "0.4",
+        "ff": {
+          "function": "dipole",
+          "Mg2": "1.0"
+        },
+        "t_range": ["-3.0", "-0.1"]
+      },
+      "advanced": {
+        "info": "adjust this number to address the warning that the cross section max is being exceeded; smaller speeds up the generation process, larger adds a safety multiplier to the cross section maximum",
+        "penalty": "0.2"
+      }
+    },
+    "detector" : {
+      "type" : "composite",
+      "components" : {
+        "forward" : {
+          "id" : "1",
+          "name" : "forward",
+          "type" : "cone",
+          "acceptance" : {
+            "acceptance" : "1.0",
+            "p" : [ ".8", "11" ],
+            "theta" : [ "8", "16" ],
+            "pid" : [ "e+", "e-", "proton" ]
+          },
+          "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
+        },
+        "wide" : {
+          "id" : "2",
+          "name" : "wide",
+          "type" : "cone",
+          "acceptance" : {
+            "acceptance" : "1.0",
+            "p" : [ ".8", "11" ],
+            "theta" : [ "18.3", "28.5" ],
+            "pid" : [ "e+", "e-", "proton" ]
+          },
+          "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
+        }
+      }
+    },
+    "reconstruction" : {
+      "require_scat" : "true",
+      "require_recoil": "true"
+    }
+  }
+}
