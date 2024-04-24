@@ -22,7 +22,7 @@ RUN  echo "  -------------------------------------------------"           \
   && echo "  -------------------------------------------------"           \
   && cd /tmp                                                              \
   && git clone --depth=1 https://eicweb.phy.anl.gov/monte_carlo/photospp.git \
-  && cmake -B build -S photospp                                           \
+  && cmake -B build -S photospp -DCMAKE_BUILD_TYPE=RelWithDebInfo         \
   && cmake --build build -j12 -- install                                  \
   && rm -rf build photospp                                                \
   && echo "  -------------------------------------------------"           \

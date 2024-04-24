@@ -1,0 +1,63 @@
+{
+  "mc" : {
+    "type" : "solid-box",
+    "tag" : "",
+    "lumi" : "1000",
+    "generator" : {
+      "type" : "holographic",
+      "vertex" : {"type" : "linear", "range" : [ "-7.5", "7.5" ]},
+      "beam": {
+        "lepton" : {
+          "type" : "constant",
+          "particle_type" : "e-",
+          "dir" : [ "0", "0", "1" ],
+          "energy" : "11.0"
+        },
+        "ion" : {
+          "type" : "constant",
+          "particle_type" : "proton",
+          "dir" : [ "0", "0", "-1" ],
+          "energy" : "0.9382721"
+        }
+      },
+      "target": {"type": "primary"},
+      "photon" : {"type" : "vphoton", "y_range" : [ "0.6", "1" ]},
+      "process_0" : {
+        "type" : "holographic_vm",
+        "vm_type" : "J/psi",
+        "recoil_type" : "proton",
+        "A0" : "0.414",
+        "m_A" : "1.57",
+        "C0" : "-0.45",
+        "m_C" : "1.12",
+        "N" : "7.768",
+        "R_vm_c" : "2.164",
+        "R_vm_n" : "2.131",
+        "dipole_n" : "2.575"
+      }
+    },
+    "detector" : {
+      "type" : "composite",
+      "components" : {
+        "forward" : {
+          "id" : "1",
+          "name" : "box",
+          "type" : "cone",
+          "acceptance" : {
+            "acceptance" : "1.0",
+            "p" : [ "0.5", "11" ],
+            "theta" : [ "7", "30" ],
+            "pid" : [ "e+", "e-", "mu+", "mu-", "proton" ]
+          },
+          "smearing" : {"p" : "0.0", "theta" : "0.0", "phi" : "0.0"}
+        }
+      }
+    },
+    "reconstruction" : {"require_leading" : "true"},
+    "decay" : {
+      "vm_decay_lepton_type" : "11",
+      "vm_branching_ratio" : "0.05971",
+      "do_radiative_decay_vm" : "true"
+    }
+  }
+}
