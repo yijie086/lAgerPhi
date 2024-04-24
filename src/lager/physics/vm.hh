@@ -170,7 +170,6 @@ inline double sigmaT_phi_clas(const double Q2, const double W, const double Mt,
                               const double Mv, const double alpha_1,
                               const double alpha_2, const double alpha_3,
                               const double nu_T) { //, const double B0,
-  // double alpha_prime) {
   const double Wth = Mt + Mv;
   const double cT =
       alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3);
@@ -200,6 +199,76 @@ inline double dipole_ff_normalized(const double Q2, const double W,
   const double F_int = Mg8 / (3 * pow(Mg2 - t_min, 3));
   return F / F_int;
 }
+// =============================================================================
+// J/psi production in the holographic model by Mamo & Zahed
+//
+// This is the exact formalism used in https://inspirehep.net/literature/2110821
+// =============================================================================
+inline double F_kinematic_holographic(double s, double t, double Mt,
+                                      double Mv) {
+  double F =
+      (1 / (4096 * Mv * Mv)) *
+      (-9 * pow(Mv, 10) + pow(Mv, 8) * (-32 + 68 * Mt * Mt + 28 * s + 37 * t) +
+       2 * pow(Mv, 6) *
+           (256 * pow(Mt, 4) + 8 * Mt * Mt * (32 * s - 3 * t) +
+            t * (56 - 40 * s - 29 * t)) +
+       2 * pow(Mv, 4) *
+           (-136 * pow(Mt, 6) + 64 * s * s - 56 * pow(s, 3) +
+            8 * pow(Mt, 4) * (8 + 27 * s - 64 * t) + 3 * t * t * (-24 + 7 * t) +
+            4 * s * t * (-4 + 9 * t) -
+            4 * Mt * Mt *
+                (6 * s * s + 32 * s * (1 + 4 * t) + t * (-4 + 25 * t))) +
+       Mv * Mv *
+           (144 * pow(Mt, 8) + 144 * pow(s, 4) - 192 * s * s * t +
+            96 * pow(s, 3) * t - 16 * s * (-4 + t) * t * t +
+            (80 - 13 * t) * pow(t, 3) + 96 * pow(Mt, 6) * (-6 * s + 7 * t) +
+            32 * pow(Mt, 4) * (27 * s * s - 6 * t - 39 * s * t + 8 * t * t) +
+            16 * Mt * Mt *
+                (-36 * pow(s, 3) + 30 * s * s * t + 24 * s * t * (1 + 2 * t) +
+                 t * t * (-4 + 17 * t))) -
+       t * (2 * Mt * Mt - 2 * s - t) *
+           (64 * pow(Mt, 4) + 8 * pow(Mt, 6) - 8 * pow(s, 3) +
+            76 * pow(Mt, 4) * t - 16 * t * t - 90 * Mt * Mt * t * t +
+            pow(t, 3) + 4 * s * s * (16 + 6 * Mt * Mt + 3 * t) -
+            2 * s * (12 * pow(Mt, 4) + 3 * t * t + Mt * Mt * (64 + 44 * t))));
+  return F;
+}
+// Arguments:
+//  - Q2, W, t  --> kinematics
+//  - Mt, Mv    --> target mass and VM mass
+//  - A0, m_A   --> tripole parameters for the A GFF
+//  - C0, m_C   --> tripole parameters for the C GFF
+//  - N         --> Additional free normalization constant
+inline double dsigma_dt_holographic(const double Q2, const double W,
+                                    const double t, const double Mt,
+                                    const double Mv, const double A0,
+                                    const double m_A, const double C0,
+                                    const double m_C, const double N) {
+  const double s = W * W;
+  const double abst = -t;
+  const double q_gamma =
+      (1 / (2 * pow(s, 0.5))) *
+      pow(s * s - 2 * (-Q2 + Mt * Mt) * s + (-Q2 - Mt * Mt) * (-Q2 - Mt * Mt),
+          0.5);
+  const double q_jpsi = (1 / (2 * pow(s, 0.5))) *
+                        pow(s * s - 2 * (Mv * Mv + Mt * Mt) * s +
+                                (Mv * Mv - Mt * Mt) * (Mv * Mv - Mt * Mt),
+                            0.5);
+  const double E_jpsi = pow(Mv * Mv + q_jpsi * q_jpsi, 0.5);
+  const double E_gamma = pow(-Q2 + q_gamma * q_gamma, 0.5);
+  const double const_h =
+      1 / (64 * Mt * Mt * pow(s - Mt * Mt, 2) * 4 * TMath::Pi());
+  const double eta = (Mv * Mv) / (2 * (s - Mt * Mt) - Mv * Mv - abst);
+  const double Ak = A0 / pow(1 + abst / (m_A * m_A), 3);
+  const double Ck = C0 / pow(1 + abst / (m_C * m_C), 3);
+  const double F = F_kinematic_holographic(s, -abst, Mt, Mv);
+  const double dsigma_dt =
+      N * N * const_h *
+      (Ak * Ak + 2 * eta * eta * Ak * 4 * Ck + pow(eta, 4) * pow(4 * Ck, 2)) /
+      (A0 * A0) * F * (2 * abst + 8 * Mt * Mt);
+  return dsigma_dt;
+}
+
 // =============================================================================
 // General VM decay distributions in the VM helicity frame for the
 // cases of  (1) VM --> Scaler+scaler
