@@ -38,7 +38,7 @@ lA::lA(const configuration& conf, const string_path& path,
     , vm_decay_lminus_{static_cast<pdg_id>(
           abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
     , vm_decay_br_{conf.get<double>(path / "vm_branching_ratio", 1)} {
-  LOG_INFO("decay", "VM decays into " + vm_decay_lplus_.name() +
+  LOG_INFO("decay", "VM decays into HENRY WAS HERE!" + vm_decay_lplus_.name() +
                         vm_decay_lminus_.name());
   LOG_INFO("decay",
            "VM Branching ratio set to: " + std::to_string(vm_decay_br_));
