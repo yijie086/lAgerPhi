@@ -241,6 +241,7 @@ void lA::pentaquark_qpq(lA_event& e, const int i) const {
         {-1, 1}, [](const double x) { return 1.; }, 1.);
   }
   const double theta = acos(ctheta);
+  cout << "theta = " << theta << endl;
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // set the vertex info
   decay_products.first.vertex() = e[i].vertex();
