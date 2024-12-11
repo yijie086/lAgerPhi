@@ -37,6 +37,7 @@
 #include <lager/gen/initial/vertex_gen.hh>
 #include <lager/gen/lA/brodsky_2vmX.hh>
 #include <lager/gen/lA/phi_clas12.hh>
+#include <lager/gen/lA/phi_hatta.hh>
 #include <lager/gen/lA/holographic_vm.hh>
 #include <lager/gen/lA/jpacPhoto_pentaquark.hh>
 #include <lager/gen/lA/jpacPhoto_pomeron.hh>
@@ -74,6 +75,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(lA::generator, lA::lee_4He_jpsi_grid, "lee_4He_jpsi_grid");
   FACTORY_REGISTER2(lA::generator, lA::brodsky_2vmX, "brodsky_2vmX");
   FACTORY_REGISTER2(lA::generator, lA::phi_clas12, "phi_clas12");
+  FACTORY_REGISTER2(lA::generator, lA::phi_hatta, "phi_hatta");
   FACTORY_REGISTER2(lA::generator, lA::holographic_vm, "holographic_vm");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_2vmp, "oleksii_2vmp");
   FACTORY_REGISTER2(lA::generator, lA::oleksii_jpsi_bh, "oleksii_jpsi_bh");
@@ -104,7 +106,7 @@ int run_mc(const configuration& cf, const std::string& output) {
   FACTORY_REGISTER2(detector::detector, detector::composite, "composite");
   // TODO
 
-  LOG_INFO("lager", "Initializing LAGER for lp-gamma processes");
+  LOG_INFO("lager", "HK WAS HERE AGAIN Initializing LAGER for lp-gamma processes");
 
   // get RNG
   LOG_INFO("lager",

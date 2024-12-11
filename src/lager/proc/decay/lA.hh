@@ -53,11 +53,12 @@ public:
 
 private:
   void quarkonium_schc(lA_event& e, const int index) const;
+  void quarkonium_hadronic_schc(lA_event& e, const int index) const;
   void quarkonium_radcor_only(lA_event& e, const int index) const;
   void pentaquark_qpq(lA_event& e, const int index) const;
 
-  const particle vm_decay_lplus_;
-  const particle vm_decay_lminus_;
+  const particle vm_decay_plus_;
+  const particle vm_decay_minus_;
   const double vm_decay_br_;
   std::unique_ptr<radiative_decay_vm> radiative_decay_;
 };

@@ -69,7 +69,7 @@ public:
     // Removed lock guard because it screws up when doing nested constructions,
     // and we are not running in a multi-threaded environment anyway
     //    std::lock_guard<std::mutex> lock{mutex_};
-    LOG_DEBUG("factory", "Constructing " + name);
+    LOG_DEBUG("factory", "HK Constructing " + name);
     if (!workers_) {
       LOG_DEBUG("factory",
                 "Worker pointer is a null pointer. This should never happen.");

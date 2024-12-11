@@ -17,7 +17,7 @@
 // along with lAger.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "phi_clas12.hh"
+#include "phi_hatta.hh"
 #include <TMath.h>
 #include <lager/core/logger.hh>
 #include <lager/gen/initial/target_gen.hh>
@@ -29,9 +29,9 @@ namespace lager {
 namespace lA {
 
 // =============================================================================
-// Constructor for lA::phi_clas12
+// Constructor for lA::phi_hatta
 // =============================================================================
-phi_clas12::phi_clas12(const configuration& cf, const string_path& path,
+phi_hatta::phi_hatta(const configuration& cf, const string_path& path,
                        std::shared_ptr<TRandom> r)
     : base_type{r}
     , recoil_{cf.get<std::string>(path / "recoil_type")}
@@ -43,50 +43,50 @@ phi_clas12::phi_clas12(const configuration& cf, const string_path& path,
     , c_R_{cf.get<double>(path / "c_R")}
     , max_t_range_{calc_max_t_range(cf, path)}
     , max_{calc_max_xsec(cf)} {
-  LOG_INFO("phi_clas12", "t range [GeV^2]: [" +
+  LOG_INFO("phi_hatta", "t range [GeV^2]: [" +
                              std::to_string(max_t_range_.min) + ", " +
                              std::to_string(max_t_range_.max) + "]");
-  LOG_INFO("phi_clas12", "alpha_1 parameter: " + std::to_string(alpha_1_));
-  LOG_INFO("phi_clas12", "alpha_2 parameter: " + std::to_string(alpha_2_));
-  LOG_INFO("phi_clas12", "alpha_3 parameter: " + std::to_string(alpha_3_));
-  LOG_INFO("phi_clas12", "nu_T parameter: " + std::to_string(nu_T_));
-  LOG_INFO("phi_clas12", "c_R parameter: " + std::to_string(c_R_));
+  LOG_INFO("phi_hatta", "alpha_1 parameter: " + std::to_string(alpha_1_));
+  LOG_INFO("phi_hatta", "alpha_2 parameter: " + std::to_string(alpha_2_));
+  LOG_INFO("phi_hatta", "alpha_3 parameter: " + std::to_string(alpha_3_));
+  LOG_INFO("phi_hatta", "nu_T parameter: " + std::to_string(nu_T_));
+  LOG_INFO("phi_hatta", "c_R parameter: " + std::to_string(c_R_));
   const std::string ff = cf.get<std::string>(path / "ff" / "function");
-  LOG_INFO("phi_clas12", "FF function: " + ff);
+  LOG_INFO("phi_hatta", "FF function: " + ff);
   if (ff == "exp") {
     const double B0 = cf.get<double>(path / "ff" / "B0");
     const double alphaP = cf.get<double>(path / "ff" / "alphaP");
-    LOG_INFO("phi_clas12", "FF B0 parameter" + std::to_string(B0));
-    LOG_INFO("phi_clas12", "FF alphaP parameter" + std::to_string(alphaP));
+    LOG_INFO("phi_hatta", "FF B0 parameter" + std::to_string(B0));
+    LOG_INFO("phi_hatta", "FF alphaP parameter" + std::to_string(alphaP));
     ff_func_ = [=, *this](double Q2, double W, double t, double Mt) -> double {
       return physics::exp_ff_normalized(Q2, W, t, Mt, vm_.mass(), B0, alphaP);
     };
   } else if (ff == "dipole") {
     const double Mg2 = cf.get<double>(path / "ff" / "Mg2");
-    LOG_INFO("phi_clas12", "FF Mg^2 parameter" + std::to_string(Mg2));
+    LOG_INFO("phi_hatta", "FF Mg^2 parameter" + std::to_string(Mg2));
     ff_func_ = [=, *this](double Q2, double W, double t, double Mt) -> double {
       return physics::dipole_ff_normalized(Q2, W, t, Mt, vm_.mass(), Mg2);
     };
   } else {
     throw cf.value_error("ff/function", ff);
   }
-  LOG_INFO("phi_clas12", "VM: " + std::string(vm_.pdg()->GetName()));
-  LOG_INFO("phi_clas12", "recoil: " + std::string(recoil_.pdg()->GetName()));
+  LOG_INFO("phi_hatta", "VM: " + std::string(vm_.pdg()->GetName()));
+  LOG_INFO("phi_hatta", "recoil: " + std::string(recoil_.pdg()->GetName()));
 }
 
-lA_event phi_clas12::generate(const lA_data& initial) {
+lA_event phi_hatta::generate(const lA_data& initial) {
 
   // generate a mass() in case of non-zero width, initialize the particles
   particle vm = {vm_.type(), rng()};
   particle recoil = {recoil_.type(), rng()};
-  //LOG_INFO("phi_clas12", "HK WAS HERE ");
+  //LOG_INFO("phi_hatta", "HK WAS HERE ");
   // shortcuts
   const auto& gamma = initial.photon();
   const auto& target = initial.target();
 
   // check if enough energy available
   if (gamma.W2() < threshold2(vm, recoil)) {
-    LOG_JUNK("phi_clas12", "Not enough phase space available - W2: " +
+    LOG_JUNK("phi_hatta", "Not enough phase space available - W2: " +
                                std::to_string(gamma.W2()) + " < " +
                                std::to_string(threshold2(vm, recoil)));
     return lA_event{0.};
@@ -95,37 +95,37 @@ lA_event phi_clas12::generate(const lA_data& initial) {
   // generate a phase space point
   const double t = rng()->Uniform(max_t_range_.min, max_t_range_.max);
 
-  LOG_JUNK("phi_clas12", "t: " + std::to_string(t));
+  LOG_JUNK("phi_hatta", "t: " + std::to_string(t));
 
   // check if kinematically allowed
   if (physics::t_range(gamma.W2(), gamma.Q2(), target.particle().mass(),
                        vm.mass(), recoil.mass())
           .excludes(t)) {
-    LOG_JUNK("phi_clas12", "t outside of the allowed range for this W2")
+    LOG_JUNK("phi_hatta", "t outside of the allowed range for this W2")
     return lA_event{0.};
   }
 
   // evaluate the cross section
-  const double R = physics::R_phi_clas(gamma.Q2(), vm_.mass(), c_R_);
+  const double R = physics::R_phi_hatta(gamma.Q2(), vm_.mass(), c_R_);
   const double sigmaT =
-      physics::sigmaT_phi_clas(gamma.Q2(), gamma.W(), target.particle().mass(),
+      physics::sigmaT_phi_hatta(gamma.Q2(), gamma.W(), target.particle().mass(),
                                vm_.mass(), alpha_1_, alpha_2_, alpha_3_, nu_T_);
   const double ff =
       ff_func_(gamma.Q2(), gamma.W(), t, target.particle().mass());
   const double xs = (1 + gamma.epsilon() * R) * sigmaT * ff;
 
-  LOG_JUNK("phi_clas12",
+  LOG_JUNK("phi_hatta",
            "xsec: " + std::to_string(xs) + " < " + std::to_string(max_));
-  LOG_JUNK("phi_clas12", "sigmaT: " + std::to_string(sigmaT));
-  LOG_JUNK("phi_clas12", "R: " + std::to_string(R));
-  LOG_JUNK("phi_clas12", "ff: " + std::to_string(ff));
+  LOG_JUNK("phi_hatta", "sigmaT: " + std::to_string(sigmaT));
+  LOG_JUNK("phi_hatta", "R: " + std::to_string(R));
+  LOG_JUNK("phi_hatta", "ff: " + std::to_string(ff));
 
   // return a new VM event
   return make_event(initial, t, vm, recoil, xs, R);
 }
 
 // =============================================================================
-// phi_clas12::calc_max_xsec(cf)
+// phi_hatta::calc_max_xsec(cf)
 //
 // Utility function for the generator initialization
 //
@@ -136,7 +136,7 @@ lA_event phi_clas12::generate(const lA_data& initial) {
 //  * no t-requirement (ff smaller than 1 everywhere)
 //  * Q2 is zero
 // =============================================================================
-double phi_clas12::calc_max_xsec(const configuration& cf) const {
+double phi_hatta::calc_max_xsec(const configuration& cf) const {
   // get the extreme beam parameters (where the photon carries all of the
   // lepton beam energy
   const particle photon{pdg_id::gamma,
@@ -149,12 +149,12 @@ double phi_clas12::calc_max_xsec(const configuration& cf) const {
   const double Wmax = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                          (photon.p() + target.p()).M())
                                   : (photon.p() + target.p()).M();
-  return physics::sigmaT_phi_clas(0, Wmax, target.mass() * 1.0001, vm_.mass(),
+  return physics::sigmaT_phi_hatta(0, Wmax, target.mass() * 1.0001, vm_.mass(),
                                   alpha_1_, alpha_2_, alpha_3_, nu_T_);
 } // namespace lA
 
 // =============================================================================
-// phi_clas12::calc_max_t_range(cf)
+// phi_hatta::calc_max_t_range(cf)
 //
 // Utility function for the generator initialization
 //
@@ -165,7 +165,7 @@ double phi_clas12::calc_max_xsec(const configuration& cf) const {
 //  bound
 //  * Q2 = 0 for the upper t bound (tmin)
 // =============================================================================
-interval<double> phi_clas12::calc_max_t_range(const configuration& cf,
+interval<double> phi_hatta::calc_max_t_range(const configuration& cf,
                                               const string_path& path) const {
   // hack
   // get the extreme beam parameters (where the photon carries all of the
@@ -206,13 +206,13 @@ interval<double> phi_clas12::calc_max_t_range(const configuration& cf,
   return tlim;
 }
 // =============================================================================
-// phi_clas12::threshold2()
+// phi_hatta::threshold2()
 //
 // utility function returns the production threshold squared for the chosen
 // particles. Important to re-calculate in case of a particle with non-zero
 // widht.
 // =============================================================================
-double phi_clas12::threshold2(const particle& vm,
+double phi_hatta::threshold2(const particle& vm,
                               const particle& recoil) const {
 
   return recoil.mass2() + vm.mass2() + 2 * vm.mass() * recoil.mass();
@@ -222,7 +222,7 @@ double phi_clas12::threshold2(const particle& vm,
 // create the lA_event dataf, calculates the final state four-vectors in
 // the lab-frame
 // =============================================================================
-lA_event phi_clas12::make_event(const lA_data& initial, const double t,
+lA_event phi_hatta::make_event(const lA_data& initial, const double t,
                                 particle vm, particle X, const double xs,
                                 const double R) {
   const auto& gamma = initial.photon();

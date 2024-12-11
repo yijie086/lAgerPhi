@@ -411,7 +411,7 @@ private:
       auto type = cf.get_optional<std::string>(path / "type");
       if (type) {
         LOG_DEBUG(path.str(),
-                  "Creating a new process sub-generator (" + *type + ")");
+                  "HK is Creating a new process sub-generator (" + *type + ")");
         process_list_.push_back(
             {i, FACTORY_CREATE(process_type, cf, path, this->rng())});
         LOG_DEBUG(path.str(), "Cross section max: " +

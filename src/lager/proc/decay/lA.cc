@@ -33,13 +33,13 @@ namespace decay {
 lA::lA(const configuration& conf, const string_path& path,
        std::shared_ptr<TRandom> r)
     : lA::base_type{std::move(r)}
-    , vm_decay_lplus_{static_cast<pdg_id>(
+    , vm_decay_plus_{static_cast<pdg_id>(
           -abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
-    , vm_decay_lminus_{static_cast<pdg_id>(
+    , vm_decay_minus_{static_cast<pdg_id>(
           abs(conf.get<int>(path / "vm_decay_lepton_type", 11)))}
     , vm_decay_br_{conf.get<double>(path / "vm_branching_ratio", 1)} {
-  LOG_INFO("decay", "VM decays into HENRY WAS HERE!" + vm_decay_lplus_.name() +
-                        vm_decay_lminus_.name());
+  LOG_INFO("decay", "VM decays into HENRY WAS HERE!" + vm_decay_plus_.name() +
+                        vm_decay_minus_.name());
   LOG_INFO("decay",
            "VM Branching ratio set to: " + std::to_string(vm_decay_br_));
   auto do_radiative_decay_vm =
@@ -61,9 +61,14 @@ void lA::process(lA_event& e) const {
     // SCHC leptonic decay of vms
     if (e[i].status() == particle::status_code::UNSTABLE_SCHC &&
         (e[i].type() == pdg_id::J_psi || e[i].type() == pdg_id::psi_prime ||
-         e[i].type() == pdg_id::upsilon || e[i].type() == pdg_id::phi)) {
+         e[i].type() == pdg_id::upsilon)) {
       LOG_JUNK2("decay::lA", "Performing SCHC decay for VMs");
       quarkonium_schc(e, i);
+    }
+    if (e[i].status() == particle::status_code::UNSTABLE_SCHC &&
+        (e[i].type() == pdg_id::phi)) {
+      LOG_JUNK2("decay::lA", "Performing Hadronic SCHC decay for VMs");
+      quarkonium_hadronic_schc(e, i);
     }
     // Assume actual decay already done, and we just need to add radcor if
     // desired
@@ -96,11 +101,12 @@ void lA::process(lA_event& e) const {
 void lA::quarkonium_schc(lA_event& e, const int i) const {
   // electron or muon BR only
   e.update_weight(vm_decay_br_);
-  std::pair<particle, particle> decay_products{{vm_decay_lplus_.type()},
-                                               {vm_decay_lminus_.type()}};
+  LOG_INFO("decay", "Simulating hadronic SCHC decay for VM particles");
+  std::pair<particle, particle> decay_products{{vm_decay_plus_.type()},
+                                               {vm_decay_minus_.type()}};
   std::pair<particle, particle> decay_products_cm{
-      {vm_decay_lplus_.type(), particle::status_code::INFO_PARENT_CM},
-      {vm_decay_lminus_.type(), particle::status_code::INFO_PARENT_CM}};
+      {vm_decay_plus_.type(), particle::status_code::INFO_PARENT_CM},
+      {vm_decay_minus_.type(), particle::status_code::INFO_PARENT_CM}};
   const double epsilon_R = e.epsilon() * e.R();
   const double r04 = epsilon_R / (1 + epsilon_R);
   const double phi = rng()->Uniform(0., TMath::TwoPi());
@@ -133,6 +139,51 @@ void lA::quarkonium_schc(lA_event& e, const int i) const {
   // mark the vm as decayed
   e[i].update_status(particle::status_code::DECAYED_SCHC);
 }
+
+
+  
+void lA::quarkonium_hadronic_schc(lA_event& e, const int i) const {
+  // hadronic BR only
+  
+  e.update_weight(vm_decay_br_);
+  std::pair<particle, particle> decay_products{{vm_decay_plus_.type()},
+                                               {vm_decay_minus_.type()}};
+  std::pair<particle, particle> decay_products_cm{
+      {vm_decay_plus_.type(), particle::status_code::INFO_PARENT_CM},
+      {vm_decay_minus_.type(), particle::status_code::INFO_PARENT_CM}};
+  const double epsilon_R = e.epsilon() * e.R();
+  const double r04 = epsilon_R / (1 + epsilon_R);
+  const double phi = rng()->Uniform(0., TMath::TwoPi());
+  const double ctheta = rand_f(
+      {-1, 1},
+      [=](const double ctheta) {
+        return ((1. - r04) + (3. * r04 - 1) * ctheta * ctheta);
+      },
+      2.001);
+  const double theta = acos(ctheta);
+  physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
+
+  // set the vertex in the decay products
+  decay_products.first.vertex() = e[i].vertex();
+  decay_products.second.vertex() = e[i].vertex();
+  // add the decay particles
+
+  e.add_daughter(decay_products, i);
+  if (radiative_decay_) {
+    radiative_decay_->process(e, i);
+  }
+
+  // do not store the CM particles
+#if 0
+  decay_products_cm.first.add_parent(i);
+  decay_products_cm.second.add_parent(i);
+  e.add_particle(decay_products_cm);
+#endif
+
+  // mark the vm as decayed
+  e[i].update_status(particle::status_code::DECAYED_SCHC);
+}
+ 
 radiative_decay_vm::radiative_decay_vm() {
   Photospp::Photos::initialize();
   // 0.5MeV cutoff for a 3GeV J/psi
@@ -241,7 +292,7 @@ void lA::pentaquark_qpq(lA_event& e, const int i) const {
         {-1, 1}, [](const double x) { return 1.; }, 1.);
   }
   const double theta = acos(ctheta);
-  cout << "theta = " << theta << endl;
+  std::cout << "theta = " << theta << std::endl;
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
   // set the vertex info
   decay_products.first.vertex() = e[i].vertex();

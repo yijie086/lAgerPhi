@@ -181,6 +181,25 @@ inline double R_phi_clas(const double Q2, const double Mv, const double c_R) {
   return c_R * Q2 / Mv2;
 }
 
+inline double sigmaT_phi_hatta(const double Q2, const double W, const double Mt,
+                              const double Mv, const double alpha_1,
+                              const double alpha_2, const double alpha_3,
+                              const double nu_T) { //, const double B0,
+  const double Wth = Mt + Mv;
+  double cTold =
+      alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3);
+
+  const double cT = 0.045 * pow((2/sqrt(Q2)), 9.65) * pow(W*W-Mv*Mv, 0.866) * pow(W,4.177); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177
+    //alpha_1 * pow((2/sqrt(Q2)), alpha_2) * pow(W, alpha_3); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177
+  std::cout << "old ct = " << cTold << " cT = " << cT << " ratio = " << cTold/cT << std::endl;    
+  const double sigmaT = cT * multipole_ff_vm(Q2, Mv, nu_T);
+  return sigmaT;
+}
+inline double R_phi_hatta(const double Q2, const double Mv, const double c_R) {
+  const double Mv2 = Mv * Mv;
+  return c_R * Q2 / Mv2;
+}
+
 inline double exp_ff_normalized(const double Q2, const double W, const double t,
                                 const double Mt, const double Mv,
                                 const double B0, const double alphaP) {
