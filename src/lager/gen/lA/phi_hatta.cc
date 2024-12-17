@@ -19,6 +19,7 @@
 
 #include "phi_hatta.hh"
 #include <TMath.h>
+//#include <lager/core/factory.hh>
 #include <lager/core/logger.hh>
 #include <lager/gen/initial/target_gen.hh>
 #include <lager/physics/kinematics.hh>
@@ -149,7 +150,7 @@ double phi_hatta::calc_max_xsec(const configuration& cf) const {
   const double Wmax = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                          (photon.p() + target.p()).M())
                                   : (photon.p() + target.p()).M();
-  return physics::sigmaT_phi_hatta(0, Wmax, target.mass() * 1.0001, vm_.mass(),
+  return physics::sigmaT_phi_hatta(0.01, Wmax, target.mass() * 1.0001, vm_.mass(),
                                   alpha_1_, alpha_2_, alpha_3_, nu_T_);
 } // namespace lA
 
@@ -303,6 +304,9 @@ lA_event phi_hatta::make_event(const lA_data& initial, const double t,
   // all done!
   return e;
 }
-
+  //FACTORY_REGISTER2(lA::generator, lager::lA::phi_hatta, "phi_hatta");
 } // namespace lA
 } // namespace lager
+
+
+

@@ -12,6 +12,7 @@ file (GLOB SOURCES "*.cc" "initial/*.cc" "lA/*.cc")
 file (GLOB HEADERS "*.hh")
 file (GLOB INITIAL_HEADERS "initial/*.hh")
 file (GLOB LA_HEADERS "lA/*.hh")
+message(STATUS "Found sources: ${SOURCES}")
 
 ################################################################################
 ## Include directories
