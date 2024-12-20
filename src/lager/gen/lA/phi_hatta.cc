@@ -150,7 +150,7 @@ double phi_hatta::calc_max_xsec(const configuration& cf) const {
   const double Wmax = opt_W_range ? fmin(opt_W_range->max * opt_W_range->max,
                                          (photon.p() + target.p()).M())
                                   : (photon.p() + target.p()).M();
-  return physics::sigmaT_phi_hatta(0.01, Wmax, target.mass() * 1.0001, vm_.mass(),
+  return physics::sigmaT_phi_hatta(0.0, Wmax, target.mass() * 1.0001, vm_.mass(),
                                   alpha_1_, alpha_2_, alpha_3_, nu_T_);
 } // namespace lA
 

@@ -191,32 +191,27 @@ inline double R_phi_clas(const double Q2, const double Mv, const double c_R) {
 // to be multiplied with a normalized form factor F(t)/F_int for a differential
 // cross section
 // =============================================================================
-inline double sigmaT_phi_hatta(const double Q2, const double W, const double Mt,
-                              const double Mv, const double alpha_1,
-                              const double alpha_2, const double alpha_3,
-                              const double nu_T) { //, const double B0,                                                                                                                                                                                                                  
-  const double Wth = Mt + Mv;
-  double cT_temp = 0.0;
-  double cT_clas12 = alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3);
-  double cT_hatta = (140.0/pow(sqrt(Q2), 9.4)) * pow(W*W-Mv*Mv, 0.71) * pow(W,3.8); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177                                                                                                                                                      
-    //alpha_1 * pow((2/sqrt(Q2)), alpha_2) * pow(W, alpha_3); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177                                                                                                                                                                            
-  //std::cout << " Q2 = " << Q2 << "Wth = " << Wth <<  " W = " << W << std::endl;
-  //std::cout << "0.045 * pow((2/sqrt(Q2)), 9.65) = " << 0.045 * pow((2/sqrt(Q2)), 9.65) << " pow(W*W-Mv*Mv, 0.866) = " << pow(W*W-Mv*Mv, 0.866) << " pow(W,4.177) = " << pow(W,4.177) << std::endl;
-  //std::cout << "CLAS ct = " << cT_clas12 << " hatta cT = " << cT_hatta << " ratio = " << cT_clas12/cT_hatta << std::endl;
-
-  //Choose whichever is smaller between Hatta and CLAS12 models                                                                                                                                                                                                                          
-  if(cT_clas12 > cT_hatta) cT_temp = cT_hatta;
-  else cT_temp = cT_clas12;
-
-  const double cT = cT_temp;
-  //std::cout << "final cT = " << cT << std::endl;
-  const double sigmaT = cT * multipole_ff_vm(Q2, Mv, nu_T);
-  return sigmaT;
-}
-
-  inline double R_phi_hatta(const double Q2, const double Mv, const double c_R) {
+  
+inline double R_phi_hatta(const double Q2, const double Mv, const double c_R) {
   const double Mv2 = Mv * Mv;
   return c_R * Q2 / Mv2;
+}
+
+  inline double sigmaT_phi_hatta(const double Q2, const double W, const double Mt,
+                              const double Mv, const double alpha_1,
+                              const double alpha_2, const double alpha_3,
+                              const double nu_T) { //alphas only control the CLAS model, not Hatta                                                                                                                                                                                                                  
+  const double Wth = Mt + Mv;
+  double cT_temp = 0.0;
+  double cT_clas12 = alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3) * multipole_ff_vm(Q2, Mv, nu_T);
+  
+  double cT_hatta = ((140.0/pow(sqrt(Q2), 9.4)) * pow(W*W-Mv*Mv, 0.71) * pow(W,3.8)) / R_phi_hatta(Q2,Mv,0.4); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177           
+  //Choose whichever is smaller between Hatta and CLAS12 models
+  if(cT_clas12 > cT_hatta) cT_temp = cT_hatta;
+  else cT_temp = cT_clas12;
+  
+  const double sigmaT = cT_temp;
+  return sigmaT;
 }
 
 inline double exp_ff_normalized(const double Q2, const double W, const double t,

@@ -182,6 +182,7 @@ Edit .cc or .hh files using a non-lager-shell terminal.
 
 From lager-shell, and in the directory /w/hallc-scshelf2102/jpsi-007/klest/lager2, run "cmake --build build -- install"
 
-Add to LD_LIBRARY_PATH (still in lager-shell) with: export LD_LIBRARY_PATH="/work/hallc/jpsi-007/klest/lager2/install/lib/:$LD_LIBRARY_PATH"
+Add to LD_LIBRARY_PATH (still in lager-shell) with: export LD_LIBRARY_PATH="/work/hallc/jpsi-007/klest/lager2/lib/:$LD_LIBRARY_PATH"
 
-Then run for example: "./install/bin/lager -c ../examples/solid/solid.ep-2gluon.json -o ../ -r 999"
+Then run for example: "./bin/lager -c jsons/hatta.ep-phi.json -o outputs -r 9999"
+
