@@ -154,13 +154,18 @@ void lA::quarkonium_hadronic_schc(lA_event& e, const int i) const {
   const double epsilon_R = e.epsilon() * e.R();
   const double r04 = epsilon_R / (1 + epsilon_R);
   const double phi = rng()->Uniform(0., TMath::TwoPi());
+  
   const double ctheta = rand_f(
       {-1, 1},
       [=](const double ctheta) {
-        return ((1. - r04) + (3. * r04 - 1) * ctheta * ctheta);
+	//return ((1. - r04) + (3. * r04 - 1) * ctheta * ctheta); Hadronic one, but gives strange results
+	return rng()->Uniform(-1, 1);
+	//return ((1. + r04) + (1. - 3. * r04) * ctheta * ctheta); Leptonic one, but gives NaN for theta?
       },
       2.001);
+
   const double theta = acos(ctheta);
+
   physics::decay_2body(e[i], theta, phi, decay_products, decay_products_cm);
 
   // set the vertex in the decay products
