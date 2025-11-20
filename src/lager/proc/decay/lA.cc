@@ -101,7 +101,7 @@ void lA::process(lA_event& e) const {
 void lA::quarkonium_schc(lA_event& e, const int i) const {
   // electron or muon BR only
   e.update_weight(vm_decay_br_);
-  LOG_INFO("decay", "Simulating hadronic SCHC decay for VM particles");
+  //LOG_INFO("decay", "Simulating hadronic SCHC decay for VM particles");
   std::pair<particle, particle> decay_products{{vm_decay_plus_.type()},
                                                {vm_decay_minus_.type()}};
   std::pair<particle, particle> decay_products_cm{

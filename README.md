@@ -180,7 +180,7 @@ To compile and have changes propagate:
 
 Edit .cc or .hh files using a non-lager-shell terminal. 
 
-From lager-shell, and in the directory /w/hallc-scshelf2102/jpsi-007/klest/lager2, run "cmake --build build -- install"
+From lager-shell, and in the directory /w/hallc-scshelf2102/jpsi-007/klest/lager2, run "cmake --build build -- install -j10"
 
 Add to LD_LIBRARY_PATH (still in lager-shell) with: export LD_LIBRARY_PATH="/work/hallc/jpsi-007/klest/lager2/lib/:$LD_LIBRARY_PATH"
 

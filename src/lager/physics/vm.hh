@@ -205,11 +205,13 @@ inline double R_phi_hatta(const double Q2, const double Mv, const double c_R) {
   double cT_temp = 0.0;
   double cT_clas12 = alpha_1 * pow((1 - Wth * Wth / (W * W)), alpha_2) * pow(W, alpha_3) * multipole_ff_vm(Q2, Mv, nu_T);
   
-  double cT_hatta = ((140.0/pow(sqrt(Q2), 9.4)) * pow(W*W-Mv*Mv, 0.71) * pow(W,3.8)) / R_phi_hatta(Q2,Mv,0.4); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177           
+  double cT_hatta = ((140.0/pow(sqrt(Q2), 9.4)) * pow(W*W-Mv*Mv, 0.71) * pow(W,3.8)) / R_phi_hatta(Q2,Mv,0.4); //Nominally, a1 = 0.045, a2 = 0.866, a3 = 4.177
+  // std::cout << "cT_hatta = " << cT_hatta << " cT_C12 = " << cT_clas12 << std::endl;
   //Choose whichever is smaller between Hatta and CLAS12 models
+
   if(cT_clas12 > cT_hatta) cT_temp = cT_hatta;
   else cT_temp = cT_clas12;
-  
+  //  if(cT_hatta > 30) cT_temp = cT_clas12;
   const double sigmaT = cT_temp;
   return sigmaT;
 }
