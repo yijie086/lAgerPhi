@@ -50,7 +50,7 @@ void decay_2body(const particle& part, const double theta_1, const double phi_1,
   
   // store the CM info prior to boosting / rotating
   xx_cm.first.p() = xx.first.p();
-  xx_cm.second.p() = xx.second.p();
+  xx_cm.second.p() = xx.secondroot .p();
   
   // boost back to the rotated version of the original frame pointing in the
   // direction of part
