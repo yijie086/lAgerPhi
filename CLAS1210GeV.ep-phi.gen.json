@@ -2,7 +2,6 @@
   "mc": {
     "type": "CLAS-ep-phi-10GeV",
     "tag": "",
-    "events": "5000",
     "output_gemc": true,
     "info": "lumi in fb^-1",
     "generator": {
