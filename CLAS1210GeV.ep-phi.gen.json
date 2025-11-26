@@ -30,7 +30,7 @@
       "photon": {
         "type": "vphoton",
         "y_range": ["0.25", "0.5"],
-        "Q2_range": ["2.5", "7."]
+        "Q2_range": ["1.0", "10.0"]
       },
       "process_0": {
         "type": "phi_clas12",
@@ -45,7 +45,7 @@
           "function": "dipole",
           "Mg2": "1.6"
         },
-        "t_range": ["-5.0", "-0.2"]
+        "t_range": ["-8.0", "-0.2"]
       },
       "advanced": {
         "info": "adjust this number to address the warning that the cross section max is being exceeded; smaller speeds up the generation process, larger adds a safety multiplier to the cross section maximum",
