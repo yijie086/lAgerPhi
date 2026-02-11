@@ -1,82 +1,67 @@
 #!/bin/bash
-# This script automatically:
-#   1. Runs bin/lager for multiple runs
-#   2. Cleans the generated LUND files using clean_lund
-#   3. Deletes .gemc, .log, and .root files after cleaning
-#
-# Modify NRUNS / NEV / CONFIG / PREFIX as needed.
 
-# JSON configuration file for lAgerPhi
 CONFIG="CLAS1210GeV.ep-phi.gen.json"
-
-# Number of events per run (defines the final "-1000" part)
-NEV=5000
-
-# Total number of runs to generate
-NRUNS=10
-
-# Prefix of the lAger output files
-# Example: CLAS-ep-phi-10GeV.ep-phi.4pi.run00001-1000.gemc
 PREFIX="CLAS-ep-phi-10GeV.ep-phi.4pi"
 
-for ((i=1; i<=NRUNS; i++)); do
-    # Format run number as 00001, 00002, ...
-    RUN_TAG=$(printf "%05d" "$i")
+NEV_GEN=10000
+TARGET=$NEV_GEN          # <-- 修正：原来写成 TARGET=NEV_GEN 会变成字符串
+NRUNS=3
+FMAX=1.0
 
-    echo "=== Running lager for run ${RUN_TAG} ==="
+SUMMARY="sampling_summary.txt"
+> "$SUMMARY"
 
-    # Run generator
-    bin/lager -c "${CONFIG}" -r "${i}" -e "${NEV}" -o .
+for ((r=1; r<=NRUNS; r++)); do
 
-    # Expected .gemc LUND file
-    IN_LUND="${PREFIX}.run${RUN_TAG}-${NEV}.gemc"
+  RUN=$(printf "%05d" "$r")
+  FINAL="run${RUN}_final.txt"
+  > "$FINAL"
 
-    # Cleaned output file (txt)
-    OUT_TXT="${PREFIX}.run${RUN_TAG}-${NEV}_clean.txt"
+  ACC=0
+  BATCH=0
 
-    # Clean if exists
-    if [ -f "${IN_LUND}" ]; then
-        echo "Cleaning ${IN_LUND} -> ${OUT_TXT}"
-        ./clean_lund "${IN_LUND}" "${OUT_TXT}"
-    else
-        echo "WARNING: LUND file not found: ${IN_LUND}"
-    fi
+  while (( ACC < TARGET*9/10 )); do
+    ((BATCH++))
 
-    echo "Deleting temporary files..."
+    # -----------------------------
+    # Deterministic, reproducible seed per batch
+    # -----------------------------
+    SEED=$(( r*1000000 + BATCH ))
+    SEED_TAG=$(printf "%05d" "$SEED")
 
-    # Delete .gemc file
-    if [ -f "${IN_LUND}" ]; then
-        rm -f "${IN_LUND}"
-        echo "  Deleted: ${IN_LUND}"
-    fi
+    echo "Run $RUN batch $BATCH (seed=$SEED_TAG)"
 
-    # Delete .log (produced by lager)
-    LOG_FILE="${PREFIX}.run${RUN_TAG}-${NEV}.log"
-    if [ -f "${LOG_FILE}" ]; then
-        rm -f "${LOG_FILE}"
-        echo "  Deleted: ${LOG_FILE}"
-    fi
+    # Generate with unique seed each batch
+    bin/lager -c "$CONFIG" -r "$SEED" -e "$NEV_GEN" -o . -v 0
 
-    # Delete any .root file created during the run
-    ROOT_FILE="${PREFIX}.run${RUN_TAG}-${NEV}.root"
-    if [ -f "${ROOT_FILE}" ]; then
-        rm -f "${ROOT_FILE}"
-        echo "  Deleted: ${ROOT_FILE}"
-    fi
+    # IMPORTANT: lager output file name follows the -r value (seed)
+    IN="${PREFIX}.run${SEED_TAG}-${NEV_GEN}.gemc"
+    OUT="tmp_${RUN}_${BATCH}.lund"
 
-    JSON_FILE="${PREFIX}.run${RUN_TAG}-${NEV}.json"
-    if [ -f "${JSON_FILE}" ]; then
-        rm -f "${JSON_FILE}"
-        echo "  Deleted: ${JSON_FILE}"
-    fi
+    # Clean + rejection sampling
+    RES=$(./clean_lund \
+      "$IN" "$OUT" \
+      "$FMAX" "$SUMMARY" \
+      "run${RUN}_batch${BATCH}")
 
-    LOG_FILE="${PREFIX}.run${RUN_TAG}.log"
-    if [ -f "${LOG_FILE}" ]; then
-        rm -f "${LOG_FILE}"
-        echo "  Deleted: ${LOG_FILE}"
-    fi
+    ADD=$(echo "$RES" | sed 's/ACCEPTED_EVENTS=//')
+    ACC=$((ACC + ADD))
 
-    echo
+    cat "$OUT" >> "$FINAL"
+
+    # Clean intermediate files for this batch/seed
+    rm -f "$IN" "$OUT"
+
+    # Delete .log/.root/.json produced by lager for this seed
+    for ext in log root json; do
+      f="${PREFIX}.run${SEED_TAG}-${NEV_GEN}.${ext}"
+      if [ -f "$f" ]; then
+        rm -f "$f"
+        echo "  Deleted: $f"
+      fi
+    done
+  done
+
+  echo "Run $RUN done, accepted $ACC"
+
 done
-
-echo "All runs completed."
